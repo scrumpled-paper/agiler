@@ -12,13 +12,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import scrumpledpaper.agiler.common.BaseEntity;
 import scrumpledpaper.agiler.user.entity.User;
 
 @Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "user_project")
-public class UserProject {
+public class UserProject extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -31,13 +32,4 @@ public class UserProject {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "project_id")
 	private Project project;
-
-	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
-
-	@Column(name = "modified_at", nullable = false)
-	private LocalDateTime updatedAt;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
 }

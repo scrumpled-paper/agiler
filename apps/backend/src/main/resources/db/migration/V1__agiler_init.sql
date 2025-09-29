@@ -189,4 +189,4 @@ CREATE TABLE `meeting_template` (
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME,
     FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; 
