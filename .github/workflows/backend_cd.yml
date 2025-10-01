@@ -1,0 +1,71 @@
+name: Backend CD
+
+on:
+  push:
+    branches:
+      - 'dev'
+    paths:
+      - 'apps/backend/**'
+      - '.github/workflows/backend_cd.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Backend to Test Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+        working-directory: ./apps/backend
+
+      - name: Build with Gradle
+        run: ./gradlew bootJar
+        working-directory: ./apps/backend
+
+      - name: Transfer artifact to server
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "apps/backend/build/libs/*.jar"
+          target: "/home/agiler/backend"
+          strip_components: 4
+
+      - name: Execute deployment script on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # --- [USER ACTION REQUIRED] ---
+            # 1. Change DEPLOY_PATH to match the 'target' in the previous step.
+            # ---------------------------------
+
+            DEPLOY_PATH="/home/agiler/backend"
+            CONFIG_PATH="$DEPLOY_PATH/config"
+            JAR_NAME=$(ls -t $DEPLOY_PATH/*.jar | head -n 1)
+
+            # Create configuration directory
+            mkdir -p $CONFIG_PATH
+
+            # Create application.yml from GitHub Secret
+            echo "${{ secrets.APPLICATION_YML }}" > $CONFIG_PATH/application.yml
+
+            # Stop any old running process
+            pkill -f "java -jar" || true
+            sleep 5
+
+            # Start the new application with external config
+            nohup java -jar $JAR_NAME --spring.config.location=file:$CONFIG_PATH/application.yml > $DEPLOY_PATH/app.log 2>&1 &
