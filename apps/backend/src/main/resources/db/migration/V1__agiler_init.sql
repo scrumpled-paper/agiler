@@ -124,7 +124,7 @@ CREATE TABLE `issue_status_history` (
 CREATE TABLE `note` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `project_id` BIGINT NOT NULL,
-    `type` ENUM('retro', 'issue', 'scrum', 'meeting') NOT NULL,
+    `type` ENUM('retro', 'scrum', 'meeting') NOT NULL,
     `title` VARCHAR(20) NOT NULL,
     `contents` TEXT,
     `created_at` DATETIME NOT NULL,
@@ -189,4 +189,4 @@ CREATE TABLE `meeting_template` (
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME,
     FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
