@@ -76,7 +76,8 @@ CREATE TABLE `issue` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `image` (
-    `profile_id` BIGINT PRIMARY KEY,
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `profile_id` BIGINT NOT NULL,
     `url` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
