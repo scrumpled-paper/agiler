@@ -25,6 +25,7 @@ public class User extends BaseEntity {
 	private String vendor;
 
 	@Column(name = "vendor_id", nullable = false)
+	@Column(name = "vendor_id")
 	private String vendorId;
 
 	@Column(name = "email")
@@ -35,4 +36,6 @@ public class User extends BaseEntity {
 
 	@Column(name = "img_id", nullable = false)
 	private long imgId;
+	@Column(name = "image_id", nullable = false)
+	private long imageId;
 }
