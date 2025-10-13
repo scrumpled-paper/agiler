@@ -1,6 +1,5 @@
 package scrumpledpaper.agiler.user.entity;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,7 +27,6 @@ public class User extends BaseEntity {
 	@Column(name = "vendor")
 	private String vendor;
 
-	@Column(name = "vendor_id", nullable = false)
 	@Column(name = "vendor_id")
 	private String vendorId;
 
@@ -38,8 +36,6 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", nullable = false)
 	private String nickname;
 
-	@Column(name = "img_id", nullable = false)
-	private long imgId;
 	@Column(name = "image_id", nullable = false)
 	private long imageId;
 }

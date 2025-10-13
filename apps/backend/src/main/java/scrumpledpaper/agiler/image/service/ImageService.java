@@ -19,4 +19,9 @@ public class ImageService {
 		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 		return image.getId();
 	}
+
+	public String getImageUrl(Long imageId) {
+		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+		return image.getUrl();
+	}
 }
