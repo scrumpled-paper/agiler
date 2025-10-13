@@ -37,7 +37,7 @@ public class Issue extends BaseEntity {
 	private String title;
 
 	@Column(name = "is_done", nullable = false)
-	private boolean done;
+	private Boolean isDone;
 
 	@Column(name = "contents")
 	private String contents;
