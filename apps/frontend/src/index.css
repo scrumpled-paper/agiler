@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  /* 라이트 모드 색상 */
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(9% 0.026 285.89);
+
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(9% 0.026 285.89);
+
+  --color-primary: oklch(52.42% 0.216 265.75);
+  --color-primary-foreground: oklch(98% 0 0);
+
+  --color-secondary: oklch(96.1% 0 0);
+  --color-secondary-foreground: oklch(11.2% 0.026 285.89);
+
+  --color-muted: oklch(96.1% 0 0);
+  --color-muted-foreground: oklch(46.9% 0.026 285.89);
+
+  --color-accent: oklch(96.1% 0 0);
+  --color-accent-foreground: oklch(11.2% 0.026 285.89);
+
+  --color-destructive: oklch(60.2% 0.22 29.23);
+  --color-destructive-foreground: oklch(98% 0 0);
+
+  --color-border: oklch(91.4% 0 0);
+  --color-input: oklch(91.4% 0 0);
+  --color-ring: oklch(52.42% 0.216 265.75);
+
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+}
+
+/* 다크모드는 @theme 밖에서 정의 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: oklch(9% 0.026 285.89);
+    --color-foreground: oklch(98% 0 0);
+
+    --color-card: oklch(9% 0.026 285.89);
+    --color-card-foreground: oklch(98% 0 0);
+
+    --color-primary: oklch(59.8% 0.22 265.75);
+    --color-primary-foreground: oklch(11.2% 0.026 285.89);
+
+    --color-secondary: oklch(17.5% 0.026 285.89);
+    --color-secondary-foreground: oklch(98% 0 0);
+
+    --color-muted: oklch(17.5% 0.026 285.89);
+    --color-muted-foreground: oklch(65.1% 0.026 285.89);
+
+    --color-accent: oklch(17.5% 0.026 285.89);
+    --color-accent-foreground: oklch(98% 0 0);
+
+    --color-destructive: oklch(30.6% 0.22 29.23);
+    --color-destructive-foreground: oklch(98% 0 0);
+
+    --color-border: oklch(17.5% 0.026 285.89);
+    --color-input: oklch(17.5% 0.026 285.89);
+    --color-ring: oklch(48% 0.22 265.75);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+}
