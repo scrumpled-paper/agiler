@@ -23,7 +23,7 @@ public class UserService {
 	private final AuthTokenProvider authTokenProvider;
 
 	public User findById(Long userId) { // todo
-		return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+		return userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	public TokenResponseDto login(String email) { // todo
