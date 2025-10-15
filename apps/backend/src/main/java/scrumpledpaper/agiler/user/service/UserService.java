@@ -4,11 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.user.dto.TokenResponseDto;
 import scrumpledpaper.agiler.user.dto.UserDto;
 import scrumpledpaper.agiler.user.dto.UserResDto;
+import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.mapper.UserMapper;
 import scrumpledpaper.agiler.user.repository.UserRepository;
