@@ -42,5 +42,4 @@ public class User extends BaseEntity {
 	public void update(String nickname) {
 		this.nickname = nickname;
 	}
->>>>>>> Stashed changes
 }
