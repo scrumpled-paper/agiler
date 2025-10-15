@@ -13,6 +13,10 @@ public class TokenFixture {
 		this.authTokenProvider = authTokenProvider;
 	}
 
+	public String createNotAllowedAccessToken() {
+		return authTokenProvider.createToken(9999L);
+	}
+
 	public String createAccessToken(User user) {
 		return authTokenProvider.createToken(user.getId());
 	}
