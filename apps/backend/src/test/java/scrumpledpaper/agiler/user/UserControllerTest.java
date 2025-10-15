@@ -66,10 +66,10 @@ public class UserControllerTest {
 				.andReturn().getResponse().getContentAsString();
 			// then
 			UserResDto userResDto = objectMapper.readValue(res, UserResDto.class);
-			assertThat(userResDto.getNickname()).isEqualTo(user.getNickname());
+			assertThat(userResDto.nickname()).isEqualTo(user.getNickname());
 			Image image = imageRepository.findById(user.getImageId())
 				.orElseThrow();
-			assertThat(userResDto.getImageUrl()).isEqualTo(image.getUrl());
+			assertThat(userResDto.imageUrl()).isEqualTo(image.getUrl());
 		}
 
 		@Test

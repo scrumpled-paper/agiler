@@ -12,7 +12,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 @Configuration
 public class SwaggerConfig {
 	@Bean
-	public GroupedOpenApi RiotDataGroup() {
+	public GroupedOpenApi agilerApiGroup() {
 		return GroupedOpenApi.builder()
 			.group("Agiler")
 			.pathsToMatch("/**")
