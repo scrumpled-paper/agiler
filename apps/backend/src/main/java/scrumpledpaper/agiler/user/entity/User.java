@@ -1,18 +1,21 @@
 package scrumpledpaper.agiler.user.entity;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.common.BaseEntity;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "user")
 public class User extends BaseEntity {
@@ -24,7 +27,7 @@ public class User extends BaseEntity {
 	@Column(name = "vendor")
 	private String vendor;
 
-	@Column(name = "vendor_id", nullable = false)
+	@Column(name = "vendor_id")
 	private String vendorId;
 
 	@Column(name = "email")
@@ -33,6 +36,6 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", nullable = false)
 	private String nickname;
 
-	@Column(name = "img_id", nullable = false)
-	private long imgId;
+	@Column(name = "image_id", nullable = false)
+	private long imageId;
 }

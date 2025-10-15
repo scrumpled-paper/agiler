@@ -4,7 +4,7 @@ CREATE TABLE `user` (
     `vendor_id` VARCHAR(50),
     `email` VARCHAR(40),
     `nickname` VARCHAR(20) NOT NULL,
-    `img_id` BIGINT NOT NULL,
+    `image_id` BIGINT NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME
@@ -77,7 +77,6 @@ CREATE TABLE `issue` (
 
 CREATE TABLE `image` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `profile_id` BIGINT NOT NULL,
     `url` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
