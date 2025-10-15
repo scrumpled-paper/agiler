@@ -1,0 +1,54 @@
+name: Frontend CD
+
+on:
+  push:
+    branches:
+      - 'dev'
+    paths:
+      - 'apps/frontend/**'
+      - '.github/workflows/frontend_cd.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Frontend to Test Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Test Server
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "apps/frontend/dist/*"
+          target: "/var/www/html"
+          overwrite: true
+          # Note: This action overwrites files but does not remove old files
+          # that are no longer part of the new build. For a perfectly clean
+          # deployment, you might add a step to clear the directory via ssh first.
