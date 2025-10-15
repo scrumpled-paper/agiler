@@ -26,6 +26,7 @@ public class UserService {
 		return userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
+	@Transactional
 	public TokenResponseDto login(String email) { // todo
 		Long imageId = imageService.findById(1L);
 
@@ -41,9 +42,16 @@ public class UserService {
 		return new TokenResponseDto(accessToken, refreshToken, "Bearer");
 	}
 
+	@Transactional(readOnly = true)
 	public UserResDto getUser(UserDto userDto) {
 		String imageUrl = imageService.getImageUrl(userDto.getImageId());
 		return userMapper.toDto(userDto, imageUrl);
+	}
+
+	@Transactional
+	public void updateUser(UserDto userDto, UserUpdateReqDto userUpdateReqDto) {
+		User user = findById(userDto.getId());
+		user.update(userUpdateReqDto.nickname());
 	}
 }
 
