@@ -23,6 +23,7 @@ import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.user.dto.UserResDto;
+import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
@@ -73,7 +74,7 @@ public class UserControllerTest {
 		}
 
 		@Test
-		@DisplayName("404 - Not Found Image")
+		@DisplayName("404 - Image Not Found")
 		public void notFoundImage() throws Exception {
 			// given
 			User user = UserFixture.createUser(999L);
@@ -88,6 +89,57 @@ public class UserControllerTest {
 				.andReturn().getResponse().getContentAsString();
 			// then
 			assertThat(res).contains("I001").contains("이미지를 찾을 수 없습니다");
+		}
+	}
+
+	@Nested
+	@DisplayName("Update User Test")
+	class UpdateUserTest {
+		@BeforeEach
+		void beforeEach() {
+			Image image = ImageFixture.createImage();
+			imageRepository.save(image);
+		}
+
+		@Test
+		@DisplayName("204 - User Update Success")
+		public void userUpdateSuccess() throws Exception {
+			// given
+			User user = UserFixture.createUser();
+			userRepository.save(user);
+			String accessToken = tokenFixture.createAccessToken(user);
+			UserUpdateReqDto updateReqDto = UserFixture.createUpdateReqDto("newNickname");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+			// when
+			mockMvc.perform(
+					patch("/api/v1/users")
+						.header("Authorization", "Bearer " + accessToken)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent());
+			// then
+			User updatedUser = userRepository.findById(user.getId())
+				.orElseThrow();
+			assertThat(updatedUser.getNickname()).isEqualTo("newNickname");
+		}
+
+		@Test
+		@DisplayName("404 - User Not Found")
+		public void notFoundUser() throws Exception {
+			// given
+			String accessToken = tokenFixture.createNotAllowedAccessToken();
+			UserUpdateReqDto updateReqDto = UserFixture.createUpdateReqDto("newNickname");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+			// when
+			String res = mockMvc.perform(
+					patch("/api/v1/users")
+						.header("Authorization", "Bearer " + accessToken)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+			// then
+			assertThat(res).contains("U001").contains("사용자를 찾을 수 없습니다");
 		}
 	}
 }

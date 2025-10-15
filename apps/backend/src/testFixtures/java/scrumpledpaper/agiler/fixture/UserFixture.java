@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.fixture;
 
+import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.entity.User;
 
 public class UserFixture {
@@ -18,5 +19,9 @@ public class UserFixture {
 			.nickname("테스트유저")
 			.imageId(imageId)
 			.build();
+	}
+
+	public static UserUpdateReqDto createUpdateReqDto(String nickname) {
+		return new UserUpdateReqDto(nickname);
 	}
 }
