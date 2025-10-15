@@ -18,7 +18,6 @@ import scrumpledpaper.agiler.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class UserService {
 	private final UserMapper userMapper;
 	private final ImageService imageService;
@@ -54,7 +53,7 @@ public class UserService {
 	@Transactional
 	public void updateUser(UserDto userDto, UserUpdateReqDto userUpdateReqDto) {
 		User user = findById(userDto.getId());
-		user.update(userUpdateReqDto.nickname());
+		user.updateNickname(userUpdateReqDto.nickname());
 	}
 }
 

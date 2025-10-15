@@ -17,18 +17,18 @@ import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.service.UserService;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 	private final UserService userService;
 
-	@GetMapping("/users")
+	@GetMapping
 	public ResponseEntity<UserResDto> getUser(@Parameter(hidden = true) @Login UserDto userDto) {
 		UserResDto userResDto = userService.getUser(userDto);
 		return ResponseEntity.ok(userResDto);
 	}
 
-	@PatchMapping("/users")
+	@PatchMapping
 	public ResponseEntity<Void> updateUser(@Parameter(hidden = true) @Login UserDto userDto, @RequestBody @Valid UserUpdateReqDto userUpdateReqDto) {
 		userService.updateUser(userDto, userUpdateReqDto);
 		return ResponseEntity.noContent().build();

@@ -39,7 +39,7 @@ public class User extends BaseEntity {
 	@Column(name = "image_id", nullable = false)
 	private long imageId;
 
-	public void update(String nickname) {
+	public void updateNickname(String nickname) {
 		this.nickname = nickname;
 	}
 }
