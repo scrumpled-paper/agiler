@@ -11,6 +11,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -38,6 +40,10 @@
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/coverage-v8": "^2.0.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.23",
     "globals": "^16.4.0",
@@ -45,5 +51,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.46.1",
     "vite": "^7.1.9"
-  }
+    "jsdom": "^24.1.1",
+    "vitest": "^2.0.4"
+  },
 }
