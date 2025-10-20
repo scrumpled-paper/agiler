@@ -1,0 +1,6 @@
+app:
+  auth:
+    tokenSecret: "dummysecretkey"
+    refreshTokenSecret: "anotherdummysecretkey"
+    token-expiry: 86400000
+    refresh-token-expiry: 604800000

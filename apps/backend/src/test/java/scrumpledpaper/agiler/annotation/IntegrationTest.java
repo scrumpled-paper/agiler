@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @Target(ElementType.TYPE)
@@ -15,9 +14,5 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-@TestPropertySource(properties = {
-	"app.auth.tokenSecret=verylongsecretkey",
-	"app.auth.refreshTokenSecret=anotherlongsecretkey"
-})
 public @interface IntegrationTest {
 }
