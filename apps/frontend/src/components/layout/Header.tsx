@@ -24,11 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Link, useLocation, useParams } from 'react-router-dom'
-
-interface BreadcrumbItem {
-  label: string
-  href?: string
-}
+import { getBreadcrumbs } from '@/lib/breadcrumbs'
 
 export function AppHeader() {
   const location = useLocation()
@@ -152,46 +148,4 @@ export function AppHeader() {
       </header>
     </TooltipProvider>
   )
-}
-
-// 브레드크럼 생성 함수
-function getBreadcrumbs(
-  pathname: string,
-  params: { projectId?: string; scrumId?: string }
-): BreadcrumbItem[] {
-  const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Dashboard', href: '/dashboard' },
-  ]
-
-  // Dashboard 경로
-  if (pathname.startsWith('/dashboard')) {
-    if (pathname.includes('/settings')) {
-      breadcrumbs.push({ label: 'Settings' })
-    }
-    return breadcrumbs
-  }
-
-  // Projects 경로
-  if (pathname.startsWith('/projects/') && params.projectId) {
-    breadcrumbs.push({
-      label: `Project ${params.projectId}`,
-      href: `/projects/${params.projectId}`,
-    })
-
-    if (pathname.includes('/settings')) {
-      breadcrumbs.push({ label: 'Settings' })
-    } else if (pathname.includes('/daily-scrum')) {
-      breadcrumbs.push({
-        label: 'Daily Scrum',
-        href: `/projects/${params.projectId}/daily-scrum`,
-      })
-
-      if (params.scrumId) {
-        breadcrumbs.push({ label: `Scrum #${params.scrumId}` })
-      }
-    }
-    return breadcrumbs
-  }
-
-  return breadcrumbs
 }
