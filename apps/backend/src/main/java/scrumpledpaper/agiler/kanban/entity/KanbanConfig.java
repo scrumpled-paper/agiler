@@ -40,5 +40,5 @@ public class KanbanConfig extends BaseEntity {
 	private boolean backlog;
 
 	@Column(name = "is_done", nullable = false)
-	private boolean done;
+	private Boolean isDone;
 }
