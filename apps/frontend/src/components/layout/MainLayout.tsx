@@ -1,16 +1,25 @@
-import { Outlet } from 'react-router'
+import { Outlet } from 'react-router-dom'
 import { AppSidebar } from '@/components/layout/Sidebar'
-import { SidebarProvider } from '@/components/ui/sidebar' // 경로 통일된 것으로 가정
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppHeader } from '@/components/layout/Header'
+import { cn } from '@/lib/utils'
 
 export default function MainLayout() {
   return (
     <SidebarProvider>
-      <div className="peer flex justify-start w-full min-h-screen">
+      <div
+        className="flex min-h-screen w-full justify-start"
+        data-testid="main-layout-container"
+      >
         <AppSidebar />
-        <div className="flex-1 transition-all duration-300 ease-in-out peer-data-[state=expanded]:md:ml-32 peer-data-[state=collapsed]:md:ml-2">
+        <div
+          className={cn(
+            'flex-1 transition-all duration-300 ease-in-out',
+            'peer-data-[state=expanded]:ml-[12rem]' // 12rem = w-48
+          )}
+        >
           <AppHeader />
-          <main className="w-full h-full container p-4">
+          <main className="container h-full w-full p-4">
             <Outlet />
           </main>
         </div>

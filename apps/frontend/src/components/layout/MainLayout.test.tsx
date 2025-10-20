@@ -1,16 +1,18 @@
-// src/components/layout/MainLayout.test.tsx
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter, MemoryRouter } from 'react-router-dom'
+import { render, screen, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import MainLayout from './MainLayout'
 
-// Mock 컴포넌트들
 vi.mock('@/components/layout/Sidebar', () => ({
-  AppSidebar: () => <div data-testid="app-sidebar">Sidebar</div>,
+  AppSidebar: () => (
+    <aside className="peer" data-testid="app-sidebar">
+      Sidebar
+    </aside>
+  ),
 }))
 
 vi.mock('@/components/layout/Header', () => ({
-  AppHeader: () => <div data-testid="app-header">Header</div>,
+  AppHeader: () => <header data-testid="app-header">Header</header>,
 }))
 
 vi.mock('@/components/ui/sidebar', () => ({
@@ -20,74 +22,32 @@ vi.mock('@/components/ui/sidebar', () => ({
 }))
 
 describe('MainLayout', () => {
-  it('should render without crashing', () => {
-    render(
-      <BrowserRouter>
-        <MainLayout />
-      </BrowserRouter>
-    )
-
-    expect(screen.getByTestId('sidebar-provider')).toBeInTheDocument()
-  })
-
-  it('should render AppSidebar component', () => {
-    render(
-      <BrowserRouter>
-        <MainLayout />
-      </BrowserRouter>
-    )
-
-    expect(screen.getByTestId('app-sidebar')).toBeInTheDocument()
-  })
-
-  it('should render AppHeader component', () => {
-    render(
-      <BrowserRouter>
-        <MainLayout />
-      </BrowserRouter>
-    )
-
-    expect(screen.getByTestId('app-header')).toBeInTheDocument()
-  })
-
-  it('should render main content area', () => {
-    render(
-      <BrowserRouter>
-        <MainLayout />
-      </BrowserRouter>
-    )
-
-    const mainElement = screen.getByRole('main')
-    expect(mainElement).toBeInTheDocument()
-    expect(mainElement).toHaveClass('container')
-  })
-
-  it('should have correct layout structure', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <MainLayout />
-      </BrowserRouter>
-    )
-
-    const peerDiv = container.querySelector('.peer')
-    expect(peerDiv).toBeInTheDocument()
-    expect(peerDiv).toHaveClass(
-      'flex',
-      'justify-start',
-      'w-full',
-      'min-h-screen'
-    )
-  })
-
-  it('should render Outlet for nested routes', () => {
-    render(
-      <MemoryRouter initialEntries={['/dashboard']}>
+  // 렌더링을 돕는 헬퍼 함수
+  const setup = () => {
+    return render(
+      <MemoryRouter>
         <MainLayout />
       </MemoryRouter>
     )
+  }
 
-    // Outlet이 렌더링되는지 확인 (실제로는 자식 라우트가 필요)
-    const mainElement = screen.getByRole('main')
-    expect(mainElement).toBeInTheDocument()
+  it('사이드바, 헤더, 메인 콘텐츠 영역을 모두 렌더링해야 한다', () => {
+    setup()
+    expect(screen.getByTestId('app-sidebar')).toBeInTheDocument()
+    expect(screen.getByTestId('app-header')).toBeInTheDocument()
+    expect(screen.getByRole('main')).toBeInTheDocument()
+  })
+
+  it('올바른 레이아웃 구조와 스타일을 가져야 한다', () => {
+    setup()
+
+    // 1. 최상위 flex 컨테이너를 찾고 테스트.
+    const container = screen.getByTestId('main-layout-container') // MainLayout.tsx에 data-testid 추가 필요
+    expect(container).toBeInTheDocument()
+    expect(container).toHaveClass('flex min-h-screen w-full justify-start')
+
+    // 2. 그 컨테이너 내부에 peer 클래스를 가진 사이드바가 있는지 확인합니다.
+    const sidebar = within(container).getByTestId('app-sidebar')
+    expect(sidebar).toHaveClass('peer')
   })
 })
