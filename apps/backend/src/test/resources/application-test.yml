@@ -6,7 +6,7 @@ spring:
 
 app:
   auth:
-    tokenSecret: "dummysecretkey"
-    refreshTokenSecret: "anotherdummysecretkey"
+    tokenSecret: "scrumpledpaperdummydummysecretkey"
+    refreshTokenSecret: "scrumpledpaperanotherdummydummysecretkey"
     token-expiry: 86400000
     refresh-token-expiry: 604800000
