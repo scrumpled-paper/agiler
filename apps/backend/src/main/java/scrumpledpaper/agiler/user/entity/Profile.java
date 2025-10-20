@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -17,6 +19,8 @@ import scrumpledpaper.agiler.common.BaseEntity;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "profile")
 public class Profile extends BaseEntity {
@@ -40,8 +44,8 @@ public class Profile extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@Column(name = "img_id", nullable = false)
-	private long imgId;
+	@Column(name = "image_id", nullable = false)
+	private long imageId;
 
 	@Column(name = "email")
 	private String email;

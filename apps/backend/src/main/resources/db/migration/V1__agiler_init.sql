@@ -13,21 +13,12 @@ CREATE TABLE `user` (
 CREATE TABLE `project` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `title` VARCHAR(20) NOT NULL,
+    `url` VARCHAR(20),
+    `tag` VARCHAR(20),
     `summary` TEXT,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `user_project` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `project_id` BIGINT NOT NULL,
-    `created_at` DATETIME NOT NULL,
-    `updated_at` DATETIME NOT NULL,
-    `deleted_at` DATETIME,
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
-    FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `profile` (
@@ -36,7 +27,7 @@ CREATE TABLE `profile` (
     `project_id` BIGINT NOT NULL,
     `nickname` VARCHAR(20),
     `role` ENUM('member', 'owner') NOT NULL,
-    `img_id` BIGINT NOT NULL,
+    `image_id` BIGINT NOT NULL,
     `email` TEXT,
     `description` TEXT,
     `created_at` DATETIME NOT NULL,
