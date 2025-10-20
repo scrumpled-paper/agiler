@@ -9,9 +9,10 @@ import lombok.Setter;
 @Component
 @ConfigurationProperties(prefix = "app")
 @Getter
+@Setter
 public class AppProperties {
 
-	private final Auth auth = new Auth();
+	private Auth auth = new Auth();
 
 	@Getter
 	@Setter
@@ -22,4 +23,3 @@ public class AppProperties {
 		private long refreshTokenExpiry;
 	}
 }
-

@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.common.utils;
 
 import static scrumpledpaper.agiler.common.exception.ErrorCode.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -25,8 +26,9 @@ public class AuthTokenProvider {
 
 	public AuthTokenProvider(AppProperties appProperties) {
 		this.appProperties = appProperties;
-		this.key = Keys.hmacShaKeyFor(appProperties.getAuth().getTokenSecret().getBytes());
-		this.refreshKey = Keys.hmacShaKeyFor(appProperties.getAuth().getRefreshTokenSecret().getBytes());
+		this.key = Keys.hmacShaKeyFor(appProperties.getAuth().getTokenSecret().getBytes(StandardCharsets.UTF_8));
+		this.refreshKey = Keys.hmacShaKeyFor(appProperties.getAuth().getRefreshTokenSecret().getBytes(StandardCharsets.UTF_8));
+
 	}
 
 	public String createToken(Long userId) {
