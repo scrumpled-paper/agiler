@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import scrumpledpaper.agiler.TestcontainersConfiguration;
+import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
@@ -31,10 +31,7 @@ import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
-@Transactional
+@IntegrationTest
 public class ProjectControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
