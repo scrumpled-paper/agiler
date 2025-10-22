@@ -64,4 +64,4 @@ jobs:
             sleep 5
 
             # Start the new application with external config
-            nohup java -jar $JAR_NAME --spring.config.location=file:$CONFIG_PATH/application.yml > $DEPLOY_PATH/app.log 2>&1 &
+            nohup java -jar $JAR_NAME --spring.config.location=$CONFIG_PATH/application.yml > $DEPLOY_PATH/app.log 2>&1 &
