@@ -48,3 +48,4 @@ jobs:
         with:
           flags: backend
           slug: ${{ github.repository }}
+          token: ${{ secrets.CODECOV_TOKEN }}

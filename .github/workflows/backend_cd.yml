@@ -39,7 +39,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "apps/backend/build/libs/*.jar"
-          target: "/home/agiler/backend"
+          target: "/home/ubuntu/backend"
           strip_components: 4
 
       - name: Execute deployment script on server
@@ -49,11 +49,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # --- [USER ACTION REQUIRED] ---
-            # 1. Change DEPLOY_PATH to match the 'target' in the previous step.
-            # ---------------------------------
-
-            DEPLOY_PATH="/home/agiler/backend"
+            DEPLOY_PATH="/home/ubuntu/backend"
             CONFIG_PATH="$DEPLOY_PATH/config"
             JAR_NAME=$(ls -t $DEPLOY_PATH/*.jar | head -n 1)
 
@@ -64,8 +60,8 @@ jobs:
             echo "${{ secrets.APPLICATION_YML }}" > $CONFIG_PATH/application.yml
 
             # Stop any old running process
-            pkill -f "java -jar" || true
+            pkill -f "$JAR_NAME" || true
             sleep 5
 
             # Start the new application with external config
-            nohup java -jar $JAR_NAME --spring.config.location=file:$CONFIG_PATH/application.yml > $DEPLOY_PATH/app.log 2>&1 &
+            nohup java -jar $JAR_NAME --spring.config.location=$CONFIG_PATH/application.yml > $DEPLOY_PATH/app.log 2>&1 &
