@@ -32,7 +32,7 @@ public class ProjectController {
 	}
 
 	@GetMapping("/check")
-	public ResponseEntity<ProjectCheckResDto> checkProjectUrl(@ModelAttribute ProjectCheckReqDto projectCheckReqDto) {
+	public ResponseEntity<ProjectCheckResDto> checkProjectUrl(@ModelAttribute @Valid ProjectCheckReqDto projectCheckReqDto) {
 		ProjectCheckResDto projectCheckResDto = projectService.checkProjectUrl(projectCheckReqDto);
 		return ResponseEntity.ok().body(projectCheckResDto);
 	}

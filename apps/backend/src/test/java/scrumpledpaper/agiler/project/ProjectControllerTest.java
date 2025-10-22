@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -189,6 +191,34 @@ public class ProjectControllerTest {
 			// then
 			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(res, ProjectCheckResDto.class);
 			assertThat(projectCheckResDto.isDuplicated()).isFalse();
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings = {
+			"test_url_tag",
+			"test__tag",
+			"_tag",
+			"test_",
+			"test",
+			"test#tag",
+			"test tag",
+			"test+tag_name",
+			"",
+			"very-long-project-name-here_very-long-tag-name-here-too"
+		})
+		@DisplayName("400 - Invalid Project URL Format")
+		void invalidProjectUrlFormat(String invalidUrl) throws Exception {
+			// given
+			User user = UserFixture.createUser(defaultImage);
+			userRepository.save(user);
+			String accessToken = tokenFixture.createAccessToken(user);
+
+			// when & then
+			mockMvc.perform(
+					get("/api/v1/projects/check")
+						.header("Authorization", "Bearer " + accessToken)
+						.param("url", invalidUrl))
+				.andExpect(status().isBadRequest());
 		}
 	}
 }
