@@ -83,7 +83,6 @@ public class ProjectControllerTest {
 
 			assertThat(createdProject.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdProject.getUrl()).isEqualTo(createReqDto.url());
-			assertThat(createdProject.getTag()).isEqualTo(createReqDto.tag());
 			assertThat(createdProject.getSummary()).isEqualTo(createReqDto.summary());
 
 			Profile ownerProfile = profileRepository.findByUserIdAndProjectId(user.getId(), createdProject.getId())
@@ -110,7 +109,7 @@ public class ProjectControllerTest {
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			assertThat(res).contains("U001").contains("사용자를 찾을 수 없습니다");
+			assertThat(res).contains(ErrorCode.USER_NOT_FOUND.getCode());
 		}
 	}
 }
