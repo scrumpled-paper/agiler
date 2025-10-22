@@ -24,11 +24,8 @@ public class Project extends BaseEntity {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "url")
+	@Column(name = "url", nullable = false)
 	private String url;
-
-	@Column(name = "tag")
-	private String tag;
 
 	@Column(name = "title", nullable = false)
 	private String title;
