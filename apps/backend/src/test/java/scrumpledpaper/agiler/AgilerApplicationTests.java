@@ -1,15 +1,13 @@
 package scrumpledpaper.agiler;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import scrumpledpaper.agiler.annotation.IntegrationTest;
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
+@IntegrationTest
 class AgilerApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }

@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+app:
+  auth:
+    tokenSecret: "scrumpledpaperdummydummysecretkey"
+    refreshTokenSecret: "scrumpledpaperanotherdummydummysecretkey"
+    token-expiry: 86400000
+    refresh-token-expiry: 604800000

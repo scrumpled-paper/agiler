@@ -9,7 +9,9 @@ public enum ErrorCode {
 
 	USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
 
-	IMAGE_NOT_FOUND(404, "I001", "이미지를 찾을 수 없습니다.");
+	IMAGE_NOT_FOUND(404, "I001", "이미지를 찾을 수 없습니다."),
+
+	INVALID_REQUEST(400, "C001", "잘못된 요청입니다.");
 
 	private final int status;
 	private final String code;

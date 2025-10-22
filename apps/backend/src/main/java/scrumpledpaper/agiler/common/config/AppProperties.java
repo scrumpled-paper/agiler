@@ -1,17 +1,18 @@
 package scrumpledpaper.agiler.common.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Component
-@ConfigurationProperties(prefix = "app")
 @Getter
+@Setter
+@Configuration
+@ConfigurationProperties(prefix = "app")
 public class AppProperties {
 
-	private final Auth auth = new Auth();
+	private Auth auth = new Auth();
 
 	@Getter
 	@Setter
@@ -22,4 +23,3 @@ public class AppProperties {
 		private long refreshTokenExpiry;
 	}
 }
-

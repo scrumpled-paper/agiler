@@ -9,14 +9,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
@@ -27,9 +25,7 @@ import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
+@IntegrationTest
 public class UserControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
@@ -41,21 +37,22 @@ public class UserControllerTest {
 	private UserRepository userRepository;
 	@Autowired
 	private ImageRepository imageRepository;
+	Image defaultImage;
 
 	@Nested
 	@DisplayName("Get User Test")
 	class GetUserTest {
 		@BeforeEach
 		void beforeEach() {
-			Image image = ImageFixture.createImage();
-			imageRepository.save(image);
+			defaultImage = ImageFixture.createImage();
+			imageRepository.save(defaultImage);
 		}
 
 		@Test
 		@DisplayName("200 - User Get Success")
 		public void userGetSuccess() throws Exception {
 			// given
-			User user = UserFixture.createUser();
+			User user = UserFixture.createUser(defaultImage);
 			userRepository.save(user);
 			String accessToken = tokenFixture.createAccessToken(user);
 			// when
@@ -97,15 +94,15 @@ public class UserControllerTest {
 	class UpdateUserTest {
 		@BeforeEach
 		void beforeEach() {
-			Image image = ImageFixture.createImage();
-			imageRepository.save(image);
+			defaultImage = ImageFixture.createImage();
+			imageRepository.save(defaultImage);
 		}
 
 		@Test
 		@DisplayName("204 - User Update Success")
 		public void userUpdateSuccess() throws Exception {
 			// given
-			User user = UserFixture.createUser();
+			User user = UserFixture.createUser(defaultImage);
 			userRepository.save(user);
 			String accessToken = tokenFixture.createAccessToken(user);
 			UserUpdateReqDto updateReqDto = UserFixture.createUpdateReqDto("newNickname");
