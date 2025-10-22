@@ -15,12 +15,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import scrumpledpaper.agiler.annotation.IntegrationTest;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -136,5 +138,57 @@ public class ProjectControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("Check Project URL Test")
+	class CheckProjectUrlAndTagTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = ImageFixture.createImage();
+			imageRepository.save(defaultImage);
+		}
+
+		@Test
+		@DisplayName("200 - Already Project URL Check Success")
+		public void alreadyProjectUrlCheckSuccess() throws Exception {
+			// given
+			User user = UserFixture.createUser(defaultImage);
+			userRepository.save(user);
+			String accessToken = tokenFixture.createAccessToken(user);
+			String url = "test-url_tag";
+			Project existingProject = ProjectFixture.createProject(url);
+			projectRepository.save(existingProject);
+			// when
+			String res = mockMvc.perform(
+					get("/api/v1/projects/check")
+						.header("Authorization", "Bearer " + accessToken)
+						.param("url", url)
+				)
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+			// then
+			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(res, ProjectCheckResDto.class);
+			assertThat(projectCheckResDto.isDuplicated()).isTrue();
+		}
+
+		@Test
+		@DisplayName("200 - Project URL Check Success")
+		public void ProjectUrlCheckSuccess() throws Exception {
+			// given
+			User user = UserFixture.createUser(defaultImage);
+			userRepository.save(user);
+			String accessToken = tokenFixture.createAccessToken(user);
+			String url = "test-url_tag";
+			// when
+			String res = mockMvc.perform(
+					get("/api/v1/projects/check")
+						.header("Authorization", "Bearer " + accessToken)
+						.param("url", url)
+				)
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+			// then
+			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(res, ProjectCheckResDto.class);
+			assertThat(projectCheckResDto.isDuplicated()).isFalse();
+		}
 	}
 }
