@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import scrumpledpaper.agiler.annotation.IntegrationTest;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
