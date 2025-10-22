@@ -39,7 +39,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "apps/backend/build/libs/*.jar"
-          target: "/home/agiler/backend"
+          target: "/home/ubuntu/backend"
           strip_components: 4
 
       - name: Execute deployment script on server
@@ -49,10 +49,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # --- [USER ACTION REQUIRED] ---
-            # 1. Change DEPLOY_PATH to match the 'target' in the previous step.
-            # ---------------------------------
-
             DEPLOY_PATH="/home/agiler/backend"
             CONFIG_PATH="$DEPLOY_PATH/config"
             JAR_NAME=$(ls -t $DEPLOY_PATH/*.jar | head -n 1)
