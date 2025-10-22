@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
+import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -32,5 +34,14 @@ public class ProjectService {
 
 		profileService.createDefaultProfile(user, savedProject, Role.owner);
 		return projectMapper.toDto(savedProject);
+	}
+
+	public ProjectCheckResDto checkProjectUrl(ProjectCheckReqDto projectCheckReqDto) {
+		boolean isDuplicated = alreadyExistProjectUrl(projectCheckReqDto.url());
+		return new ProjectCheckResDto(isDuplicated);
+	}
+
+	private boolean alreadyExistProjectUrl(String url) {
+		return projectRepository.existsByUrl(url);
 	}
 }
