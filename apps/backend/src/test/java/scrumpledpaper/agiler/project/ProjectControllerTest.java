@@ -111,5 +111,30 @@ public class ProjectControllerTest {
 			// then
 			assertThat(res).contains(ErrorCode.USER_NOT_FOUND.getCode());
 		}
+
+		@Test
+		@DisplayName("409 - Duplicate Project URL")
+		public void duplicateUrl() throws Exception {
+			// given
+			User user = UserFixture.createUser(defaultImage);
+			userRepository.save(user);
+			String accessToken = tokenFixture.createAccessToken(user);
+			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
+			String updateJson = objectMapper.writeValueAsString(createReqDto);
+			Project existingProject = ProjectFixture.createProject(createReqDto.url());
+			projectRepository.save(existingProject);
+			// when
+			String res = mockMvc.perform(
+					post("/api/v1/projects")
+						.header("Authorization", "Bearer " + accessToken)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isConflict())
+				.andReturn().getResponse().getContentAsString();
+			// then
+			assertThat(res).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
+		}
+	}
+
 	}
 }
