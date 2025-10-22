@@ -60,7 +60,7 @@ jobs:
             echo "${{ secrets.APPLICATION_YML }}" > $CONFIG_PATH/application.yml
 
             # Stop any old running process
-            pkill -f "java -jar" || true
+            pkill -f "$JAR_NAME" || true
             sleep 5
 
             # Start the new application with external config
