@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
+import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.user.dto.TokenResponseDto;
 import scrumpledpaper.agiler.user.dto.UserDto;
@@ -30,11 +31,11 @@ public class UserService {
 
 	@Transactional
 	public TokenResponseDto login(String email) { // todo
-		Long imageId = imageService.findById(1L);
+		Image image = imageService.findById(1L);
 
 		User user = userRepository.findByEmail(email);
 		if (user == null) {
-			user = userMapper.toEntity(email, "nickname", imageId);
+			user = userMapper.toEntity(email, "nickname", image.getId());
 			userRepository.save(user);
 		}
 
@@ -46,8 +47,8 @@ public class UserService {
 
 	@Transactional(readOnly = true)
 	public UserResDto getUser(UserDto userDto) {
-		String imageUrl = imageService.getImageUrl(userDto.getImageId());
-		return userMapper.toDto(userDto, imageUrl);
+		Image image = imageService.findById(userDto.getImageId());
+		return userMapper.toDto(userDto, image.getUrl());
 	}
 
 	@Transactional
