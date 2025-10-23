@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import scrumpledpaper.agiler.common.resolver.Login;
+import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
+import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlRequestDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.service.ImageService;
@@ -26,6 +28,14 @@ public class ImageController {
 			@RequestBody @Valid PreSignedUrlRequestDto request
 	) {
 		PreSignedUrlResponseDto response = imageService.generatePreSignedUrl(user, request.fileName());
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/confirm-upload")
+	public ResponseEntity<ImageUploadConfirmationResponseDto> confirmUpload(
+			@RequestBody @Valid ImageUploadConfirmationRequestDto request
+	) {
+		ImageUploadConfirmationResponseDto response = imageService.confirmUpload(request);
 		return ResponseEntity.ok(response);
 	}
 
