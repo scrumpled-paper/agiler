@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
@@ -14,6 +15,7 @@ import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.enums.ImageContentType;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.image.event.ImageDeletedEvent;
 import scrumpledpaper.agiler.user.entity.User;
 
 import java.util.Date;
@@ -27,6 +29,7 @@ public class ImageService {
 	private String bucket;
 	private final AmazonS3 amazonS3;
 	private final ImageRepository imageRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional(readOnly = true)
 	public PreSignedUrlResponseDto generatePreSignedUrl(User user, String fileName, String contentType) {
@@ -82,6 +85,17 @@ public class ImageService {
 	public String getImageUrl(Long imageId) {
 		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 		return image.getUrl();
+	}
+
+	@Transactional
+	public void deleteImage(Long imageId) {
+		Image image = imageRepository.findById(imageId)
+				.orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+		String objectKey = image.getObjectKey();
+
+		imageRepository.delete(image);
+
+		eventPublisher.publishEvent(new ImageDeletedEvent(objectKey));
 	}
 
 }

@@ -3,10 +3,7 @@ package scrumpledpaper.agiler.image.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import scrumpledpaper.agiler.common.resolver.Login;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
@@ -37,6 +34,14 @@ public class ImageController {
 	) {
 		ImageUploadConfirmationResponseDto response = imageService.confirmUpload(request.objectKey());
 		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/{imageId}")
+	public ResponseEntity<Void> deleteImage(
+			@PathVariable Long imageId
+	) {
+		imageService.deleteImage(imageId);
+		return ResponseEntity.noContent().build();
 	}
 
 }
