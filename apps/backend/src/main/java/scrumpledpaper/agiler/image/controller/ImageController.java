@@ -35,7 +35,7 @@ public class ImageController {
 	public ResponseEntity<ImageUploadConfirmationResponseDto> confirmUpload(
 			@RequestBody @Valid ImageUploadConfirmationRequestDto request
 	) {
-		ImageUploadConfirmationResponseDto response = imageService.confirmUpload(request);
+		ImageUploadConfirmationResponseDto response = imageService.confirmUpload(request.objectKey());
 		return ResponseEntity.ok(response);
 	}
 

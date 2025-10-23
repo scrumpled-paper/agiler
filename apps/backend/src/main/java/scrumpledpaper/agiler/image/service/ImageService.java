@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
-import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
@@ -60,12 +59,12 @@ public class ImageService {
 	}
 
 	@Transactional
-	public ImageUploadConfirmationResponseDto confirmUpload(ImageUploadConfirmationRequestDto request) {
-		String objectKey = request.objectKey();
+	public ImageUploadConfirmationResponseDto confirmUpload(String objectKey) {
 		String imageUrl = amazonS3.getUrl(bucket, objectKey).toString();
 
 		Image image = Image.builder()
 				.url(imageUrl)
+				.objectKey(objectKey)
 				.build();
 
 		Image savedImage = imageRepository.save(image);
