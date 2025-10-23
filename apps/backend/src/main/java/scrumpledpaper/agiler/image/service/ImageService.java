@@ -21,7 +21,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ImageService {
 
 	@Value("${cloud.aws.s3.bucket}")
@@ -56,6 +55,7 @@ public class ImageService {
 		return new Date(expTimeMillis);
 	}
 
+	@Transactional
 	public ImageUploadConfirmationResponseDto confirmUpload(ImageUploadConfirmationRequestDto request) {
 		String objectKey = request.objectKey();
 		String imageUrl = amazonS3.getUrl(bucket, objectKey).toString();
@@ -69,11 +69,13 @@ public class ImageService {
 		return new ImageUploadConfirmationResponseDto(savedImage.getId(), savedImage.getUrl());
 	}
 
+	@Transactional(readOnly = true)
 	public Long findById(Long imageId) {
 		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 		return image.getId();
 	}
 
+	@Transactional(readOnly = true)
 	public String getImageUrl(Long imageId) {
 		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 		return image.getUrl();
