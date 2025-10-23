@@ -13,6 +13,7 @@ import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.image.enums.ImageContentType;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.user.entity.User;
 
@@ -29,13 +30,16 @@ public class ImageService {
 	private final ImageRepository imageRepository;
 
 	@Transactional(readOnly = true)
-	public PreSignedUrlResponseDto generatePreSignedUrl(User user, String fileName) {
+	public PreSignedUrlResponseDto generatePreSignedUrl(User user, String fileName, String contentType) {
 		String objectKey = generateKeyPath(user.getId(), fileName);
 		Date expiration = getExpirationTime();
 
+		ImageContentType imageContentType = ImageContentType.from(contentType);
+
 		GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket, objectKey)
 				.withMethod(HttpMethod.PUT)
-				.withExpiration(expiration);
+				.withExpiration(expiration)
+				.withContentType(imageContentType.getMimeType());
 
 		String preSignedUrl = amazonS3.generatePresignedUrl(presignedUrlRequest).toString();
 

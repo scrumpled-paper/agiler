@@ -27,7 +27,7 @@ public class ImageController {
 			@Login User user,
 			@RequestBody @Valid PreSignedUrlRequestDto request
 	) {
-		PreSignedUrlResponseDto response = imageService.generatePreSignedUrl(user, request.fileName());
+		PreSignedUrlResponseDto response = imageService.generatePreSignedUrl(user, request.fileName(), request.contentType());
 		return ResponseEntity.ok(response);
 	}
 
