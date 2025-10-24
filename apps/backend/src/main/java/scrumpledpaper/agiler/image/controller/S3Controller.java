@@ -15,7 +15,7 @@ import scrumpledpaper.agiler.user.dto.UserDto;
 @RestController
 @RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
-public class ImageController {
+public class S3Controller {
 
 	private final ImageService imageService;
 
