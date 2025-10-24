@@ -70,3 +70,52 @@ public class TestDataFactory {
 		profileRepository.save(profile);
 		return project;
 	}
+
+	public List<Project> createProjects(User user, String urlPrefix, int count) {
+		List<Project> projects = new ArrayList<>();
+		for (int i = 1; i <= count; i++) {
+			Project project = createProjectAndOwnerProfile(
+				urlPrefix + "_" + i,
+				user
+			);
+			projects.add(project);
+		}
+		return projects;
+	}
+
+	public Profile createProfileWithTime(User user, Project project, Role role, LocalDateTime createdAt) {
+		Profile profile = ProfileFixture.createProfile(role, user, project);
+		Profile savedProfile = profileRepository.saveAndFlush(profile);
+
+		updateTimestamps("profile", savedProfile.getId(), createdAt);
+
+		entityManager.flush();
+		entityManager.clear();
+
+		return profileRepository.findById(savedProfile.getId()).orElseThrow();
+	}
+
+
+	public Project createProjectWithTime(String url, User user, LocalDateTime createdAt) {
+		Project project = ProjectFixture.createProject(url);
+		Project savedProject = projectRepository.saveAndFlush(project);
+		updateTimestamps("project", savedProject.getId(), createdAt);
+
+		Profile profile = ProfileFixture.createProfile(Role.owner, user, savedProject);
+		Profile savedProfile = profileRepository.saveAndFlush(profile);
+		updateTimestamps("profile", savedProfile.getId(), createdAt);
+
+		entityManager.flush();
+		entityManager.clear();
+
+		return projectRepository.findById(savedProject.getId()).orElseThrow();
+	}
+
+	private void updateTimestamps(String tableName, Long id, LocalDateTime createdAt) {
+		entityManager.createNativeQuery(
+				String.format("UPDATE %s SET created_at = :createdAt, updated_at = :createdAt WHERE id = :id", tableName))
+			.setParameter("createdAt", createdAt)
+			.setParameter("id", id)
+			.executeUpdate();
+	}
+}
