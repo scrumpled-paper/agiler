@@ -14,16 +14,8 @@ public class ImageService {
 
 	private final ImageRepository imageRepository;
 
-	@Transactional(readOnly = true)
-	public Long findById(Long imageId) {
-		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
-		return image.getId();
-	}
-
-	@Transactional(readOnly = true)
-	public String getImageUrl(Long imageId) {
-		Image image = imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
-		return image.getUrl();
+	public Image findById(Long imageId) {
+		return imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 	}
 
 }

@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import scrumpledpaper.agiler.annotation.IntegrationTest;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
@@ -85,7 +86,7 @@ public class UserControllerTest {
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			assertThat(res).contains("I001").contains("이미지를 찾을 수 없습니다");
+			assertThat(res).contains(ErrorCode.IMAGE_NOT_FOUND.getCode());
 		}
 	}
 
@@ -136,7 +137,7 @@ public class UserControllerTest {
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			assertThat(res).contains("U001").contains("사용자를 찾을 수 없습니다");
+			assertThat(res).contains(ErrorCode.USER_NOT_FOUND.getCode());
 		}
 	}
 }
