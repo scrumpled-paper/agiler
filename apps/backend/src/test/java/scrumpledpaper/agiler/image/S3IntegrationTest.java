@@ -83,7 +83,7 @@ class S3IntegrationTest {
 
 		// when
 		String res = mockMvc.perform(
-						post("/api/v1/images/pre-signed-url")
+						post("/api/v1/s3/pre-signed-url")
 								.contentType(MediaType.APPLICATION_JSON)
 								.header("Authorization", "Bearer " + accessToken)
 								.content(om.writeValueAsString(req)))
@@ -116,7 +116,7 @@ class S3IntegrationTest {
 
 		// when & then
 		mockMvc.perform(
-						post("/api/v1/images/pre-signed-url")
+						post("/api/v1/s3/pre-signed-url")
 								.contentType(MediaType.APPLICATION_JSON)
 								.header("Authorization", "Bearer " + accessToken)
 								.content(om.writeValueAsString(req)))
@@ -135,7 +135,7 @@ class S3IntegrationTest {
 
 		// when
 		String res = mockMvc.perform(
-						post("/api/v1/images/confirm-upload")
+						post("/api/v1/s3/confirm-upload")
 								.contentType(MediaType.APPLICATION_JSON)
 								.header("Authorization", "Bearer " + accessToken)
 								.content(om.writeValueAsString(req)))
@@ -166,7 +166,7 @@ class S3IntegrationTest {
 		amazonS3Client.putObject(bucket, image.getObjectKey(), "image.jpg");
 
 		// when
-		mockMvc.perform(delete("/api/v1/images/{imageId}", image.getId())
+		mockMvc.perform(delete("/api/v1/s3/{imageId}", image.getId())
 						.header("Authorization", "Bearer " + accessToken))
 				.andExpect(status().isNoContent());
 
@@ -185,7 +185,7 @@ class S3IntegrationTest {
 		Long nonExistentImageId = 9999L;
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/images/{imageId}", nonExistentImageId)
+		mockMvc.perform(delete("/api/v1/s3/{imageId}", nonExistentImageId)
 						.header("Authorization", "Bearer " + accessToken))
 				.andExpect(status().isNotFound());
 	}
