@@ -10,7 +10,7 @@ import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlRequestDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.service.ImageService;
-import scrumpledpaper.agiler.user.entity.User;
+import scrumpledpaper.agiler.user.dto.UserDto;
 
 @RestController
 @RequestMapping("/api/v1/images")
@@ -21,10 +21,10 @@ public class ImageController {
 
 	@PostMapping("/pre-signed-url")
 	public ResponseEntity<PreSignedUrlResponseDto> generatePreSignedUrl(
-			@Login User user,
+			@Login UserDto userDto,
 			@RequestBody @Valid PreSignedUrlRequestDto request
 	) {
-		PreSignedUrlResponseDto response = imageService.generatePreSignedUrl(user, request.fileName(), request.contentType());
+		PreSignedUrlResponseDto response = imageService.generatePreSignedUrl(userDto.getId(), request.fileName(), request.contentType());
 		return ResponseEntity.ok(response);
 	}
 

@@ -5,18 +5,17 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.enums.ImageContentType;
-import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.image.event.ImageDeletedEvent;
-import scrumpledpaper.agiler.user.entity.User;
+import scrumpledpaper.agiler.image.repository.ImageRepository;
 
 import java.util.Date;
 import java.util.UUID;
@@ -32,8 +31,8 @@ public class ImageService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional(readOnly = true)
-	public PreSignedUrlResponseDto generatePreSignedUrl(User user, String fileName, String contentType) {
-		String objectKey = generateKeyPath(user.getId(), fileName);
+	public PreSignedUrlResponseDto generatePreSignedUrl(long userId, String fileName, String contentType) {
+		String objectKey = generateKeyPath(userId, fileName);
 		Date expiration = getExpirationTime();
 
 		ImageContentType imageContentType = ImageContentType.from(contentType);
