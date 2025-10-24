@@ -4,6 +4,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,43 +18,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import scrumpledpaper.agiler.annotation.IntegrationTest;
+import scrumpledpaper.agiler.common.AuthContext;
+import scrumpledpaper.agiler.common.PageResDto;
+import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
-import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
-import scrumpledpaper.agiler.fixture.TokenFixture;
-import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
-import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.ProfileRepository;
-import scrumpledpaper.agiler.user.repository.UserRepository;
 
 @IntegrationTest
 public class ProjectControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
-	private TokenFixture tokenFixture;
-	@Autowired
 	private ObjectMapper objectMapper;
 	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private ImageRepository imageRepository;
+	private ProjectRepository projectRepository;
 	@Autowired
 	private ProfileRepository profileRepository;
 	@Autowired
-	private ProjectRepository projectRepository;
+	private TestDataFactory testDataFactory;
 	Image defaultImage;
 
 	@Nested
@@ -58,23 +57,20 @@ public class ProjectControllerTest {
 	class CreateProjectTest {
 		@BeforeEach
 		void beforeEach() {
-			defaultImage = ImageFixture.createImage();
-			imageRepository.save(defaultImage);
+			defaultImage = testDataFactory.createDefaultImage();
 		}
 
 		@Test
 		@DisplayName("201 - Project Create Success")
 		public void projectCreateSuccess() throws Exception {
 			// given
-			User user = UserFixture.createUser(defaultImage);
-			userRepository.save(user);
-			String accessToken = tokenFixture.createAccessToken(user);
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
 			String res = mockMvc.perform(
 					post("/api/v1/projects")
-						.header("Authorization", "Bearer " + accessToken)
+						.header("Authorization", auth.bearer())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
 				.andExpect(status().isCreated())
@@ -89,19 +85,19 @@ public class ProjectControllerTest {
 			assertThat(createdProject.getUrl()).isEqualTo(createReqDto.url());
 			assertThat(createdProject.getSummary()).isEqualTo(createReqDto.summary());
 
-			Profile ownerProfile = profileRepository.findByUserIdAndProjectId(user.getId(), createdProject.getId())
+			Profile ownerProfile = profileRepository.findByUserIdAndProjectId(auth.getUser().getId(), createdProject.getId())
 				.orElseThrow();
 			assertThat(ownerProfile.getRole()).isEqualTo(Role.owner);
-			assertThat(ownerProfile.getEmail()).isEqualTo(user.getEmail());
-			assertThat(ownerProfile.getNickname()).isEqualTo(user.getNickname());
-			assertThat(ownerProfile.getImageId()).isEqualTo(user.getImageId());
+			assertThat(ownerProfile.getEmail()).isEqualTo(auth.getUser().getEmail());
+			assertThat(ownerProfile.getNickname()).isEqualTo(auth.getUser().getNickname());
+			assertThat(ownerProfile.getImageId()).isEqualTo(auth.getUser().getImageId());
 		}
 
 		@Test
 		@DisplayName("404 - User Not Found")
 		public void notFoundUser() throws Exception {
 			// given
-			String accessToken = tokenFixture.createNotAllowedAccessToken();
+			String accessToken = testDataFactory.createNotAllowedAccessToken();
 			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
@@ -120,17 +116,14 @@ public class ProjectControllerTest {
 		@DisplayName("409 - Duplicate Project URL")
 		public void duplicateUrl() throws Exception {
 			// given
-			User user = UserFixture.createUser(defaultImage);
-			userRepository.save(user);
-			String accessToken = tokenFixture.createAccessToken(user);
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
+			testDataFactory.createProject(createReqDto.url());
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
-			Project existingProject = ProjectFixture.createProject(createReqDto.url());
-			projectRepository.save(existingProject);
 			// when
 			String res = mockMvc.perform(
 					post("/api/v1/projects")
-						.header("Authorization", "Bearer " + accessToken)
+						.header("Authorization", auth.bearer())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
 				.andExpect(status().isConflict())
@@ -145,24 +138,20 @@ public class ProjectControllerTest {
 	class CheckProjectUrlAndTagTest {
 		@BeforeEach
 		void beforeEach() {
-			defaultImage = ImageFixture.createImage();
-			imageRepository.save(defaultImage);
+			defaultImage = testDataFactory.createDefaultImage();
 		}
 
 		@Test
 		@DisplayName("200 - Already Project URL Check Success")
 		public void alreadyProjectUrlCheckSuccess() throws Exception {
 			// given
-			User user = UserFixture.createUser(defaultImage);
-			userRepository.save(user);
-			String accessToken = tokenFixture.createAccessToken(user);
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url_tag";
-			Project existingProject = ProjectFixture.createProject(url);
-			projectRepository.save(existingProject);
+			testDataFactory.createProject(url);
 			// when
 			String res = mockMvc.perform(
 					get("/api/v1/projects/check")
-						.header("Authorization", "Bearer " + accessToken)
+						.header("Authorization", auth.bearer())
 						.param("url", url)
 				)
 				.andExpect(status().isOk())
@@ -176,14 +165,12 @@ public class ProjectControllerTest {
 		@DisplayName("200 - Project URL Check Success")
 		public void ProjectUrlCheckSuccess() throws Exception {
 			// given
-			User user = UserFixture.createUser(defaultImage);
-			userRepository.save(user);
-			String accessToken = tokenFixture.createAccessToken(user);
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url_tag";
 			// when
 			String res = mockMvc.perform(
 					get("/api/v1/projects/check")
-						.header("Authorization", "Bearer " + accessToken)
+						.header("Authorization", auth.bearer())
 						.param("url", url)
 				)
 				.andExpect(status().isOk())
@@ -209,14 +196,11 @@ public class ProjectControllerTest {
 		@DisplayName("400 - Invalid Project URL Format")
 		void invalidProjectUrlFormat(String invalidUrl) throws Exception {
 			// given
-			User user = UserFixture.createUser(defaultImage);
-			userRepository.save(user);
-			String accessToken = tokenFixture.createAccessToken(user);
-
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			// when & then
 			mockMvc.perform(
 					get("/api/v1/projects/check")
-						.header("Authorization", "Bearer " + accessToken)
+						.header("Authorization", auth.bearer())
 						.param("url", invalidUrl))
 				.andExpect(status().isBadRequest());
 		}
