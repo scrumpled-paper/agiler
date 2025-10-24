@@ -13,8 +13,7 @@ CREATE TABLE `user` (
 CREATE TABLE `project` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `title` VARCHAR(20) NOT NULL,
-    `url` VARCHAR(20),
-    `tag` VARCHAR(20),
+    `url` VARCHAR(40),
     `summary` TEXT,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
