@@ -9,7 +9,7 @@ import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlRequestDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
-import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.image.service.S3Service;
 import scrumpledpaper.agiler.user.dto.UserDto;
 
 @RestController
@@ -17,14 +17,14 @@ import scrumpledpaper.agiler.user.dto.UserDto;
 @RequiredArgsConstructor
 public class S3Controller {
 
-	private final ImageService imageService;
+	private final S3Service s3Service;
 
 	@PostMapping("/pre-signed-url")
 	public ResponseEntity<PreSignedUrlResponseDto> generatePreSignedUrl(
 			@Login UserDto userDto,
 			@RequestBody @Valid PreSignedUrlRequestDto request
 	) {
-		PreSignedUrlResponseDto response = imageService.generatePreSignedUrl(userDto.getId(), request.fileName(), request.contentType());
+		PreSignedUrlResponseDto response = s3Service.generatePreSignedUrl(userDto.getId(), request.fileName(), request.contentType());
 		return ResponseEntity.ok(response);
 	}
 
@@ -32,7 +32,7 @@ public class S3Controller {
 	public ResponseEntity<ImageUploadConfirmationResponseDto> confirmUpload(
 			@RequestBody @Valid ImageUploadConfirmationRequestDto request
 	) {
-		ImageUploadConfirmationResponseDto response = imageService.confirmUpload(request.objectKey());
+		ImageUploadConfirmationResponseDto response = s3Service.confirmUpload(request.objectKey());
 		return ResponseEntity.ok(response);
 	}
 
@@ -40,7 +40,7 @@ public class S3Controller {
 	public ResponseEntity<Void> deleteImage(
 			@PathVariable Long imageId
 	) {
-		imageService.deleteImage(imageId);
+		s3Service.deleteImage(imageId);
 		return ResponseEntity.noContent().build();
 	}
 
