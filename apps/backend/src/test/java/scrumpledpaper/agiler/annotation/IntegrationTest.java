@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import scrumpledpaper.agiler.config.S3FallbackConfiguration;
 import scrumpledpaper.agiler.config.TestcontainersConfiguration;
 
 import java.lang.annotation.ElementType;
@@ -17,7 +18,7 @@ import java.lang.annotation.Target;
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import({ TestcontainersConfiguration.class, S3FallbackConfiguration.class })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public @interface IntegrationTest {
 }
