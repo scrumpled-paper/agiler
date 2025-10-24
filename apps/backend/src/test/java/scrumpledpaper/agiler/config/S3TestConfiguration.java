@@ -19,8 +19,10 @@ public class S3TestConfiguration {
 
 	@Bean
 	public LocalStackContainer localStackContainer() {
-		return new LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
-				.withServices(LocalStackContainer.Service.S3);
+		LocalStackContainer c = new LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
+				.withServices(org.testcontainers.containers.localstack.LocalStackContainer.Service.S3);
+		c.start();
+		return c;
 	}
 
 	@Bean
