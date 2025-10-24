@@ -9,6 +9,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -39,6 +41,11 @@ public class S3TestConfiguration {
 				.withCredentials(new AWSStaticCredentialsProvider(credentials))
 				.withPathStyleAccessEnabled(true)
 				.build();
+	}
+
+	@DynamicPropertySource
+	static void props(DynamicPropertyRegistry r) {
+		r.add("cloud.aws.s3.bucket", () -> "agiler-test-bucket");
 	}
 
 }
