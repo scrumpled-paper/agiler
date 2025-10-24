@@ -1,19 +1,26 @@
 package scrumpledpaper.agiler.project.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.user.dto.UserDto;
+import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.service.ProfileService;
@@ -49,5 +56,18 @@ public class ProjectService {
 
 	private boolean alreadyExistProjectUrl(String url) {
 		return projectRepository.existsByUrl(url);
+	}
+
+	public PageResDto<ProjectInfoResDto> getProjectInfo(UserDto userDto, Pageable pageable) {
+		Page<ProjectInfoResDto> page = profileService
+			.getProfilesByUserId(userDto.getId(), pageable)
+			.map(Profile::getProject)
+			.map(projectMapper::toProjectInfoResDto);
+
+		if (page.isEmpty() && page.getTotalElements() > 0) {
+			throw new CustomException(ErrorCode.PAGE_NOT_FOUND);
+		}
+
+		return PageResDto.from(page);
 	}
 }
