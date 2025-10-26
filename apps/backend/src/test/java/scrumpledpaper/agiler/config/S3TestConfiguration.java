@@ -6,6 +6,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -27,26 +28,31 @@ public class S3TestConfiguration {
 
 	@Bean
 	@Primary
-	public AmazonS3 amazonS3Client(LocalStackContainer localStackContainer) {
-		AwsClientBuilder.EndpointConfiguration endpointConfig = new AwsClientBuilder.EndpointConfiguration(
+	public AmazonS3 amazonS3Client(
+			final LocalStackContainer localStackContainer,
+			@Value("${cloud.aws.s3.bucket}") final String bucketName
+	) {
+		final AwsClientBuilder.EndpointConfiguration endpointConfig = new AwsClientBuilder.EndpointConfiguration(
 				localStackContainer.getEndpointOverride(LocalStackContainer.Service.S3).toString(),
 				localStackContainer.getRegion()
 		);
 
-		AWSCredentials credentials = new BasicAWSCredentials(
+		final AWSCredentials credentials = new BasicAWSCredentials(
 				localStackContainer.getAccessKey(),
 				localStackContainer.getSecretKey()
 		);
 
-		return AmazonS3ClientBuilder.standard()
+		final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
 				.withEndpointConfiguration(endpointConfig)
 				.withCredentials(new AWSStaticCredentialsProvider(credentials))
 				.withPathStyleAccessEnabled(true)
 				.build();
+		s3.createBucket(bucketName);
+		return s3;
 	}
 
 	@DynamicPropertySource
-	static void props(DynamicPropertyRegistry r) {
+	static void props(final DynamicPropertyRegistry r) {
 		r.add("cloud.aws.s3.bucket", () -> "agiler-test-bucket");
 	}
 
