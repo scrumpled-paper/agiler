@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -51,9 +49,5 @@ public class S3TestConfiguration {
 		return s3;
 	}
 
-	@DynamicPropertySource
-	static void props(final DynamicPropertyRegistry r) {
-		r.add("cloud.aws.s3.bucket", () -> "agiler-test-bucket");
-	}
 
 }
