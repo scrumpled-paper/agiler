@@ -28,7 +28,7 @@ public class S3TestConfiguration {
 	@Primary
 	public AmazonS3 amazonS3Client(
 			final LocalStackContainer localStackContainer,
-			@Value("${cloud.aws.s3.bucket}") final String bucketName
+			@Value("${cloud.aws.s3.bucket:agiler-test-bucket}") final String bucketName
 	) {
 		final AwsClientBuilder.EndpointConfiguration endpointConfig = new AwsClientBuilder.EndpointConfiguration(
 				localStackContainer.getEndpointOverride(LocalStackContainer.Service.S3).toString(),
