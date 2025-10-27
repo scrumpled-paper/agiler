@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.service.ProjectService;
@@ -58,5 +60,12 @@ public class ProjectController {
 
 		PageResDto<ProjectSideResDto> pageResDto = projectService.getProjectSide(userDto, pageable);
 		return ResponseEntity.ok().body(pageResDto);
+	}
+
+	@GetMapping("/{projectUrl}")
+	public ResponseEntity<ProjectDetailResDto> getProjectDetailByUrl(@Parameter(hidden = true) @Login UserDto userDto,
+		@PathVariable String projectUrl) {
+		ProjectDetailResDto projectDetailResDto = projectService.getProjectDetailByUrl(userDto, projectUrl);
+		return ResponseEntity.ok().body(projectDetailResDto);
 	}
 }

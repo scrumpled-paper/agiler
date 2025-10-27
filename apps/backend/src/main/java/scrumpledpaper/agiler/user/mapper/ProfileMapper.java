@@ -13,5 +13,6 @@ public interface ProfileMapper {
 
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "user", source = "user")
+	@Mapping(target = "imageId", source = "user.imageId")
 	Profile toEntity(User user, Project project, Role role);
 }

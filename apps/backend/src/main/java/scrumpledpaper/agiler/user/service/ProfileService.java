@@ -29,4 +29,8 @@ public class ProfileService {
 	public Page<Profile> getProfilesByUserId(Long userId, Pageable pageable) {
 		return profileRepository.findByUserId(userId, pageable);
 	}
+
+	public boolean existsByUserIdAndProjectId(Long userId, Long projectId) {
+		return profileRepository.existsByUserIdAndProjectId(userId, projectId);
+	}
 }

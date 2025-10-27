@@ -19,4 +19,7 @@ public interface ProjectMapper {
 	ProjectInfoResDto toProjectInfoResDto(Project project);
 
 	ProjectSideResDto toProjectSideResDto(Project project);
+
+	@Mapping(target = "imageUrl", source = "ImageUrl")
+	ProjectDetailResDto toProjectDetailResDto(Project project, String ImageUrl);
 }

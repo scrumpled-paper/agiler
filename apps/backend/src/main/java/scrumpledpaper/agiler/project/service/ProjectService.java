@@ -85,4 +85,21 @@ public class ProjectService {
 
 		return PageResDto.from(page);
 	}
+
+	@Transactional(readOnly = true)
+	public ProjectDetailResDto getProjectDetailByUrl(UserDto userDto, String projectUrl) {
+		Project project = projectRepository.findByUrl(projectUrl)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+
+		boolean teamMemberHasAccess = profileService.existsByUserIdAndProjectId(userDto.getId(), project.getId());
+		if (!teamMemberHasAccess) {
+			throw new CustomException(ErrorCode.PROJECT_NOT_MEMBER);
+		}
+
+		String imageUrl = Optional.ofNullable(project.getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return projectMapper.toProjectDetailResDto(project, imageUrl);
+	}
 }
