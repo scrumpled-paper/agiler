@@ -20,6 +20,7 @@ import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
+import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.service.ProjectService;
 import scrumpledpaper.agiler.user.dto.UserDto;
 
@@ -47,6 +48,15 @@ public class ProjectController {
 		Pageable pageable = pageReqDto.toPageable();
 
 		PageResDto<ProjectInfoResDto> pageResDto = projectService.getProjectInfo(userDto, pageable);
+		return ResponseEntity.ok().body(pageResDto);
+	}
+
+	@GetMapping
+	public ResponseEntity<PageResDto<ProjectSideResDto>> getProjectSide(@Parameter(hidden = true) @Login UserDto userDto,
+		@ModelAttribute @Valid PageReqDto pageReqDto) {
+		Pageable pageable = pageReqDto.toPageable();
+
+		PageResDto<ProjectSideResDto> pageResDto = projectService.getProjectSide(userDto, pageable);
 		return ResponseEntity.ok().body(pageResDto);
 	}
 }

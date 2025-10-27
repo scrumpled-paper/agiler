@@ -68,4 +68,18 @@ public class ProjectService {
 
 		return PageResDto.from(page);
 	}
+
+	@Transactional(readOnly = true)
+	public PageResDto<ProjectSideResDto> getProjectSide(UserDto userDto, Pageable pageable) {
+		Page<ProjectSideResDto> page = profileService
+			.getProfilesByUserId(userDto.getId(), pageable)
+			.map(Profile::getProject)
+			.map(projectMapper::toProjectSideResDto);
+
+		if (page.isEmpty() && page.getTotalElements() > 0) {
+			throw new CustomException(ErrorCode.PAGE_NOT_FOUND);
+		}
+
+		return PageResDto.from(page);
+	}
 }
