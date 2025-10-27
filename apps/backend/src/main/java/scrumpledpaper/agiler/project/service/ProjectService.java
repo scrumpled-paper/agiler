@@ -1,5 +1,7 @@
 package scrumpledpaper.agiler.project.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -9,10 +11,12 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -28,8 +32,9 @@ import scrumpledpaper.agiler.user.service.UserService;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-	private final UserService userService;
 	private final ProjectMapper projectMapper;
+	private final UserService userService;
+	private final ImageService imageService;
 	private final ProfileService profileService;
 	private final ProjectRepository projectRepository;
 
@@ -63,7 +68,13 @@ public class ProjectService {
 		Page<ProjectInfoResDto> page = profileService
 			.getProfilesByUserId(userDto.getId(), pageable)
 			.map(Profile::getProject)
-			.map(projectMapper::toProjectInfoResDto);
+			.map(project -> {
+				String imageUrl = Optional.ofNullable(project.getImageId())
+					.map(imageService::getImageUrlById)
+					.orElse("");
+
+				return projectMapper.toProjectInfoResDto(project, imageUrl);
+			});
 
 		if (page.isEmpty() && page.getTotalElements() > 0) {
 			throw new CustomException(ErrorCode.PAGE_NOT_FOUND);
