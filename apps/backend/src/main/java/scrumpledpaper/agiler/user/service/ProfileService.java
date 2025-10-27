@@ -1,5 +1,10 @@
 package scrumpledpaper.agiler.user.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -19,5 +24,9 @@ public class ProfileService {
 	public void createDefaultProfile(User user, Project savedProject, Role role) {
 		Profile defaultProfile = profileMapper.toEntity(user, savedProject, role);
 		profileRepository.save(defaultProfile);
+	}
+
+	public Page<Profile> getProfilesByUserId(Long userId, Pageable pageable) {
+		return profileRepository.findByUserId(userId, pageable);
 	}
 }

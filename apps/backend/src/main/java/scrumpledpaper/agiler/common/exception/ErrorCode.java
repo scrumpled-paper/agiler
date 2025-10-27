@@ -12,6 +12,7 @@ public enum ErrorCode {
 	IMAGE_NOT_FOUND(404, "I001", "이미지를 찾을 수 없습니다."),
 
 	INVALID_REQUEST(400, "C001", "잘못된 요청입니다."),
+	PAGE_NOT_FOUND(404, "C002", "페이지를 찾을 수 없습니다."),
 
 	PROJECT_URL_ALREADY_EXISTS(409, "P001", "이미 존재하는 프로젝트 URL입니다.");
 
