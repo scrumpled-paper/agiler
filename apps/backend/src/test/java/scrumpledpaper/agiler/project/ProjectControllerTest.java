@@ -494,5 +494,51 @@ public class ProjectControllerTest {
 			assertThat(page.getContents().get(1).url()).isEqualTo("project_1");
 			assertThat(page.getContents().get(2).url()).isEqualTo("project_3");
 		}
+
+		@ParameterizedTest
+		@ValueSource(strings = {
+			"createdAt"
+		})
+		@DisplayName("200 - @Valid 검증 통과")
+		void validatePageReqDto(String sort) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			// when & then
+			mockMvc.perform(
+					get("/api/v1/projects/info")
+						.header("Authorization", auth.bearer())
+						.param("page", "0")
+						.param("size", "10")
+						.param("sort", sort))
+				.andExpect(status().isOk());
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings = {
+			"CREATEDAT",
+			"CreatedAt",
+			"createdat",
+			"createdat",
+			"NonExistingField",
+			"12345",
+			"",
+			"created-at"
+		})
+		@DisplayName("400 - @Valid 검증 실패")
+		void invalidatePageReqDto(String sort) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/info")
+						.header("Authorization", auth.bearer())
+						.param("page", "0")
+						.param("size", "10")
+						.param("sort", sort))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+			// then
+			assertThat(response).contains(ErrorCode.INVALID_REQUEST.getCode());
+		}
 	}
 }
