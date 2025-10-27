@@ -32,4 +32,7 @@ public class Project extends BaseEntity {
 
 	@Column(name = "summary")
 	private String summary;
+
+	@Column(name = "image_id")
+	private Long imageId;
 }
