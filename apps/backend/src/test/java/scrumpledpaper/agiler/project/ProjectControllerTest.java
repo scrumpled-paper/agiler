@@ -206,7 +206,6 @@ public class ProjectControllerTest {
 	}
 
 	@Nested
-	@Transactional
 	@DisplayName("Get Project Info Pagination Test")
 	class GetProjectInfoPaginationTest {
 		@BeforeEach
@@ -551,7 +550,6 @@ public class ProjectControllerTest {
 	}
 
 	@Nested
-	@Transactional
 	@DisplayName("Get Project Side Pagination Test")
 	class GetProjectSidePaginationTest {
 		@BeforeEach
