@@ -87,7 +87,7 @@ public class ProjectControllerTest {
 
 			Profile ownerProfile = profileRepository.findByUserIdAndProjectId(auth.getUser().getId(), createdProject.getId())
 				.orElseThrow();
-			assertThat(ownerProfile.getRole()).isEqualTo(Role.owner);
+			assertThat(ownerProfile.getRole()).isEqualTo(Role.OWNER);
 			assertThat(ownerProfile.getEmail()).isEqualTo(auth.getUser().getEmail());
 			assertThat(ownerProfile.getNickname()).isEqualTo(auth.getUser().getNickname());
 			assertThat(ownerProfile.getImageId()).isEqualTo(auth.getUser().getImageId());
@@ -471,9 +471,9 @@ public class ProjectControllerTest {
 
 			AuthContext member = testDataFactory.createAuth(testDataFactory.createDefaultImage());
 
-			testDataFactory.createProfileWithTime(member.getUser(), project3, Role.member, baseTime.minusDays(5));
-			testDataFactory.createProfileWithTime(member.getUser(), project2, Role.member, baseTime.minusDays(3));
-			testDataFactory.createProfileWithTime(member.getUser(), project1, Role.member, baseTime.minusDays(4));
+			testDataFactory.createProfileWithTime(member.getUser(), project3, Role.MEMBER, baseTime.minusDays(5));
+			testDataFactory.createProfileWithTime(member.getUser(), project2, Role.MEMBER, baseTime.minusDays(3));
+			testDataFactory.createProfileWithTime(member.getUser(), project1, Role.MEMBER, baseTime.minusDays(4));
 			// 프로필이 가장 최근에 생성된 프로젝트가 가장 앞에 와야 함 (2, 1, 3) 순서대로
 
 			// when

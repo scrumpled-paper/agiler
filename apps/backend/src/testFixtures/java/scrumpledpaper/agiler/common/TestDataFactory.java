@@ -66,7 +66,7 @@ public class TestDataFactory {
 	public Project createProjectAndOwnerProfile(String url, User user) {
 		Project project = ProjectFixture.createProject(url);
 		projectRepository.save(project);
-		Profile profile = ProfileFixture.createProfile(Role.owner, user, project);
+		Profile profile = ProfileFixture.createProfile(Role.OWNER, user, project);
 		profileRepository.save(profile);
 		return project;
 	}
@@ -101,7 +101,7 @@ public class TestDataFactory {
 		Project savedProject = projectRepository.saveAndFlush(project);
 		updateTimestamps("project", savedProject.getId(), createdAt);
 
-		Profile profile = ProfileFixture.createProfile(Role.owner, user, savedProject);
+		Profile profile = ProfileFixture.createProfile(Role.OWNER, user, savedProject);
 		Profile savedProfile = profileRepository.saveAndFlush(profile);
 		updateTimestamps("profile", savedProfile.getId(), createdAt);
 

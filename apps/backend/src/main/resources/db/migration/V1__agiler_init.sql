@@ -25,7 +25,7 @@ CREATE TABLE `profile` (
     `user_id` BIGINT NOT NULL,
     `project_id` BIGINT NOT NULL,
     `nickname` VARCHAR(20),
-    `role` ENUM('member', 'owner') NOT NULL,
+    `role` ENUM('MEMBER', 'OWNER') NOT NULL,
     `image_id` BIGINT NOT NULL,
     `email` TEXT,
     `description` TEXT,
@@ -114,7 +114,7 @@ CREATE TABLE `issue_status_history` (
 CREATE TABLE `note` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `project_id` BIGINT NOT NULL,
-    `type` ENUM('retro', 'scrum', 'meeting') NOT NULL,
+    `type` ENUM('RETRO', 'SCRUM', 'MEETING') NOT NULL,
     `title` VARCHAR(20) NOT NULL,
     `contents` TEXT,
     `created_at` DATETIME NOT NULL,
