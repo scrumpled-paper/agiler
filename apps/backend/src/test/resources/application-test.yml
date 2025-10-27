@@ -12,3 +12,8 @@ app:
     refreshTokenSecret: "scrumpledpaperanotherdummydummysecretkey"
     token-expiry: 86400000
     refresh-token-expiry: 604800000
+
+cloud:
+  aws:
+    s3:
+      bucket: agiler-bucket

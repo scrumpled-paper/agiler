@@ -26,4 +26,7 @@ public class Image extends BaseEntity {
 
 	@Column(name = "url", nullable = false)
 	private String url;
+
+	@Column(name = "object_key", nullable = false)
+	private String objectKey;
 }

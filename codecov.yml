@@ -35,4 +35,5 @@ flags:
 ignore:
   - "**/node_modules"
   - "apps/backend/build"
+  - "apps/backend/config/S3Config.java"
   - "apps/frontend/dist"

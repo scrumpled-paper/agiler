@@ -68,6 +68,7 @@ CREATE TABLE `issue` (
 CREATE TABLE `image` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `url` TEXT NOT NULL,
+    `object_key` VARCHAR(255) NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME
