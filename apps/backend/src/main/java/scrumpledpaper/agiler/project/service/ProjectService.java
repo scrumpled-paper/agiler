@@ -14,6 +14,7 @@ import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
+import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
@@ -47,6 +48,7 @@ public class ProjectService {
 		return projectMapper.toDto(savedProject);
 	}
 
+	@Transactional(readOnly = true)
 	public ProjectCheckResDto checkProjectUrl(ProjectCheckReqDto projectCheckReqDto) {
 		boolean isDuplicated = alreadyExistProjectUrl(projectCheckReqDto.url());
 		return new ProjectCheckResDto(isDuplicated);
@@ -56,6 +58,7 @@ public class ProjectService {
 		return projectRepository.existsByUrl(url);
 	}
 
+	@Transactional(readOnly = true)
 	public PageResDto<ProjectInfoResDto> getProjectInfo(UserDto userDto, Pageable pageable) {
 		Page<ProjectInfoResDto> page = profileService
 			.getProfilesByUserId(userDto.getId(), pageable)
