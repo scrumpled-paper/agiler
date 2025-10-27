@@ -7,7 +7,7 @@ import scrumpledpaper.agiler.user.entity.User;
 
 public class ProfileFixture {
 
-	public static Profile createProfile(Role role, User user, Project project) {
+	public static Profile createProfile(User user, Project project, Role role) {
 		return Profile.builder()
 			.role(role)
 			.user(user)
