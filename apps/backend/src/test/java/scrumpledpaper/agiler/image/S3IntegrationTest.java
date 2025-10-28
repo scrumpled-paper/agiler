@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
+import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
@@ -58,6 +59,7 @@ class S3IntegrationTest {
 		this.user = user;
 		userRepository.save(user);
 		accessToken = tokenFixture.createAccessToken(user);
+		AuthContext authContext = new AuthContext(user, accessToken);
 	}
 
 	@ParameterizedTest

@@ -1,16 +1,14 @@
 package scrumpledpaper.agiler.user.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.user.dto.TokenResponseDto;
-import scrumpledpaper.agiler.user.dto.UserDto;
 import scrumpledpaper.agiler.user.dto.UserResDto;
 import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.entity.User;
@@ -25,15 +23,18 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final AuthTokenProvider authTokenProvider;
 
-	public User findById(Long userId) { // todo
+	public User findById(Long userId) {
 		return userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
+	/*
+	 * only swagger login
+	 * */
 	@Transactional
-	public TokenResponseDto login(String email) { // todo
+	public TokenResponseDto login(String email) {
 		Image image = imageService.findById(1L);
 
-		User user = userRepository.findByEmail(email);
+		User user = userRepository.findByEmail(email).orElse(null);
 		if (user == null) {
 			user = userMapper.toEntity(email, "nickname", image.getId());
 			userRepository.save(user);
@@ -46,14 +47,16 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public UserResDto getUser(UserDto userDto) {
-		Image image = imageService.findById(userDto.getImageId());
-		return userMapper.toDto(userDto, image.getUrl());
+	public UserResDto getUser(long userId) {
+		User user = findById(userId);
+		Image image = imageService.findById(user.getImageId());
+
+		return userMapper.toDto(user, image.getUrl());
 	}
 
 	@Transactional
-	public void updateUser(UserDto userDto, UserUpdateReqDto userUpdateReqDto) {
-		User user = findById(userDto.getId());
+	public void updateUser(long userId, UserUpdateReqDto userUpdateReqDto) {
+		User user = findById(userId);
 		user.updateNickname(userUpdateReqDto.nickname());
 	}
 }

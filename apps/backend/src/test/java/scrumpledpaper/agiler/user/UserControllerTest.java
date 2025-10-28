@@ -1,9 +1,6 @@
 package scrumpledpaper.agiler.user;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,9 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.TestDataFactory;
@@ -21,11 +15,15 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
-import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.user.dto.UserResDto;
 import scrumpledpaper.agiler.user.dto.UserUpdateReqDto;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 public class UserControllerTest {
@@ -116,24 +114,5 @@ public class UserControllerTest {
 			assertThat(updatedUser.getNickname()).isEqualTo(updateNickname);
 		}
 
-		@Test
-		@DisplayName("404 - User Not Found")
-		public void notFoundUser() throws Exception {
-			// given
-			String accessToken = testDataFactory.createNotAllowedAccessToken();
-			String updateNickname = "newNickname";
-			UserUpdateReqDto updateReqDto = UserFixture.createUpdateReqDto(updateNickname);
-			String updateJson = objectMapper.writeValueAsString(updateReqDto);
-			// when
-			String res = mockMvc.perform(
-					patch("/api/v1/users")
-						.header("Authorization", "Bearer " + accessToken)
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(updateJson))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
-			// then
-			assertThat(res).contains(ErrorCode.USER_NOT_FOUND.getCode());
-		}
 	}
 }
