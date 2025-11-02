@@ -20,6 +20,7 @@ import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
+import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
@@ -94,18 +95,49 @@ public class ProjectService {
 
 	@Transactional(readOnly = true)
 	public ProjectDetailResDto getProjectDetailByUrl(UserDto userDto, String projectUrl) {
-		Project project = projectRepository.findByUrl(projectUrl)
-			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
-
-		boolean teamMemberHasAccess = profileService.existsByUserIdAndProjectId(userDto.getId(), project.getId());
-		if (!teamMemberHasAccess) {
-			throw new CustomException(ErrorCode.PROJECT_NOT_MEMBER);
-		}
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectAccess(userDto.getId(), project.getId());
 
 		String imageUrl = Optional.ofNullable(project.getImageId())
 			.map(imageService::getImageUrlById)
 			.orElse("");
 
 		return projectMapper.toProjectDetailResDto(project, imageUrl);
+	}
+
+	public ProjectIdResDto updateProjectDetailByUrl(UserDto userDto, String projectUrl,	ProjectUpdateReqDto projectUpdateReqDto) {
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectOwnerAccess(userDto.getId(), project.getId());
+
+		if (!project.getUrl().equals(projectUpdateReqDto.url()) &&
+			alreadyExistProjectUrl(projectUpdateReqDto.url())) {
+			throw new CustomException(ErrorCode.PROJECT_URL_ALREADY_EXISTS);
+		}
+
+		project.updateDetails(
+			projectUpdateReqDto.title(),
+			projectUpdateReqDto.url(),
+			projectUpdateReqDto.summary()
+		);
+
+		return projectMapper.toDto(project);
+	}
+
+	private Project findProjectByUrl(String projectUrl) {
+		return projectRepository.findByUrl(projectUrl)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+	}
+
+	private void validateProjectAccess(Long userId, Long projectId) {
+		if (!profileService.existsByUserIdAndProjectId(userId, projectId)) {
+			throw new CustomException(ErrorCode.PROJECT_NOT_MEMBER);
+		}
+	}
+
+	private void validateProjectOwnerAccess(Long userId, Long projectId) {
+		Profile profile = profileService.getProfileByUserIdAndProjectId(userId, projectId);
+		if (profile.getRole() != Role.OWNER) {
+			throw new CustomException(ErrorCode.PROJECT_OWNER_REQUIRED);
+		}
 	}
 }

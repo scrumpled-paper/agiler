@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
@@ -32,5 +34,10 @@ public class ProfileService {
 
 	public boolean existsByUserIdAndProjectId(Long userId, Long projectId) {
 		return profileRepository.existsByUserIdAndProjectId(userId, projectId);
+	}
+
+	public Profile getProfileByUserIdAndProjectId(Long userId, Long projectId) {
+		return profileRepository.findByUserIdAndProjectId(userId, projectId)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
 	}
 }

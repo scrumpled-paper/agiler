@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
+import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.service.ProjectService;
 import scrumpledpaper.agiler.user.dto.UserDto;
 
@@ -67,5 +69,13 @@ public class ProjectController {
 		@PathVariable String projectUrl) {
 		ProjectDetailResDto projectDetailResDto = projectService.getProjectDetailByUrl(userDto, projectUrl);
 		return ResponseEntity.ok().body(projectDetailResDto);
+	}
+
+	@PutMapping("/{projectUrl}")
+	public ResponseEntity<ProjectIdResDto> updateProjectDetailByUrl(@Parameter(hidden = true) @Login UserDto userDto,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid ProjectUpdateReqDto projectUpdateReqDto) {
+		ProjectIdResDto projectIdResDto = projectService.updateProjectDetailByUrl(userDto, projectUrl, projectUpdateReqDto);
+		return ResponseEntity.ok().body(projectIdResDto);
 	}
 }

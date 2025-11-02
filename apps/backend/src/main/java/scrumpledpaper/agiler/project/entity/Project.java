@@ -35,4 +35,10 @@ public class Project extends BaseEntity {
 
 	@Column(name = "image_id")
 	private Long imageId;
+
+	public void updateDetails(String title, String url, String summary) {
+		this.title = title;
+		this.url = url;
+		this.summary = summary;
+	}
 }
