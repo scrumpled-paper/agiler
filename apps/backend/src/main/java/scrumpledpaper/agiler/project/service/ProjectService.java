@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
+import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
@@ -76,10 +77,7 @@ public class ProjectService {
 				return projectMapper.toProjectInfoResDto(project, imageUrl);
 			});
 
-		if (page.isEmpty() && page.getTotalElements() > 0) {
-			throw new CustomException(ErrorCode.PAGE_NOT_FOUND);
-		}
-
+		PageValidator.validatePageInRange(page);
 		return PageResDto.from(page);
 	}
 
@@ -90,10 +88,7 @@ public class ProjectService {
 			.map(Profile::getProject)
 			.map(projectMapper::toProjectSideResDto);
 
-		if (page.isEmpty() && page.getTotalElements() > 0) {
-			throw new CustomException(ErrorCode.PAGE_NOT_FOUND);
-		}
-
+		PageValidator.validatePageInRange(page);
 		return PageResDto.from(page);
 	}
 
