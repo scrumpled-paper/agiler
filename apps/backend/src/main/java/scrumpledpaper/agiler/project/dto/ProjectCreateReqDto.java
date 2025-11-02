@@ -16,7 +16,5 @@ public record ProjectCreateReqDto (
 		message = "올바른 URL 형식이 아닙니다."
 	)
 	String url,
-
-	@NotBlank
 	String summary
 ) {}

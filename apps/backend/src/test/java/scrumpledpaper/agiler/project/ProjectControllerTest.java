@@ -31,7 +31,7 @@ import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
@@ -74,9 +74,9 @@ public class ProjectControllerTest {
 				.andExpect(status().isCreated())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			ProjectCreateResDto projectCreateResDto = objectMapper.readValue(response, ProjectCreateResDto.class);
-			Project createdProject = testDataFactory.findProjectById(projectCreateResDto.id());
-			assertThat(projectCreateResDto.id()).isEqualTo(createdProject.getId());
+			ProjectIdResDto projectIdResDto = objectMapper.readValue(response, ProjectIdResDto.class);
+			Project createdProject = testDataFactory.findProjectById(projectIdResDto.id());
+			assertThat(projectIdResDto.id()).isEqualTo(createdProject.getId());
 
 			assertThat(createdProject.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdProject.getUrl()).isEqualTo(createReqDto.url());

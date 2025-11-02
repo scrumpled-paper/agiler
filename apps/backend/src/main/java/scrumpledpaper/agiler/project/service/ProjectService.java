@@ -16,7 +16,7 @@ import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
@@ -40,7 +40,7 @@ public class ProjectService {
 	private final ProjectRepository projectRepository;
 
 	@Transactional
-	public ProjectCreateResDto createProject(UserDto userDto, ProjectCreateReqDto projectCreateReqDto) {
+	public ProjectIdResDto createProject(UserDto userDto, ProjectCreateReqDto projectCreateReqDto) {
 		User user = userService.findById(userDto.getId());
 
 		if (alreadyExistProjectUrl(projectCreateReqDto.url())) {

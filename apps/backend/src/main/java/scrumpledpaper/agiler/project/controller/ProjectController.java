@@ -19,7 +19,7 @@ import scrumpledpaper.agiler.common.resolver.Login;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
@@ -33,9 +33,9 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	@PostMapping
-	public ResponseEntity<ProjectCreateResDto> createProject(@Parameter(hidden = true) @Login UserDto userDto, @RequestBody @Valid ProjectCreateReqDto projectCreateReqDto) {
-		ProjectCreateResDto projectCreateResDto = projectService.createProject(userDto, projectCreateReqDto);
-		return ResponseEntity.created(null).body(projectCreateResDto);
+	public ResponseEntity<ProjectIdResDto> createProject(@Parameter(hidden = true) @Login UserDto userDto, @RequestBody @Valid ProjectCreateReqDto projectCreateReqDto) {
+		ProjectIdResDto projectIdResDto = projectService.createProject(userDto, projectCreateReqDto);
+		return ResponseEntity.created(null).body(projectIdResDto);
 	}
 
 	@GetMapping("/check")
