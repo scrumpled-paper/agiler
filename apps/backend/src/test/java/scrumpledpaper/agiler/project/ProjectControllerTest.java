@@ -31,10 +31,11 @@ import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
+import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
@@ -999,6 +1000,191 @@ public class ProjectControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
+		}
+	}
+
+	@Nested
+	@DisplayName("Project Update Test")
+	class ProjectUpdateTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 프로젝트 수정 성공")
+		void updateProjectSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"another_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProjectIdResDto result = objectMapper.readValue(response, ProjectIdResDto.class);
+			assertThat(result.id()).isEqualTo(project.getId());
+
+			Project updated = testDataFactory.findProjectById(project.getId());
+			assertThat(updated.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updated.getUrl()).isEqualTo(updateReqDto.url());
+			assertThat(updated.getSummary()).isEqualTo(updateReqDto.summary());
+		}
+
+		@Test
+		@DisplayName("200 - 같은 URL 수정 성공")
+		void updateProjectSameUrlSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"test_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProjectIdResDto result = objectMapper.readValue(response, ProjectIdResDto.class);
+			assertThat(result.id()).isEqualTo(project.getId());
+
+			Project updated = testDataFactory.findProjectById(project.getId());
+			assertThat(updated.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updated.getUrl()).isEqualTo(updateReqDto.url());
+			assertThat(updated.getSummary()).isEqualTo(updateReqDto.summary());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트")
+		void updateProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"test_url",
+				"새로운 요약"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", "non-exist_url")
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아님")
+		void updateProjectNotMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"another_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when & then
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", anotherAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 오너가 아님")
+		void updateProjectNotOwner() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(anotherAuth.getUser(), project, Role.MEMBER);
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"another_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when & then
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", anotherAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_OWNER_REQUIRED.getCode());
+		}
+
+		@Test
+		@DisplayName("409 - 이미 존재하는 Project URL")
+		void updateProjectDuplicateUrl() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url1 = "test_url-1";
+			String url2 = "test_url-2";
+			Project project1 = testDataFactory.createProjectAndOwnerProfile(url1, auth.getUser());
+			Project project2 = testDataFactory.createProjectAndOwnerProfile(url2, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				url2,
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url1)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(status().isConflict())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
 		}
 	}
 }
