@@ -105,6 +105,7 @@ public class ProjectService {
 		return projectMapper.toProjectDetailResDto(project, imageUrl);
 	}
 
+	@Transactional
 	public ProjectIdResDto updateProjectDetailByUrl(UserDto userDto, String projectUrl,	ProjectUpdateReqDto projectUpdateReqDto) {
 		Project project = findProjectByUrl(projectUrl);
 		validateProjectOwnerAccess(userDto.getId(), project.getId());
