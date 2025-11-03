@@ -143,6 +143,7 @@ public class ProjectService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public PageResDto<ProfileResDto> getProjectMembersByUrl(UserDto userDto, String projectUrl, Pageable pageable) {
 		Project project = findProjectByUrl(projectUrl);
 		validateProjectAccess(userDto.getId(), project.getId());
