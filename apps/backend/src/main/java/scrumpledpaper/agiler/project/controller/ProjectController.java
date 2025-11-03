@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageReqDto;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.resolver.Login;
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
@@ -77,5 +78,15 @@ public class ProjectController {
 		@RequestBody @Valid ProjectUpdateReqDto projectUpdateReqDto) {
 		ProjectIdResDto projectIdResDto = projectService.updateProjectDetailByUrl(userDto, projectUrl, projectUpdateReqDto);
 		return ResponseEntity.ok().body(projectIdResDto);
+	}
+
+	@GetMapping("/{projectUrl}/members")
+	public ResponseEntity<PageResDto<ProfileResDto>> getProjectMembersByUrl(@Parameter(hidden = true) @Login UserDto userDto,
+		@PathVariable String projectUrl,
+		@ModelAttribute @Valid PageReqDto pageReqDto) {
+		Pageable pageable = pageReqDto.toPageable();
+
+		PageResDto<ProfileResDto> pageResDto = projectService.getProjectMembersByUrl(userDto, projectUrl, pageable);
+		return ResponseEntity.ok().body(pageResDto);
 	}
 }

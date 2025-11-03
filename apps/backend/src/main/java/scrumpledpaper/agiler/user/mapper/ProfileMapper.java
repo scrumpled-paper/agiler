@@ -3,6 +3,8 @@ package scrumpledpaper.agiler.user.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
@@ -15,4 +17,6 @@ public interface ProfileMapper {
 	@Mapping(target = "user", source = "user")
 	@Mapping(target = "imageId", source = "user.imageId")
 	Profile toEntity(User user, Project project, Role role);
+
+	ProfileResDto toProfileResDto(Profile profile, String imageUrl);
 }

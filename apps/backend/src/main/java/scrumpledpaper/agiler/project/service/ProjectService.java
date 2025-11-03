@@ -13,11 +13,12 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
@@ -140,5 +141,15 @@ public class ProjectService {
 		if (profile.getRole() != Role.OWNER) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_REQUIRED);
 		}
+	}
+
+	public PageResDto<ProfileResDto> getProjectMembersByUrl(UserDto userDto, String projectUrl, Pageable pageable) {
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectAccess(userDto.getId(), project.getId());
+
+		Page<ProfileResDto> page = profileService.getProfileResDtosByProjectId(project.getId(), pageable);
+
+		PageValidator.validatePageInRange(page);
+		return PageResDto.from(page);
 	}
 }

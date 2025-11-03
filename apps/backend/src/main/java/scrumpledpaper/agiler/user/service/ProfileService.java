@@ -1,15 +1,16 @@
 package scrumpledpaper.agiler.user.service;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
@@ -21,6 +22,7 @@ import scrumpledpaper.agiler.user.repository.ProfileRepository;
 @RequiredArgsConstructor
 public class ProfileService {
 	private final ProfileMapper profileMapper;
+	private final ImageService imageService;
 	private final ProfileRepository profileRepository;
 
 	public void createDefaultProfile(User user, Project savedProject, Role role) {
@@ -39,5 +41,16 @@ public class ProfileService {
 	public Profile getProfileByUserIdAndProjectId(Long userId, Long projectId) {
 		return profileRepository.findByUserIdAndProjectId(userId, projectId)
 			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
+	}
+
+	public Page<ProfileResDto> getProfileResDtosByProjectId(Long projectId, Pageable pageable) {
+		return profileRepository.findByProjectId(projectId, pageable)
+			.map(profile -> {
+				String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+					.map(imageService::getImageUrlById)
+					.orElse("");
+
+				return profileMapper.toProfileResDto(profile, imageUrl);
+			});
 	}
 }
