@@ -6,15 +6,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import scrumpledpaper.agiler.auth.oauth2.CustomOAuth2User;
 import scrumpledpaper.agiler.auth.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import scrumpledpaper.agiler.common.config.AppProperties;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
 import scrumpledpaper.agiler.common.utils.CookieUtils;
-import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
 import java.io.IOException;
@@ -51,18 +52,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 				.map(Cookie::getValue);
 
 		if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
-			throw new IllegalArgumentException("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication.");
+			throw new CustomException(ErrorCode.OAUTH2_PROCESSING_ERROR);
 		}
 
 		String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-
-		OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-		String email = (String) oauth2User.getAttributes().get("email");
-
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
-
-		String accessToken = tokenProvider.createToken(user.getId());
+		Long userId = ((CustomOAuth2User) authentication.getPrincipal()).getUserId();
+		String accessToken = tokenProvider.createToken(userId);
 
 		return UriComponentsBuilder.fromUriString(targetUrl)
 				.queryParam("token", accessToken)
