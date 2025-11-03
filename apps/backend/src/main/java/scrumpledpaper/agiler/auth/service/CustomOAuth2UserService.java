@@ -5,10 +5,10 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import scrumpledpaper.agiler.auth.oauth2.CustomOAuth2User;
 import scrumpledpaper.agiler.auth.oauth2.ProviderType;
 import scrumpledpaper.agiler.auth.oauth2.userinfo.OAuth2UserInfo;
 import scrumpledpaper.agiler.user.entity.User;
@@ -20,6 +20,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
 	private final UserRepository userRepository;
 
+	private static final long DEFAULT_IMAGE_ID = 1L;
+
 	@Override
 	@Transactional
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -30,16 +32,17 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		ProviderType providerType = ProviderType.from(registrationId);
 		OAuth2UserInfo oAuth2UserInfo = providerType.getOAuth2UserInfo(oAuth2User.getAttributes());
 
-		String email = oAuth2UserInfo.getEmail();
-		User user = userRepository.findByEmail(email)
+		User user = userRepository.findByEmail(oAuth2UserInfo.getEmail())
 				.orElseGet(() -> createUser(oAuth2UserInfo, registrationId));
 
-		CustomUserDetails customUserDetails = new CustomUserDetails(user.getId());
+		String nameAttributeKey = userRequest.getClientRegistration()
+				.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-		return new DefaultOAuth2User(
-				customUserDetails.getAuthorities(),
+		return new CustomOAuth2User(
+				user.getId(),
+				oAuth2User.getAuthorities(),
 				oAuth2User.getAttributes(),
-				userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()
+				nameAttributeKey
 		);
 	}
 
@@ -49,7 +52,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 				.nickname(userInfo.getName()) // Consider potential nickname duplication
 				.vendor(registrationId)
 				.vendorId(userInfo.getId())
-				.imageId(1L) // Default image ID
+				.imageId(DEFAULT_IMAGE_ID)
 				.build();
 
 		return userRepository.save(newUser);
