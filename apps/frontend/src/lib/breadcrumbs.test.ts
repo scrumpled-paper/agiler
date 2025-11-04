@@ -18,7 +18,7 @@ describe('getBreadcrumbs', () => {
   })
 
   it('should return dashboard > project for project page', () => {
-    const breadcrumbs = getBreadcrumbs('/projects/1', { projectId: '1' })
+    const breadcrumbs = getBreadcrumbs('/projects/1', { projectUrl: '1' })
 
     expect(breadcrumbs).toHaveLength(2)
     expect(breadcrumbs[0]).toEqual({ label: 'Dashboard', href: '/dashboard' })
@@ -27,7 +27,7 @@ describe('getBreadcrumbs', () => {
 
   it('should return dashboard > project > settings', () => {
     const breadcrumbs = getBreadcrumbs('/projects/1/settings', {
-      projectId: '1',
+      projectUrl: '1',
     })
 
     expect(breadcrumbs).toHaveLength(3)
@@ -38,7 +38,7 @@ describe('getBreadcrumbs', () => {
 
   it('should return dashboard > project > daily scrum', () => {
     const breadcrumbs = getBreadcrumbs('/projects/1/daily-scrum', {
-      projectId: '1',
+      projectUrl: '1',
     })
 
     expect(breadcrumbs).toHaveLength(3)
@@ -52,7 +52,7 @@ describe('getBreadcrumbs', () => {
 
   it('should return full breadcrumb for specific scrum', () => {
     const breadcrumbs = getBreadcrumbs('/projects/1/daily-scrum/123', {
-      projectId: '1',
+      projectUrl: '1',
       scrumId: '123',
     })
 
@@ -66,7 +66,7 @@ describe('getBreadcrumbs', () => {
     expect(breadcrumbs[3]).toEqual({ label: 'Scrum #123' })
   })
 
-  it('should handle missing projectId gracefully', () => {
+  it('should handle missing projectUrl gracefully', () => {
     const breadcrumbs = getBreadcrumbs('/projects/1', {})
 
     expect(breadcrumbs).toHaveLength(1)
