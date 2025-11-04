@@ -32,7 +32,7 @@ export const routers = createBrowserRouter([
         ],
       },
       {
-        path: 'projects/:projectId',
+        path: 'projects/:projectUrl',
         children: [
           {
             index: true,

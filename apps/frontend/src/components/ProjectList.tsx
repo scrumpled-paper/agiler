@@ -1,6 +1,6 @@
 import ProjectCard from './ProjectCard'
 import PaginationDemo from './Pagination'
-import type { ContentItem } from '@/utils/mockData'
+import type { ContentItem } from '@/types/index'
 import { Button } from './ui/button'
 
 interface ProjectListProps {

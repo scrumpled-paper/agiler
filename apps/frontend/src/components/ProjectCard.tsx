@@ -1,4 +1,4 @@
-import type { ContentItem } from '@/utils/mockData'
+import type { ContentItem } from '@/types/index'
 import { Link } from 'react-router-dom'
 
 export default function ProjectCard({ props }: { props: ContentItem }) {

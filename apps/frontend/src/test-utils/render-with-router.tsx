@@ -13,10 +13,10 @@ export function renderWithRouter(
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <Routes>
-        <Route path="/projects/:projectId/daily-scrum/:scrumId" element={ui} />
-        <Route path="/projects/:projectId/daily-scrum" element={ui} />
-        <Route path="/projects/:projectId/settings" element={ui} />
-        <Route path="/projects/:projectId" element={ui} />
+        <Route path="/projects/:projectUrl/daily-scrum/:scrumId" element={ui} />
+        <Route path="/projects/:projectUrl/daily-scrum" element={ui} />
+        <Route path="/projects/:projectUrl/settings" element={ui} />
+        <Route path="/projects/:projectUrl" element={ui} />
         <Route path="/dashboard/settings" element={ui} />
         <Route path="/dashboard" element={ui} />
         <Route path="/" element={ui} />

@@ -28,7 +28,7 @@ import { getBreadcrumbs } from '@/lib/breadcrumbs'
 
 export function AppHeader() {
   const location = useLocation()
-  const params = useParams<{ projectId?: string; scrumId?: string }>()
+  const params = useParams<{ projectUrl?: string; scrumId?: string }>()
 
   // 경로에 따른 브레드크럼 생성
   const breadcrumbs = getBreadcrumbs(location.pathname, params)
