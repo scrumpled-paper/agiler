@@ -1,4 +1,20 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "<YOUR_GOOGLE_CLIENT_ID>"
+            client-secret: "<YOUR_GOOGLE_CLIENT_SECRET>"
+            scope:
+              - profile
+              - email
+          github:
+            client-id: "<YOUR_GITHUB_CLIENT_ID>"
+            client-secret: "<YOUR_GITHUB_CLIENT_SECRET>"
+            scope:
+              - user:email
+              - read:user
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
@@ -12,6 +28,9 @@ app:
     refreshTokenSecret: "scrumpledpaperanotherdummydummysecretkey"
     token-expiry: 86400000
     refresh-token-expiry: 604800000
+  oauth2:
+    authorizedRedirectUris:
+      - http://localhost:3000/oauth2/redirect
 
 cloud:
   aws:
