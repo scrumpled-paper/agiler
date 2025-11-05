@@ -1,13 +1,13 @@
 package scrumpledpaper.agiler.common.exception;
 
-import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Getter
 @AllArgsConstructor
-class ErrorResponse {
+public class ErrorResponse {
 	private int status;
 	private final String code;
 	private final String message;

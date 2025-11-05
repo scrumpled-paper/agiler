@@ -5,14 +5,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import scrumpledpaper.agiler.common.resolver.Login;
+import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlRequestDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.service.S3Service;
-import scrumpledpaper.agiler.user.dto.UserDto;
 
 @Tag(name = "S3", description = "S3 이미지 업로드 관련 API")
 @RestController
@@ -25,10 +25,10 @@ public class S3Controller {
 	@Operation(summary = "Pre-signed URL 생성", description = "S3에 이미지를 업로드하기 위한 Pre-signed URL을 생성합니다.")
 	@PostMapping("/pre-signed-url")
 	public ResponseEntity<PreSignedUrlResponseDto> generatePreSignedUrl(
-			@Login UserDto userDto,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestBody @Valid PreSignedUrlRequestDto request
 	) {
-		PreSignedUrlResponseDto response = s3Service.generatePreSignedUrl(userDto.getId(), request.fileName(), request.contentType());
+		PreSignedUrlResponseDto response = s3Service.generatePreSignedUrl(customUserDetails.getUserId(), request.fileName(), request.contentType());
 		return ResponseEntity.ok(response);
 	}
 

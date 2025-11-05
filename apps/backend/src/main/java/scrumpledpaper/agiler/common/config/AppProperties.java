@@ -1,5 +1,7 @@
 package scrumpledpaper.agiler.common.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -7,12 +9,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 @Configuration
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
 
-	private Auth auth = new Auth();
+	private final Auth auth = new Auth();
+	private final OAuth2 oauth2 = new OAuth2();
 
 	@Getter
 	@Setter
@@ -21,5 +23,11 @@ public class AppProperties {
 		private String refreshTokenSecret;
 		private long tokenExpiry;
 		private long refreshTokenExpiry;
+	}
+
+	@Getter
+	@Setter
+	public static final class OAuth2 {
+		private List<String> authorizedRedirectUris = new ArrayList<>();
 	}
 }

@@ -1,22 +1,17 @@
 package scrumpledpaper.agiler.common.utils;
 
-import static scrumpledpaper.agiler.common.exception.ErrorCode.*;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Component;
+import scrumpledpaper.agiler.common.config.AppProperties;
+import scrumpledpaper.agiler.common.exception.CustomException;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import javax.crypto.SecretKey;
-
-import org.springframework.stereotype.Component;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.Keys;
-import scrumpledpaper.agiler.common.config.AppProperties;
-import scrumpledpaper.agiler.common.exception.CustomException;
+import static scrumpledpaper.agiler.common.exception.ErrorCode.EXPIRED_TOKEN;
+import static scrumpledpaper.agiler.common.exception.ErrorCode.INVALID_TOKEN;
 
 @Component
 public class AuthTokenProvider {
@@ -51,9 +46,9 @@ public class AuthTokenProvider {
 			.compact();
 	}
 
-	public Long getUserIdFromAccessToken(String accessToken) {
+	public String getUserIdFromAccessToken(String accessToken) {
 		Claims claims = getClaims(accessToken, key);
-		return Long.valueOf(claims.getSubject());
+		return claims.getSubject();
 	}
 
 	public boolean validateToken(String token) {
