@@ -53,4 +53,14 @@ public class ProfileService {
 				return profileMapper.toProfileResDto(profile, imageUrl);
 			});
 	}
+
+	public ProfileResDto getProjectProfileResDto(long profileId, long projectId) {
+		Profile profile = getProfileByUserIdAndProjectId(profileId, projectId);
+
+		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return profileMapper.toProfileResDto(profile, imageUrl);
+	}
 }

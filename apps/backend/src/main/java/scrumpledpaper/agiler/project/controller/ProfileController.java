@@ -24,6 +24,13 @@ import scrumpledpaper.agiler.user.dto.UserDto;
 public class ProfileController {
 	private final ProjectService projectService;
 
+	@GetMapping({"/{projectUrl}/profiles/me"})
+	public ResponseEntity<ProfileResDto> getMyProjectProfile(@Parameter(hidden = true) @Login UserDto userDto,
+		@PathVariable String projectUrl) {
+		ProfileResDto profileResDto = projectService.getMyProjectProfile(userDto.getId(), projectUrl);
+		return ResponseEntity.ok(profileResDto);
+	}
+
 	@GetMapping("/{projectUrl}/profiles")
 	public ResponseEntity<PageResDto<ProfileResDto>> getProjectMembersByUrl(@Parameter(hidden = true) @Login UserDto userDto,
 		@PathVariable String projectUrl,

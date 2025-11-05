@@ -152,4 +152,11 @@ public class ProjectService {
 		PageValidator.validatePageInRange(page);
 		return PageResDto.from(page);
 	}
+
+	@Transactional(readOnly = true)
+	public ProfileResDto getMyProjectProfile(Long id, String ProjectUrl) {
+		Project project = findProjectByUrl(ProjectUrl);
+		return profileService.getProjectProfileResDto(id, project.getId());
+	}
+
 }
