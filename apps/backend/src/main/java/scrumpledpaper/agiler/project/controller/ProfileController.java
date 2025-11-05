@@ -40,4 +40,12 @@ public class ProfileController {
 		PageResDto<ProfileResDto> pageResDto = projectService.getProjectMembersByUrl(userDto, projectUrl, pageable);
 		return ResponseEntity.ok().body(pageResDto);
 	}
+
+	@GetMapping({"/{projectUrl}/profiles/{profileId}"})
+	public ResponseEntity<ProfileResDto> getProjectProfileById(@Parameter(hidden = true) @Login UserDto userDto,
+		@PathVariable String projectUrl,
+		@PathVariable Long profileId) {
+		ProfileResDto profileResDto = projectService.getProjectProfileById(userDto, projectUrl, profileId);
+		return ResponseEntity.ok(profileResDto);
+	}
 }

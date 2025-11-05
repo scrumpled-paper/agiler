@@ -159,4 +159,11 @@ public class ProjectService {
 		return profileService.getProjectProfileResDto(id, project.getId());
 	}
 
+	@Transactional(readOnly = true)
+	public ProfileResDto getProjectProfileById(UserDto userDto, String projectUrl, Long profileId) {
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectAccess(userDto.getId(), project.getId());
+
+		return profileService.getProjectProfileResDto(profileId, project.getId());
+	}
 }
