@@ -3,6 +3,7 @@ import type {
   GetProjectListResponse,
   GetProjectMembersResponse,
   GetProjectMembersParams,
+  ProjectInfo,
 } from '@/types'
 import { apiClient } from '../client'
 import axios from 'axios'
@@ -70,6 +71,52 @@ export const getProjectMember = async ({
     if (axios.isAxiosError(error)) {
       const serverErrorMessage = error.response?.data?.message
       throw new Error(serverErrorMessage || 'API 요청 중 오류가 발생했습니다.')
+    } else {
+      throw new Error('알 수 없는 오류가 발생했습니다.')
+    }
+  }
+}
+
+//프로젝트 생성 url 검증
+export const getProjectUrlCheck = async (
+  projectUrl: string
+): Promise<boolean> => {
+  const url = `/api/v1/projects/check/${projectUrl}`
+  try {
+    const response = await apiClient.get(url)
+    return response.data
+  } catch (error) {
+    console.error('프로젝트 url 검증 오류 :', error)
+    if (axios.isAxiosError(error)) {
+      const serverErrorMessage = error.response?.data?.message
+      throw new Error(
+        serverErrorMessage ||
+          '프로젝트 url 검증  API 요청 중 오류가 발생했습니다.'
+      )
+    } else {
+      throw new Error('알 수 없는 오류가 발생했습니다.')
+    }
+  }
+}
+
+export const createProject = async ({
+  title,
+  url,
+  summary,
+}: ProjectInfo): Promise<number> => {
+  const apiUrl = `/api/v1/projects` // 변수명 충돌 방지를 위해 apiUrl로 변경
+  try {
+    const response = await apiClient.post(apiUrl, { title, url, summary })
+    return response.data
+  } catch (error) {
+    console.error('프로젝트 생성 오류 :', error)
+
+    // ➡️ Axios 에러 처리 (URL 검증 함수와 동일한 로직 적용)
+    if (axios.isAxiosError(error)) {
+      const serverErrorMessage = error.response?.data?.message
+      throw new Error(
+        serverErrorMessage || '프로젝트 생성 API 요청 중 오류가 발생했습니다.'
+      )
     } else {
       throw new Error('알 수 없는 오류가 발생했습니다.')
     }

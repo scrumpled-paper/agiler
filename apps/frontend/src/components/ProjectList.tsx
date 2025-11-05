@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import ProjectCard from './ProjectCard'
 import PaginationDemo from './Pagination'
 import type { ContentItem } from '@/types/index'
 import { Button } from './ui/button'
+import JoinProjectModal from './JoinProjectModal'
 
 interface ProjectListProps {
   contents: ContentItem[]
@@ -16,13 +18,18 @@ export default function ProjectList({
   totalPages,
   onPageChange,
 }: ProjectListProps) {
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
+
   return (
     <div className="border flex flex-col justify-center items-center">
       <div className="relative flex justify-center items-center w-full p-10 pt-20">
         <p className="text-black text-4xl font-bold font-['Roboto']">
           Project List
         </p>
-        <Button className="absolute right-15 bg-black text-white px-4 py-2 rounded-lg text-sm">
+        <Button
+          className="absolute right-15 bg-black text-white px-4 py-2 rounded-lg text-sm"
+          onClick={() => setIsJoinModalOpen(true)}
+        >
           Join New Project
         </Button>
       </div>
@@ -36,6 +43,11 @@ export default function ProjectList({
         totalPages={totalPages}
         onPageChange={onPageChange}
       ></PaginationDemo>
+
+      <JoinProjectModal
+        open={isJoinModalOpen}
+        onOpenChange={setIsJoinModalOpen}
+      />
     </div>
   )
 }
