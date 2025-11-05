@@ -7,6 +7,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.user.dto.TokenResponseDto;
 import scrumpledpaper.agiler.user.dto.UserResDto;
@@ -22,6 +23,7 @@ public class UserService {
 	private final ImageService imageService;
 	private final UserRepository userRepository;
 	private final AuthTokenProvider authTokenProvider;
+	private final ImageRepository imageRepository;
 
 	public User findById(Long userId) {
 		return userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -32,11 +34,15 @@ public class UserService {
 	 * */
 	@Transactional
 	public TokenResponseDto login(String email) {
-		Image image = imageService.findById(1L);
+		Image image = Image.builder()
+				.objectKey("user")
+				.url("")
+				.build();
+		Image savedImage = imageRepository.save(image);
 
 		User user = userRepository.findByEmail(email).orElse(null);
 		if (user == null) {
-			user = userMapper.toEntity(email, "nickname", image.getId());
+			user = userMapper.toEntity(email, "nickname", savedImage.getId());
 			userRepository.save(user);
 		}
 
