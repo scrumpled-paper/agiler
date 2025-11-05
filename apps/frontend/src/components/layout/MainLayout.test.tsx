@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import MainLayout from './MainLayout'
 
-vi.mock('@/components/layout/Sidebar', () => ({
+vi.mock('@/components/layout/sidebar/AppSidebar', () => ({
   AppSidebar: () => (
     <aside className="peer" data-testid="app-sidebar">
       Sidebar
@@ -24,10 +25,20 @@ vi.mock('@/components/ui/sidebar', () => ({
 describe('MainLayout', () => {
   // 렌더링을 돕는 헬퍼 함수
   const setup = () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    })
+
     return render(
-      <MemoryRouter>
-        <MainLayout />
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <MainLayout />
+        </MemoryRouter>
+      </QueryClientProvider>
     )
   }
 
@@ -38,16 +49,19 @@ describe('MainLayout', () => {
     expect(screen.getByRole('main')).toBeInTheDocument()
   })
 
-  it('올바른 레이아웃 구조와 스타일을 가져야 한다', () => {
+  it('올바른 레이아웃 구조를 가져야 한다', () => {
     setup()
 
-    // 1. 최상위 flex 컨테이너를 찾고 테스트.
-    const container = screen.getByTestId('main-layout-container') // MainLayout.tsx에 data-testid 추가 필요
-    expect(container).toBeInTheDocument()
-    expect(container).toHaveClass('flex min-h-screen w-full justify-start')
+    // SidebarProvider 내부에 사이드바와 메인 콘텐츠가 있는지 확인
+    const provider = screen.getByTestId('sidebar-provider')
+    expect(provider).toBeInTheDocument()
 
-    // 2. 그 컨테이너 내부에 peer 클래스를 가진 사이드바가 있는지 확인합니다.
-    const sidebar = within(container).getByTestId('app-sidebar')
+    // 사이드바가 peer 클래스를 가지고 있는지 확인
+    const sidebar = screen.getByTestId('app-sidebar')
     expect(sidebar).toHaveClass('peer')
+
+    // 메인 콘텐츠 영역이 올바른 flex 구조를 가지는지 확인
+    const main = screen.getByRole('main')
+    expect(main).toHaveClass('container', 'h-full', 'w-full', 'flex-1', 'p-4')
   })
 })
