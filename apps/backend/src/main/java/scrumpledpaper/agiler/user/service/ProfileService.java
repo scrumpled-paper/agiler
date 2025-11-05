@@ -12,6 +12,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.user.entity.Profile;
 import scrumpledpaper.agiler.user.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
@@ -23,6 +24,7 @@ import scrumpledpaper.agiler.user.repository.ProfileRepository;
 public class ProfileService {
 	private final ProfileMapper profileMapper;
 	private final ImageService imageService;
+	private final ProjectRepository projectRepository;
 	private final ProfileRepository profileRepository;
 
 	public void createDefaultProfile(User user, Project savedProject, Role role) {
@@ -52,5 +54,17 @@ public class ProfileService {
 
 				return profileMapper.toProfileResDto(profile, imageUrl);
 			});
+	}
+
+	public ProfileResDto getProjectProfile(Long id, String ProjectUrl) {
+		Project project = projectRepository.findByUrl(ProjectUrl)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+		Profile profile = getProfileByUserIdAndProjectId(id, project.getId());
+
+		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return profileMapper.toProfileResDto(profile, imageUrl);
 	}
 }
