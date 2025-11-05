@@ -12,6 +12,10 @@ public class ProfileFixture {
 			.role(role)
 			.user(user)
 			.project(project)
+			.nickname(user.getNickname())
+			.imageId(user.getImageId())
+			.email(user.getEmail())
+			.description("example description")
 			.build();
 	}
 }
