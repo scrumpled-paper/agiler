@@ -160,7 +160,7 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/project/{projectUrl}/me", url)
+					get("/api/v1/projects/{projectUrl}/profiles/me", url)
 						.header("Authorization", auth.bearer())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -188,7 +188,7 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/project/{projectUrl}/me", url)
+					get("/api/v1/projects/{projectUrl}/profiles/me", url)
 						.header("Authorization", memberAuth.bearer())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -206,14 +206,14 @@ public class ProfileControllerTest {
 
 		@Test
 		@DisplayName("404 - 존재하지 않는 프로젝트")
-		public void getProjectProfileNotFoundProject() throws Exception {
+		public void getMyProjectProfileNotFoundProject() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String invalidProjectUrl = "invalid_url";
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/profiles/{projectUrl}", invalidProjectUrl)
+					get("/api/v1/projects/{projectUrl}/profiles/me", invalidProjectUrl)
 						.header("Authorization", auth.bearer())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
@@ -225,7 +225,7 @@ public class ProfileControllerTest {
 
 		@Test
 		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 프로필 조회 시도")
-		public void getProjectProfileNotMemberForbidden() throws Exception {
+		public void getMyProjectProfileNotMemberForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
@@ -234,7 +234,7 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/profiles/{projectUrl}", url)
+					get("/api/v1/projects/{projectUrl}/profiles/me", url)
 						.header("Authorization", nonMemberAuth.bearer())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isForbidden())
