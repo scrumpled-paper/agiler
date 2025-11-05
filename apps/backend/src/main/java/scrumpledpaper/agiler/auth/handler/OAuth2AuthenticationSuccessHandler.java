@@ -6,17 +6,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 import scrumpledpaper.agiler.auth.oauth2.CustomOAuth2User;
 import scrumpledpaper.agiler.auth.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import scrumpledpaper.agiler.common.config.AppProperties;
-import scrumpledpaper.agiler.common.exception.CustomException;
-import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
 import scrumpledpaper.agiler.common.utils.CookieUtils;
-import scrumpledpaper.agiler.user.repository.UserRepository;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,28 +30,35 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
 	private final AuthTokenProvider tokenProvider;
 	private final AppProperties appProperties;
-	private final UserRepository userRepository;
 	private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
+	private final OAuth2AuthenticationFailureHandler failureHandler;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-		String targetUrl = determineTargetUrl(request, response, authentication);
+		try {
+			String targetUrl = determineTargetUrl(request, response, authentication);
 
-		if (response.isCommitted()) {
-			logger.debug("Response has already been committed. Unable to redirect to " + targetUrl);
-			return;
+			if (response.isCommitted()) {
+				logger.debug("Response has already been committed. Unable to redirect to " + targetUrl);
+				return;
+			}
+
+			clearAuthenticationAttributes(request, response);
+			getRedirectStrategy().sendRedirect(request, response, targetUrl);
+		} catch (Exception ex) {
+			logger.error("OAuth2 Authentication success handler error", ex);
+			AuthenticationException authException = new OAuth2AuthenticationException(ex.toString());
+			failureHandler.onAuthenticationFailure(request, response, authException);
 		}
-
-		clearAuthenticationAttributes(request, response);
-		getRedirectStrategy().sendRedirect(request, response, targetUrl);
 	}
 
+	@Override
 	protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 		Optional<String> redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
 				.map(Cookie::getValue);
 
 		if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
-			throw new CustomException(ErrorCode.OAUTH2_PROCESSING_ERROR);
+			throw new IllegalArgumentException("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication.");
 		}
 
 		String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
