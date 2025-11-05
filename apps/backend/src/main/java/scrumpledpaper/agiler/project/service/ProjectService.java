@@ -154,9 +154,9 @@ public class ProjectService {
 	}
 
 	@Transactional(readOnly = true)
-	public ProfileResDto getMyProjectProfile(Long id, String ProjectUrl) {
+	public ProfileResDto getMyProjectProfile(Long userId, String ProjectUrl) {
 		Project project = findProjectByUrl(ProjectUrl);
-		return profileService.getProjectProfileResDto(id, project.getId());
+		return profileService.getMyProjectProfileResDto(userId, project.getId());
 	}
 
 	@Transactional(readOnly = true)

@@ -16,4 +16,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	boolean existsByUserIdAndProjectId(Long userId, Long projectId);
 
 	Page<Profile> findByProjectId(Long projectId, Pageable pageable);
+
+	Optional<Profile> findByIdAndProjectId(Long profileId, Long projectId);
 }

@@ -38,7 +38,6 @@ public class ProfileControllerTest {
 	private TestDataFactory testDataFactory;
 	Image defaultImage;
 
-
 	@Nested
 	@DisplayName("Get Project Member List Test")
 	class GetProjectMemberTest {
@@ -142,8 +141,8 @@ public class ProfileControllerTest {
 	}
 
 	@Nested
-	@DisplayName("프로필 조회")
-	class GetProfile {
+	@DisplayName("Get My project Profile Test")
+	class GetMyProjectProfileTest {
 		@BeforeEach
 		void beforeEach() {
 			defaultImage = testDataFactory.createDefaultImage();
@@ -242,6 +241,181 @@ public class ProfileControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Get Project Profile By Id Test")
+	class GetProjectProfileByIdTest {
+
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 프로젝트 멤버 프로필 조회 성공 (오너가 멤버 조회)")
+		public void getProjectProfileByIdOwnerSuccess() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, memberProfile.getId())
+						.header("Authorization", ownerAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
+			assertThat(profileResDto.memberId()).isEqualTo(memberProfile.getId());
+			assertThat(profileResDto.nickname()).isEqualTo(memberProfile.getNickname());
+			assertThat(profileResDto.imageUrl()).isEqualTo(defaultImage.getUrl());
+			assertThat(profileResDto.role()).isEqualTo(Role.MEMBER.name());
+			assertThat(profileResDto.description()).isEqualTo(memberProfile.getDescription());
+			assertThat(profileResDto.email()).isEqualTo(memberAuth.getUser().getEmail());
+		}
+
+		@Test
+		@DisplayName("200 - 프로젝트 오너 프로필 조회 성공 (멤버가 오너 조회)")
+		public void getProjectProfileByIdMemberSuccess() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(ownerAuth.getUser().getId(), project.getId());
+			testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, ownerProfile.getId())
+						.header("Authorization", memberAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
+			assertThat(profileResDto.memberId()).isEqualTo(ownerProfile.getId());
+			assertThat(profileResDto.nickname()).isEqualTo(ownerProfile.getNickname());
+			assertThat(profileResDto.role()).isEqualTo(Role.OWNER.name());
+			assertThat(profileResDto.email()).isEqualTo(ownerAuth.getUser().getEmail());
+		}
+
+		@Test
+		@DisplayName("200 - 자신의 프로필 조회")
+		public void getMyProfileById() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile myProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, myProfile.getId())
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
+			assertThat(profileResDto.memberId()).isEqualTo(myProfile.getId());
+			assertThat(profileResDto.email()).isEqualTo(auth.getUser().getEmail());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로필 ID")
+		public void getProjectProfileByIdNotFoundProfile() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Long nonExistentProfileId = 99999L;
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, nonExistentProfileId)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_PROFILE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트")
+		public void getProjectProfileByIdNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String invalidUrl = "invalid_url";
+			Long profileId = 9999L;
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", invalidUrl, profileId)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 프로필 조회 시도")
+		public void getProjectProfileByIdNotMemberForbidden() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(ownerAuth.getUser().getId(), project.getId());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, ownerProfile.getId())
+						.header("Authorization", nonMemberAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 다른 프로젝트의 프로필 조회 시도")
+		public void getProjectProfileByIdDifferentProjectForbidden() throws Exception {
+			// given
+			AuthContext auth1 = testDataFactory.createAuth(defaultImage);
+			AuthContext auth2 = testDataFactory.createAuth(defaultImage);
+			String url1 = "project1_url";
+			String url2 = "project2_url";
+			Project project1 = testDataFactory.createProjectAndOwnerProfile(url1, auth1.getUser());
+			Project project2 = testDataFactory.createProjectAndOwnerProfile(url2, auth2.getUser());
+			Profile profile2 = testDataFactory.findProfileByUserIdAndProjectId(auth2.getUser().getId(), project2.getId());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url1, profile2.getId())
+						.header("Authorization", auth1.bearer())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_PROFILE_NOT_FOUND.getMessage());
 		}
 	}
 }

@@ -43,6 +43,11 @@ public class ProfileService {
 			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
 	}
 
+	public Profile getProfileByProfileIdAndProjectId(Long profileId, long projectId) {
+		return profileRepository.findByIdAndProjectId(profileId, projectId)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_PROFILE_NOT_FOUND));
+	}
+
 	public Page<ProfileResDto> getProfileResDtosByProjectId(Long projectId, Pageable pageable) {
 		return profileRepository.findByProjectId(projectId, pageable)
 			.map(profile -> {
@@ -55,7 +60,17 @@ public class ProfileService {
 	}
 
 	public ProfileResDto getProjectProfileResDto(long profileId, long projectId) {
-		Profile profile = getProfileByUserIdAndProjectId(profileId, projectId);
+		Profile profile = getProfileByProfileIdAndProjectId(profileId, projectId);
+
+		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return profileMapper.toProfileResDto(profile, imageUrl);
+	}
+
+	public ProfileResDto getMyProjectProfileResDto(Long userId, Long projectId) {
+		Profile profile = getProfileByUserIdAndProjectId(userId, projectId);
 
 		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
 			.map(imageService::getImageUrlById)
