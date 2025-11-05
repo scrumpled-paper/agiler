@@ -38,8 +38,8 @@ import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Project;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Role;
 
 @IntegrationTest
 @Transactional
@@ -1186,108 +1186,6 @@ public class ProjectControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
-		}
-	}
-
-	@Nested
-	@DisplayName("Get Project Member Test")
-	class GetProjectMemberTest {
-		@BeforeEach
-		void beforeEach() {
-			defaultImage = testDataFactory.createDefaultImage();
-		}
-
-		@Test
-		@DisplayName("200 - 프로젝트 멤버 조회 성공")
-		void getProjectMembersSuccess() throws Exception {
-			// given
-			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
-			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			AuthContext member1 = testDataFactory.createAuth(testDataFactory.createDefaultImage());
-			AuthContext member2 = testDataFactory.createAuth(testDataFactory.createDefaultImage());
-			testDataFactory.createProfile(member1.getUser(), project, Role.MEMBER);
-			testDataFactory.createProfile(member2.getUser(), project, Role.MEMBER);
-
-			// when
-			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/members", url)
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
-
-			// then
-			PageResDto<ProfileResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProfileResDto>>() {
-				});
-
-			assertThat(page.getTotalElements()).isEqualTo(3);
-			assertThat(page.getContents()).hasSize(3);
-		}
-
-		@Test
-		@DisplayName("404 - 존재하지 않는 프로젝트 조회 실패")
-		void getProjectMembersNotFound() throws Exception {
-			// given
-			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String nonExistingUrl = "non-existing_url";
-
-			// when
-			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/members", nonExistingUrl)
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
-
-			// then
-			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
-		}
-
-		@Test
-		@DisplayName("403 - 프로젝트 멤버가 아닌 유저의 조회 실패")
-		void getProjectMembersForbidden() throws Exception {
-			// given
-			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
-			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-
-			// when
-			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/members", url)
-						.header("Authorization", anotherAuth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
-
-			// then
-			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
-		}
-
-		@Test
-		@DisplayName("400 - 잘못된 페이지 요청")
-		void getProjectMembersInvalidPage() throws Exception {
-			// given
-			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
-			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-
-			// when
-			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/members", url)
-						.header("Authorization", auth.bearer())
-						.param("page", "99")
-						.param("size", "10"))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
-
-			// then
-			assertThat(response).contains(ErrorCode.PAGE_NOT_FOUND.getCode());
 		}
 	}
 }
