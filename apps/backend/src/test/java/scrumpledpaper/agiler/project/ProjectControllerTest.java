@@ -29,27 +29,25 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
+import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Project;
-import scrumpledpaper.agiler.project.repository.ProjectRepository;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
-import scrumpledpaper.agiler.user.repository.ProfileRepository;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Role;
 
 @IntegrationTest
+@Transactional
 public class ProjectControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
 	private ObjectMapper objectMapper;
-	@Autowired
-	private ProjectRepository projectRepository;
-	@Autowired
-	private ProfileRepository profileRepository;
 	@Autowired
 	private TestDataFactory testDataFactory;
 	Image defaultImage;
@@ -70,7 +68,7 @@ public class ProjectControllerTest {
 			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
-			String res = mockMvc.perform(
+			String response = mockMvc.perform(
 					post("/api/v1/projects")
 						.header("Authorization", auth.bearer())
 						.contentType(MediaType.APPLICATION_JSON)
@@ -78,17 +76,18 @@ public class ProjectControllerTest {
 				.andExpect(status().isCreated())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			ProjectCreateResDto projectCreateResDto = objectMapper.readValue(res, ProjectCreateResDto.class);
-			Project createdProject = projectRepository.findById(projectCreateResDto.id())
-				.orElseThrow();
-			assertThat(projectCreateResDto.id()).isEqualTo(createdProject.getId());
+			ProjectIdResDto projectIdResDto = objectMapper.readValue(response, ProjectIdResDto.class);
+			Project createdProject = testDataFactory.findProjectById(projectIdResDto.id());
+			assertThat(projectIdResDto.id()).isEqualTo(createdProject.getId());
 
 			assertThat(createdProject.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdProject.getUrl()).isEqualTo(createReqDto.url());
 			assertThat(createdProject.getSummary()).isEqualTo(createReqDto.summary());
 
-			Profile ownerProfile = profileRepository.findByUserIdAndProjectId(auth.getUser().getId(), createdProject.getId())
-				.orElseThrow();
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(
+				auth.getUser().getId(),
+				createdProject.getId()
+			);
 			assertThat(ownerProfile.getRole()).isEqualTo(Role.OWNER);
 			assertThat(ownerProfile.getEmail()).isEqualTo(auth.getUser().getEmail());
 			assertThat(ownerProfile.getNickname()).isEqualTo(auth.getUser().getNickname());
@@ -103,7 +102,7 @@ public class ProjectControllerTest {
 			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
-			String res = mockMvc.perform(
+			String response = mockMvc.perform(
 					post("/api/v1/projects")
 						.header("Authorization", "Bearer " + accessToken)
 						.contentType(MediaType.APPLICATION_JSON)
@@ -111,7 +110,7 @@ public class ProjectControllerTest {
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			assertThat(res).contains(ErrorCode.USER_NOT_FOUND.getCode());
+			assertThat(response).contains(ErrorCode.USER_NOT_FOUND.getCode());
 		}
 
 		@Test
@@ -123,7 +122,7 @@ public class ProjectControllerTest {
 			testDataFactory.createProject(createReqDto.url());
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
-			String res = mockMvc.perform(
+			String response = mockMvc.perform(
 					post("/api/v1/projects")
 						.header("Authorization", auth.bearer())
 						.contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +130,7 @@ public class ProjectControllerTest {
 				.andExpect(status().isConflict())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			assertThat(res).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
+			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
 		}
 	}
 
@@ -151,7 +150,7 @@ public class ProjectControllerTest {
 			String url = "test-url_tag";
 			testDataFactory.createProject(url);
 			// when
-			String res = mockMvc.perform(
+			String response = mockMvc.perform(
 					get("/api/v1/projects/check")
 						.header("Authorization", auth.bearer())
 						.param("url", url)
@@ -159,7 +158,7 @@ public class ProjectControllerTest {
 				.andExpect(status().isOk())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(res, ProjectCheckResDto.class);
+			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(response, ProjectCheckResDto.class);
 			assertThat(projectCheckResDto.isDuplicated()).isTrue();
 		}
 
@@ -170,7 +169,7 @@ public class ProjectControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url_tag";
 			// when
-			String res = mockMvc.perform(
+			String response = mockMvc.perform(
 					get("/api/v1/projects/check")
 						.header("Authorization", auth.bearer())
 						.param("url", url)
@@ -178,7 +177,7 @@ public class ProjectControllerTest {
 				.andExpect(status().isOk())
 				.andReturn().getResponse().getContentAsString();
 			// then
-			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(res, ProjectCheckResDto.class);
+			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(response, ProjectCheckResDto.class);
 			assertThat(projectCheckResDto.isDuplicated()).isFalse();
 		}
 
@@ -209,7 +208,6 @@ public class ProjectControllerTest {
 	}
 
 	@Nested
-	@Transactional
 	@DisplayName("Get Project Info Pagination Test")
 	class GetProjectInfoPaginationTest {
 		@BeforeEach
@@ -355,7 +353,7 @@ public class ProjectControllerTest {
 			String response = mockMvc.perform(
 					get("/api/v1/projects/info")
 						.header("Authorization", auth.bearer())
-						.param("page", "3")
+						.param("page", "10")
 						.param("size", "10"))
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
@@ -388,7 +386,8 @@ public class ProjectControllerTest {
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(
 				response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {}
+				new TypeReference<PageResDto<ProjectInfoResDto>>() {
+				}
 			);
 
 			assertThat(page.getContents()).hasSize(5);
@@ -423,7 +422,8 @@ public class ProjectControllerTest {
 							.param("size", "10"))
 					.andExpect(status().isOk())
 					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {}
+				new TypeReference<PageResDto<ProjectInfoResDto>>() {
+				}
 			);
 
 			PageResDto<ProjectInfoResDto> page2 = objectMapper.readValue(
@@ -434,7 +434,8 @@ public class ProjectControllerTest {
 							.param("size", "10"))
 					.andExpect(status().isOk())
 					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {}
+				new TypeReference<PageResDto<ProjectInfoResDto>>() {
+				}
 			);
 
 			PageResDto<ProjectInfoResDto> page3 = objectMapper.readValue(
@@ -445,7 +446,8 @@ public class ProjectControllerTest {
 							.param("size", "10"))
 					.andExpect(status().isOk())
 					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {}
+				new TypeReference<PageResDto<ProjectInfoResDto>>() {
+				}
 			);
 
 			// then
@@ -468,9 +470,12 @@ public class ProjectControllerTest {
 			AuthContext owner = testDataFactory.createAuth(defaultImage);
 			LocalDateTime baseTime = LocalDateTime.now();
 
-			Project project1 = testDataFactory.createProjectWithTime("project_1", owner.getUser(), baseTime.minusDays(10));
-			Project project2 = testDataFactory.createProjectWithTime("project_2", owner.getUser(), baseTime.minusDays(9));
-			Project project3 = testDataFactory.createProjectWithTime("project_3", owner.getUser(), baseTime.minusDays(8));
+			Project project1 = testDataFactory.createProjectWithTime("project_1", owner.getUser(),
+				baseTime.minusDays(10));
+			Project project2 = testDataFactory.createProjectWithTime("project_2", owner.getUser(),
+				baseTime.minusDays(9));
+			Project project3 = testDataFactory.createProjectWithTime("project_3", owner.getUser(),
+				baseTime.minusDays(8));
 
 			AuthContext member = testDataFactory.createAuth(testDataFactory.createDefaultImage());
 
@@ -491,7 +496,8 @@ public class ProjectControllerTest {
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(
 				response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {}
+				new TypeReference<PageResDto<ProjectInfoResDto>>() {
+				}
 			);
 			assertThat(page.getContents().get(0).url()).isEqualTo("project_2");
 			assertThat(page.getContents().get(1).url()).isEqualTo("project_1");
@@ -546,7 +552,6 @@ public class ProjectControllerTest {
 	}
 
 	@Nested
-	@Transactional
 	@DisplayName("Get Project Side Pagination Test")
 	class GetProjectSidePaginationTest {
 		@BeforeEach
@@ -572,7 +577,8 @@ public class ProjectControllerTest {
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {});
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(0);
@@ -599,7 +605,8 @@ public class ProjectControllerTest {
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {});
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(1);
@@ -626,7 +633,8 @@ public class ProjectControllerTest {
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {});
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(2);
@@ -652,7 +660,8 @@ public class ProjectControllerTest {
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {});
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(1);
@@ -678,7 +687,8 @@ public class ProjectControllerTest {
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {});
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(0);
@@ -732,7 +742,8 @@ public class ProjectControllerTest {
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(
 				response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {}
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				}
 			);
 
 			assertThat(page.getContents()).hasSize(5);
@@ -767,7 +778,8 @@ public class ProjectControllerTest {
 							.param("size", "10"))
 					.andExpect(status().isOk())
 					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectSideResDto>>() {}
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				}
 			);
 
 			PageResDto<ProjectSideResDto> page2 = objectMapper.readValue(
@@ -778,7 +790,8 @@ public class ProjectControllerTest {
 							.param("size", "10"))
 					.andExpect(status().isOk())
 					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectSideResDto>>() {}
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				}
 			);
 
 			PageResDto<ProjectSideResDto> page3 = objectMapper.readValue(
@@ -789,7 +802,8 @@ public class ProjectControllerTest {
 							.param("size", "10"))
 					.andExpect(status().isOk())
 					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectSideResDto>>() {}
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				}
 			);
 
 			// then
@@ -813,9 +827,12 @@ public class ProjectControllerTest {
 			AuthContext owner = testDataFactory.createAuth(defaultImage);
 			LocalDateTime baseTime = LocalDateTime.now();
 
-			Project project1 = testDataFactory.createProjectWithTime("project_1", owner.getUser(), baseTime.minusDays(10));
-			Project project2 = testDataFactory.createProjectWithTime("project_2", owner.getUser(), baseTime.minusDays(9));
-			Project project3 = testDataFactory.createProjectWithTime("project_3", owner.getUser(), baseTime.minusDays(8));
+			Project project1 = testDataFactory.createProjectWithTime("project_1", owner.getUser(),
+				baseTime.minusDays(10));
+			Project project2 = testDataFactory.createProjectWithTime("project_2", owner.getUser(),
+				baseTime.minusDays(9));
+			Project project3 = testDataFactory.createProjectWithTime("project_3", owner.getUser(),
+				baseTime.minusDays(8));
 
 			AuthContext member = testDataFactory.createAuth(testDataFactory.createDefaultImage());
 
@@ -836,7 +853,8 @@ public class ProjectControllerTest {
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(
 				response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {}
+				new TypeReference<PageResDto<ProjectSideResDto>>() {
+				}
 			);
 
 			assertThat(page.getContents().get(0).url()).isEqualTo("project_2");
@@ -888,6 +906,286 @@ public class ProjectControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.INVALID_REQUEST.getCode());
+		}
+	}
+
+	@Nested
+	@DisplayName("Project Detail Test")
+	class ProjectDetailTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 이미지가 있는 프로젝트 상세 조회 성공")
+		public void projectDetailSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String imageUrl = "https://example.com/notdefault.png";
+			Project project = testDataFactory.createProjectWithImageUrl(imageUrl);
+			testDataFactory.createProfile(auth.getUser(), project, Role.OWNER);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}", project.getUrl())
+						.header("Authorization", auth.bearer())
+				)
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProjectDetailResDto projectDetailResDto = objectMapper.readValue(response, ProjectDetailResDto.class);
+			assertThat(projectDetailResDto.title()).isEqualTo(project.getTitle());
+			assertThat(projectDetailResDto.summary()).isEqualTo(project.getSummary());
+			Image image = testDataFactory.findImageById(project.getImageId());
+			assertThat(projectDetailResDto.imageUrl()).isEqualTo(image.getUrl());
+		}
+
+		@Test
+		@DisplayName("200 - 이미지가 없는 프로젝트 상세 조회 성공")
+		public void projectDetailNoImageSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			Project project = testDataFactory.createProject();
+			testDataFactory.createProfile(auth.getUser(), project, Role.MEMBER);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}", project.getUrl())
+						.header("Authorization", auth.bearer())
+				)
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProjectDetailResDto projectDetailResDto = objectMapper.readValue(response, ProjectDetailResDto.class);
+			assertThat(projectDetailResDto.title()).isEqualTo(project.getTitle());
+			assertThat(projectDetailResDto.summary()).isEqualTo(project.getSummary());
+			assertThat(projectDetailResDto.imageUrl()).isEqualTo("");
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트 상세 조회 실패")
+		public void projectDetailNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String nonExistingProjectUrl = "non-existing_project-url";
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}", nonExistingProjectUrl)
+						.header("Authorization", auth.bearer())
+				)
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
+		}
+
+		@Test
+		@DisplayName("403 - 권한 없는 프로젝트 상세 조회 실패")
+		public void projectDetailForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			Project project = testDataFactory.createProject();
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}", project.getUrl())
+						.header("Authorization", auth.bearer())
+				)
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
+		}
+	}
+
+	@Nested
+	@DisplayName("Project Update Test")
+	class ProjectUpdateTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 프로젝트 수정 성공")
+		void updateProjectSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"another_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProjectIdResDto result = objectMapper.readValue(response, ProjectIdResDto.class);
+			assertThat(result.id()).isEqualTo(project.getId());
+
+			Project updated = testDataFactory.findProjectById(project.getId());
+			assertThat(updated.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updated.getUrl()).isEqualTo(updateReqDto.url());
+			assertThat(updated.getSummary()).isEqualTo(updateReqDto.summary());
+		}
+
+		@Test
+		@DisplayName("200 - 같은 URL 수정 성공")
+		void updateProjectSameUrlSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"test_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			ProjectIdResDto result = objectMapper.readValue(response, ProjectIdResDto.class);
+			assertThat(result.id()).isEqualTo(project.getId());
+
+			Project updated = testDataFactory.findProjectById(project.getId());
+			assertThat(updated.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updated.getUrl()).isEqualTo(updateReqDto.url());
+			assertThat(updated.getSummary()).isEqualTo(updateReqDto.summary());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트")
+		void updateProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"test_url",
+				"새로운 요약"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", "non-exist_url")
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아님")
+		void updateProjectNotMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"another_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when & then
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", anotherAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 오너가 아님")
+		void updateProjectNotOwner() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(anotherAuth.getUser(), project, Role.MEMBER);
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				"another_url",
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when & then
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url)
+						.header("Authorization", anotherAuth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_OWNER_REQUIRED.getCode());
+		}
+
+		@Test
+		@DisplayName("409 - 이미 존재하는 Project URL")
+		void updateProjectDuplicateUrl() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url1 = "test_url-1";
+			String url2 = "test_url-2";
+			Project project1 = testDataFactory.createProjectAndOwnerProfile(url1, auth.getUser());
+			Project project2 = testDataFactory.createProjectAndOwnerProfile(url2, auth.getUser());
+			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
+				"새로운 제목",
+				url2,
+				"새로운 요약"
+			);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}", url1)
+						.header("Authorization", auth.bearer())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(requestBody))
+				.andExpect(status().isConflict())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
 		}
 	}
 }

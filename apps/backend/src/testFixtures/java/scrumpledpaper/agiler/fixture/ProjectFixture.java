@@ -20,4 +20,21 @@ public class ProjectFixture {
 			.summary("프로젝트 요약 설명")
 			.build();
 	}
+
+	public static Project createProject(long imageId) {
+		return Project.builder()
+			.title("프로젝트 이름")
+			.url("project-url_tag")
+			.summary("프로젝트 요약 설명")
+			.imageId(imageId)
+			.build();
+	}
+
+	public static Project createProject() {
+		return Project.builder()
+			.title("프로젝트 이름")
+			.url("project-url_tag")
+			.summary("프로젝트 요약 설명")
+			.build();
+	}
 }

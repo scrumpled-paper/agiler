@@ -1,5 +1,5 @@
 package scrumpledpaper.agiler.project.dto;
 
-public record ProjectCreateResDto(
+public record ProjectIdResDto(
 	Long id
 ) {}

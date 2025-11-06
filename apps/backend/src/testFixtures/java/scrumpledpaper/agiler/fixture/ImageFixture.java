@@ -10,4 +10,11 @@ public class ImageFixture {
 				.objectKey("objectKey")
 				.build();
 	}
+
+	public static Image createImage(String url) {
+		return Image.builder()
+				.url(url)
+				.objectKey("objectKey")
+				.build();
+	}
 }
