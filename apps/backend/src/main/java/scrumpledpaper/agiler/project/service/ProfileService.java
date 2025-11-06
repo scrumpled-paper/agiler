@@ -1,4 +1,4 @@
-package scrumpledpaper.agiler.user.service;
+package scrumpledpaper.agiler.project.service;
 
 import java.util.Optional;
 
@@ -11,12 +11,12 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
+import scrumpledpaper.agiler.project.entity.Role;
+import scrumpledpaper.agiler.project.mapper.ProfileMapper;
+import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.entity.User;
-import scrumpledpaper.agiler.user.mapper.ProfileMapper;
-import scrumpledpaper.agiler.user.repository.ProfileRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +43,11 @@ public class ProfileService {
 			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
 	}
 
+	public Profile getProfileByProfileIdAndProjectId(Long profileId, long projectId) {
+		return profileRepository.findByIdAndProjectId(profileId, projectId)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_PROFILE_NOT_FOUND));
+	}
+
 	public Page<ProfileResDto> getProfileResDtosByProjectId(Long projectId, Pageable pageable) {
 		return profileRepository.findByProjectId(projectId, pageable)
 			.map(profile -> {
@@ -52,5 +57,25 @@ public class ProfileService {
 
 				return profileMapper.toProfileResDto(profile, imageUrl);
 			});
+	}
+
+	public ProfileResDto getProjectProfileResDto(long profileId, long projectId) {
+		Profile profile = getProfileByProfileIdAndProjectId(profileId, projectId);
+
+		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return profileMapper.toProfileResDto(profile, imageUrl);
+	}
+
+	public ProfileResDto getMyProjectProfileResDto(Long userId, Long projectId) {
+		Profile profile = getProfileByUserIdAndProjectId(userId, projectId);
+
+		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return profileMapper.toProfileResDto(profile, imageUrl);
 	}
 }

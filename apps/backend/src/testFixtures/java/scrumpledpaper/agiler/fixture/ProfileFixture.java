@@ -1,8 +1,8 @@
 package scrumpledpaper.agiler.fixture;
 
 import scrumpledpaper.agiler.project.entity.Project;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
 
 public class ProfileFixture {
@@ -12,6 +12,10 @@ public class ProfileFixture {
 			.role(role)
 			.user(user)
 			.project(project)
+			.nickname(user.getNickname())
+			.imageId(user.getImageId())
+			.email(user.getEmail())
+			.description("example description")
 			.build();
 	}
 }
