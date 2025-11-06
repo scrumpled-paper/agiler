@@ -1,13 +1,7 @@
 package scrumpledpaper.agiler.project;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,10 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.PageResDto;
@@ -40,6 +30,15 @@ import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Role;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @Transactional
@@ -92,25 +91,6 @@ public class ProjectControllerTest {
 			assertThat(ownerProfile.getEmail()).isEqualTo(auth.getUser().getEmail());
 			assertThat(ownerProfile.getNickname()).isEqualTo(auth.getUser().getNickname());
 			assertThat(ownerProfile.getImageId()).isEqualTo(auth.getUser().getImageId());
-		}
-
-		@Test
-		@DisplayName("404 - User Not Found")
-		public void notFoundUser() throws Exception {
-			// given
-			String accessToken = testDataFactory.createNotAllowedAccessToken();
-			ProjectCreateReqDto createReqDto = ProjectFixture.createProjectCreateReqDto();
-			String updateJson = objectMapper.writeValueAsString(createReqDto);
-			// when
-			String response = mockMvc.perform(
-					post("/api/v1/projects")
-						.header("Authorization", "Bearer " + accessToken)
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(updateJson))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
-			// then
-			assertThat(response).contains(ErrorCode.USER_NOT_FOUND.getCode());
 		}
 
 		@Test

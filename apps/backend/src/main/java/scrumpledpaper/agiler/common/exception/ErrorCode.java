@@ -6,6 +6,9 @@ import lombok.Getter;
 public enum ErrorCode {
 	INVALID_TOKEN(401, "A001", "유효하지 않은 토큰입니다."),
 	EXPIRED_TOKEN(403, "A002", "만료된 토큰입니다."),
+	UNAUTHORIZED(401, "A003", "인증되지 않은 사용자입니다."),
+	FORBIDDEN(403, "A004", "접근이 금지된 리소스입니다."),
+	OAUTH2_PROCESSING_ERROR(400, "A005", "OAuth2 인증 후 처리 중 오류가 발생했습니다."),
 
 	USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
 

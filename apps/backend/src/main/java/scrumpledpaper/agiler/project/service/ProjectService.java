@@ -1,33 +1,21 @@
 package scrumpledpaper.agiler.project.service;
 
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
-import scrumpledpaper.agiler.image.service.ImageService;
-import scrumpledpaper.agiler.project.dto.ProfileResDto;
-import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
-import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
-import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
-import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
-import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
-import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
-import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.dto.*;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
-import scrumpledpaper.agiler.user.dto.UserDto;
+import scrumpledpaper.agiler.user.entity.Profile;
+import scrumpledpaper.agiler.user.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.service.UserService;
 
@@ -41,8 +29,8 @@ public class ProjectService {
 	private final ProjectRepository projectRepository;
 
 	@Transactional
-	public ProjectIdResDto createProject(UserDto userDto, ProjectCreateReqDto projectCreateReqDto) {
-		User user = userService.findById(userDto.getId());
+	public ProjectCreateResDto createProject(long userId, ProjectCreateReqDto projectCreateReqDto) {
+		User user = userService.findById(userId);
 
 		if (alreadyExistProjectUrl(projectCreateReqDto.url())) {
 			throw new CustomException(ErrorCode.PROJECT_URL_ALREADY_EXISTS);
@@ -65,10 +53,11 @@ public class ProjectService {
 		return projectRepository.existsByUrl(url);
 	}
 
+
 	@Transactional(readOnly = true)
-	public PageResDto<ProjectInfoResDto> getProjectInfo(UserDto userDto, Pageable pageable) {
+	public PageResDto<ProjectInfoResDto> getProjectInfo(long userId, Pageable pageable) {
 		Page<ProjectInfoResDto> page = profileService
-			.getProfilesByUserId(userDto.getId(), pageable)
+			.getProfilesByUserId(userId, pageable)
 			.map(Profile::getProject)
 			.map(project -> {
 				String imageUrl = Optional.ofNullable(project.getImageId())
