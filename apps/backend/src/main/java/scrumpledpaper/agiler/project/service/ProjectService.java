@@ -13,22 +13,22 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
+import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.user.dto.UserDto;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
-import scrumpledpaper.agiler.user.service.ProfileService;
 import scrumpledpaper.agiler.user.service.UserService;
 
 @Service
@@ -140,5 +140,30 @@ public class ProjectService {
 		if (profile.getRole() != Role.OWNER) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_REQUIRED);
 		}
+	}
+
+	@Transactional(readOnly = true)
+	public PageResDto<ProfileResDto> getProjectMembersByUrl(UserDto userDto, String projectUrl, Pageable pageable) {
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectAccess(userDto.getId(), project.getId());
+
+		Page<ProfileResDto> page = profileService.getProfileResDtosByProjectId(project.getId(), pageable);
+
+		PageValidator.validatePageInRange(page);
+		return PageResDto.from(page);
+	}
+
+	@Transactional(readOnly = true)
+	public ProfileResDto getMyProjectProfile(Long userId, String ProjectUrl) {
+		Project project = findProjectByUrl(ProjectUrl);
+		return profileService.getMyProjectProfileResDto(userId, project.getId());
+	}
+
+	@Transactional(readOnly = true)
+	public ProfileResDto getProjectProfileById(UserDto userDto, String projectUrl, Long profileId) {
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectAccess(userDto.getId(), project.getId());
+
+		return profileService.getProjectProfileResDto(profileId, project.getId());
 	}
 }
