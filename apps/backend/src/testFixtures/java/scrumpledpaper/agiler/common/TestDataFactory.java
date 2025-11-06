@@ -17,10 +17,10 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
-import scrumpledpaper.agiler.user.repository.ProfileRepository;
+import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
 @Component

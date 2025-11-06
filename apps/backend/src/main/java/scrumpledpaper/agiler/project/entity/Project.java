@@ -1,5 +1,8 @@
 package scrumpledpaper.agiler.project.entity;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.user.entity.User;
 
 @Getter
 @NoArgsConstructor
@@ -35,4 +40,12 @@ public class Project extends BaseEntity {
 
 	@Column(name = "image_id")
 	private Long imageId;
+
+	public void updateDetails(String title, String url, String summary) {
+		this.title = title;
+		this.url = url;
+		this.summary = summary;
+	}
+
+
 }
