@@ -1,4 +1,4 @@
-package scrumpledpaper.agiler.user.entity;
+package scrumpledpaper.agiler.project.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,8 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.user.entity.User;
 
 @Getter
 @NoArgsConstructor

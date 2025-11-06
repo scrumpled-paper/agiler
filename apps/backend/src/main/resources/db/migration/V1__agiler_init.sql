@@ -15,6 +15,7 @@ CREATE TABLE `project` (
     `title` VARCHAR(20) NOT NULL,
     `url` VARCHAR(40),
     `summary` TEXT,
+    `image_id` BIGINT,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME

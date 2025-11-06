@@ -1,21 +1,25 @@
 package scrumpledpaper.agiler.project.mapper;
 
-import java.util.List;
-
 import org.mapstruct.Mapper;
-import org.springframework.data.domain.Page;
+import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
-import scrumpledpaper.agiler.project.dto.ProjectCreateResDto;
+import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
+import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
+import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @Mapper(componentModel = "spring")
 public interface ProjectMapper {
 	Project toEntity(ProjectCreateReqDto projectCreateReqDto);
-	ProjectCreateResDto toDto(Project savedProject);
 
-	ProjectInfoResDto toProjectInfoResDto(Project project);
+	ProjectIdResDto toDto(Project savedProject);
 
-	List<ProjectInfoResDto> toProjectInfoResDtoList(List<Project> projects);
+	ProjectInfoResDto toProjectInfoResDto(Project project, String ImageUrl);
+
+	ProjectSideResDto toProjectSideResDto(Project project);
+
+	@Mapping(target = "imageUrl", source = "ImageUrl")
+	ProjectDetailResDto toProjectDetailResDto(Project project, String ImageUrl);
 }

@@ -17,10 +17,10 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
-import scrumpledpaper.agiler.user.entity.Profile;
-import scrumpledpaper.agiler.user.entity.Role;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.user.entity.User;
-import scrumpledpaper.agiler.user.repository.ProfileRepository;
+import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
 @Component
@@ -63,10 +63,22 @@ public class TestDataFactory {
 		return projectRepository.save(project);
 	}
 
+	public Project createProject() {
+		Project project = ProjectFixture.createProject();
+		return projectRepository.save(project);
+	}
+
+	public Project createProjectWithImageUrl(String imageUrl) {
+		Image image = ImageFixture.createImage(imageUrl);
+		imageRepository.save(image);
+		Project project = ProjectFixture.createProject(image.getId());
+		return projectRepository.save(project);
+	}
+
 	public Project createProjectAndOwnerProfile(String url, User user) {
 		Project project = ProjectFixture.createProject(url);
 		projectRepository.save(project);
-		Profile profile = ProfileFixture.createProfile(Role.OWNER, user, project);
+		Profile profile = ProfileFixture.createProfile(user, project, Role.OWNER);
 		profileRepository.save(profile);
 		return project;
 	}
@@ -84,7 +96,7 @@ public class TestDataFactory {
 	}
 
 	public Profile createProfileWithTime(User user, Project project, Role role, LocalDateTime createdAt) {
-		Profile profile = ProfileFixture.createProfile(role, user, project);
+		Profile profile = ProfileFixture.createProfile(user, project, role);
 		Profile savedProfile = profileRepository.saveAndFlush(profile);
 
 		updateTimestamps("profile", savedProfile.getId(), createdAt);
@@ -101,7 +113,7 @@ public class TestDataFactory {
 		Project savedProject = projectRepository.saveAndFlush(project);
 		updateTimestamps("project", savedProject.getId(), createdAt);
 
-		Profile profile = ProfileFixture.createProfile(Role.OWNER, user, savedProject);
+		Profile profile = ProfileFixture.createProfile(user, savedProject, Role.OWNER);
 		Profile savedProfile = profileRepository.saveAndFlush(profile);
 		updateTimestamps("profile", savedProfile.getId(), createdAt);
 
@@ -117,5 +129,22 @@ public class TestDataFactory {
 			.setParameter("createdAt", createdAt)
 			.setParameter("id", id)
 			.executeUpdate();
+	}
+
+	public Project findProjectById(Long id) {
+		return projectRepository.findById(id).orElseThrow();
+	}
+
+	public Profile findProfileByUserIdAndProjectId(Long userId, Long projectId) {
+		return profileRepository.findByUserIdAndProjectId(userId, projectId).orElseThrow();
+	}
+
+	public Image findImageById(Long id) {
+		return imageRepository.findById(id).orElseThrow();
+	}
+
+	public Profile createProfile(User user, Project project, Role role) {
+		Profile profile = ProfileFixture.createProfile(user, project, role);
+		return profileRepository.save(profile);
 	}
 }

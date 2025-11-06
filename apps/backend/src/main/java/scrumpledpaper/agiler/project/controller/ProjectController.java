@@ -20,13 +20,13 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	@PostMapping
-	public ResponseEntity<ProjectCreateResDto> createProject(
+	public ResponseEntity<ProjectIdResDto> createProject(
 			@Parameter(hidden = true)
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestBody @Valid ProjectCreateReqDto projectCreateReqDto
 	) {
-		ProjectCreateResDto projectCreateResDto = projectService.createProject(customUserDetails.getUserId(), projectCreateReqDto);
-		return ResponseEntity.created(null).body(projectCreateResDto);
+		ProjectIdResDto projectIdResDto = projectService.createProject(customUserDetails.getUserId(), projectCreateReqDto);
+		return ResponseEntity.created(null).body(projectIdResDto);
 	}
 
 	@GetMapping("/check")
@@ -48,4 +48,33 @@ public class ProjectController {
 		return ResponseEntity.ok().body(pageResDto);
 	}
 
+	@GetMapping
+	public ResponseEntity<PageResDto<ProjectSideResDto>> getProjectSide(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@ModelAttribute @Valid PageReqDto pageReqDto) {
+		Pageable pageable = pageReqDto.toPageable();
+
+		PageResDto<ProjectSideResDto> pageResDto = projectService.getProjectSide(customUserDetails.getUserId(), pageable);
+		return ResponseEntity.ok().body(pageResDto);
+	}
+
+	@GetMapping("/{projectUrl}")
+	public ResponseEntity<ProjectDetailResDto> getProjectDetailByUrl(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl) {
+		ProjectDetailResDto projectDetailResDto = projectService.getProjectDetailByUrl(customUserDetails.getUserId(), projectUrl);
+		return ResponseEntity.ok().body(projectDetailResDto);
+	}
+
+	@PutMapping("/{projectUrl}")
+	public ResponseEntity<ProjectIdResDto> updateProjectDetailByUrl(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid ProjectUpdateReqDto projectUpdateReqDto) {
+		ProjectIdResDto projectIdResDto = projectService.updateProjectDetailByUrl(customUserDetails.getUserId(), projectUrl, projectUpdateReqDto);
+		return ResponseEntity.ok().body(projectIdResDto);
+	}
 }
