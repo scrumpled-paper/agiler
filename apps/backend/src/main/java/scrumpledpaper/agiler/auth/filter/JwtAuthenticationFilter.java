@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.auth.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import scrumpledpaper.agiler.auth.service.CustomUserDetailsService;
 import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
+import scrumpledpaper.agiler.common.utils.CookieUtils;
 
 import java.io.IOException;
 
@@ -24,8 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final AuthTokenProvider authTokenProvider;
 	private final CustomUserDetailsService customUserDetailsService;
 
-	private static final String AUTHORIZATION_HEADER = "Authorization";
-	private static final String BEARER_PREFIX = "Bearer ";
+	private static final String ACCESS_TOKEN = "accessToken";
 
 	@Override
 	protected void doFilterInternal(
@@ -48,12 +49,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	private String resolveToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-			return bearerToken.substring(BEARER_PREFIX.length());
-		}
-
-		return null;
+		return CookieUtils.getCookie(request, ACCESS_TOKEN)
+				.map(Cookie::getValue)
+				.orElse(null);
 	}
 
 }
