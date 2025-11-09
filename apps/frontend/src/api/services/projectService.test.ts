@@ -8,10 +8,7 @@ import {
   createProject,
 } from './projectService'
 import { apiClient } from '../client'
-import type {
-  GetProjectListResponse,
-  GetProjectMembersResponse,
-} from '@/types'
+import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 
 // Mock apiClient
 vi.mock('../client', () => ({

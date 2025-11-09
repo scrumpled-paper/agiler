@@ -20,9 +20,7 @@ vi.mock('@/components/ui/sidebar', () => ({
 
 vi.mock('../items/DisplayItem', () => ({
   DisplayItem: ({ member }: { member: ProjectMember }) => (
-    <div data-testid={`display-item-${member.peopleId}`}>
-      {member.nickname}
-    </div>
+    <div data-testid={`display-item-${member.peopleId}`}>{member.nickname}</div>
   ),
 }))
 
@@ -168,10 +166,7 @@ describe('MemberListSection', () => {
   it('should use fallback route when showMoreRoute is not provided', () => {
     const sectionWithoutRoute = { ...mockSection, showMoreRoute: undefined }
     renderWithRouter(
-      <MemberListSection
-        section={sectionWithoutRoute}
-        members={mockMembers}
-      />,
+      <MemberListSection section={sectionWithoutRoute} members={mockMembers} />,
       { initialEntries: ['/projects/42'] }
     )
 
