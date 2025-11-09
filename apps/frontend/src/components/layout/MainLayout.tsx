@@ -20,7 +20,7 @@ export default function MainLayout() {
           )}
         >
           <AppHeader />
-          <main className="container h-full w-full p-4 ">
+          <main className="container h-full w-full flex-1 p-4">
             <Outlet />
           </main>
         </div>

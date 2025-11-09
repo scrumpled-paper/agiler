@@ -4,7 +4,7 @@ import { SidebarGroup, SidebarGroupContent } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import type { ActionSection as ActionSectionType } from '@/lib/sidebar/types'
 
-interface ActionSectionProps {
+export interface ActionSectionProps {
   section: ActionSectionType
 }
 

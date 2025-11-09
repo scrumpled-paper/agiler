@@ -10,7 +10,7 @@ import {
 import { NavigationItem } from '../items/NavigationItem'
 import type { NavigationSection as NavigationSectionType } from '@/lib/sidebar/types'
 
-interface NavigationSectionProps {
+export interface NavigationSectionProps {
   section: NavigationSectionType
 }
 

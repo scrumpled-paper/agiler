@@ -12,7 +12,7 @@ import { ShowMoreButton } from '../buttons/ShowMoreButton'
 import type { ListSection } from '@/lib/sidebar/types'
 import type { ProjectInfo } from '@/types'
 
-interface ProjectListSectionProps {
+export interface ProjectListSectionProps {
   section: ListSection
   projects?: ProjectInfo[]
 }

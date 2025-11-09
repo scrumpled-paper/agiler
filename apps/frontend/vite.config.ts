@@ -25,9 +25,11 @@ export default mergeConfig(
         reporter: ['text', 'json', 'html'],
         reportsDirectory: './coverage',
         include: [
-          'src/components/layout/**/*.{ts,tsx}',
-          'src/lib/**/*.{ts,tsx}',
-          'src/pages/**/*.{ts,tsx}',
+          'src/api/**/*.{ts,tsx}', // API 서비스 & 클라이언트
+          'src/components/!(ui)/**/*.{ts,tsx}', // shadcn/ui 제외한 모든 컴포넌트
+          'src/lib/**/*.{ts,tsx}', // 유틸리티 & 로직
+          'src/pages/**/*.{ts,tsx}', // 페이지 컴포넌트
+          'src/utils/!(mockData).ts', // mockData 제외한 유틸
         ],
         // 커버리지에서 제외할 파일
         exclude: [
@@ -40,9 +42,12 @@ export default mergeConfig(
           'src/test-utils/**',
           'src/main.tsx',
           'src/router.tsx',
-          'src/components/ui/**', // shadcn/ui 제외
+          'src/types/**', // 타입 정의 파일
+          'src/components/ui/**', // shadcn/ui
           'src/hooks/use-mobile.ts',
           'src/lib/query-client.ts',
+          'src/lib/sidebar/types.ts', // 타입 정의
+          'src/utils/mockData.ts', // 목 데이터
         ],
       },
       include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],

@@ -11,7 +11,7 @@ import { ShowMoreButton } from '../buttons/ShowMoreButton'
 import type { DisplaySection } from '@/lib/sidebar/types'
 import type { ProjectMember } from '@/types'
 
-interface MemberListSectionProps {
+export interface MemberListSectionProps {
   section: DisplaySection
   members?: ProjectMember[]
 }

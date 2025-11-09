@@ -1,13 +1,54 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { AppSidebar } from './sidebar/AppSidebar'
 import { renderWithRouter } from '@/test-utils/render-with-router'
 import { sidebarConfigs } from '@/lib/sidebar/config'
+import type { ProjectInfo, ProjectMember } from '@/types'
+import type { NavigationSectionProps } from './sidebar/sections/NavigationSection'
+import type { NavigationItem } from '@/lib/sidebar/types'
+import type { ProjectListSectionProps } from './sidebar/sections/ProjectListSection'
+import type { MemberListSectionProps } from './sidebar/sections/MemberListSection'
+import type { ActionSectionProps } from './sidebar/sections/ActionSection'
 
 interface SidebarMenuButtonProps {
   children: React.ReactNode
   isActive?: boolean
 }
+
+// --- Mock Data ---
+const mockProjects: ProjectInfo[] = [
+  {
+    title: 'Project 1',
+    url: '/projects/1',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Test project 1',
+  },
+  {
+    title: 'Project 2',
+    url: '/projects/2',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Test project 2',
+  },
+]
+
+const mockMembers: ProjectMember[] = [
+  {
+    peopleId: 1,
+    nickname: 'Alice',
+    email: 'alice@example.com',
+    imageUrl: 'https://placehold.co/100x100',
+    role: 'Developer',
+    description: 'Frontend developer',
+  },
+  {
+    peopleId: 2,
+    nickname: 'Bob',
+    email: 'bob@example.com',
+    imageUrl: 'https://placehold.co/100x100',
+    role: 'Designer',
+    description: 'UI/UX designer',
+  },
+]
 
 // --- Mocks ---
 vi.mock('@/components/ui/sidebar', () => ({
@@ -41,48 +82,122 @@ vi.mock('@/components/ui/sidebar', () => ({
   SidebarRail: () => <div data-testid="sidebar-rail" />,
 }))
 
-vi.mock('@/components/layout/SidebarUserInfo', () => ({
-  SidebarUserInfo: ({ userName }: { userName: string }) => (
-    <div data-testid="user-info">{userName}</div>
+vi.mock('./sidebar/sections/UserInfoSection', () => ({
+  UserInfoSection: () => <div data-testid="user-info">Test User</div>,
+}))
+
+vi.mock('./sidebar/sections/NavigationSection', () => ({
+  NavigationSection: ({ section }: NavigationSectionProps) => (
+    <div data-testid="navigation-section">
+      {section.title && <div>{section.title}</div>}
+      {section.items.map((item: NavigationItem, index: number) => (
+        <a key={index} href={item.route}>
+          {item.label}
+        </a>
+      ))}
+    </div>
   ),
+}))
+
+vi.mock('./sidebar/sections/ProjectListSection', () => ({
+  ProjectListSection: ({ section, projects }: ProjectListSectionProps) => (
+    <div data-testid="project-list-section">
+      <div>{section.title}</div>
+      {projects?.map((project, index) => (
+        <a key={index} href={project.url}>
+          {project.title}
+        </a>
+      ))}
+    </div>
+  ),
+}))
+
+vi.mock('./sidebar/sections/MemberListSection', () => ({
+  MemberListSection: ({ section, members }: MemberListSectionProps) => (
+    <div data-testid="member-list-section">
+      <div>{section.title}</div>
+      {members?.map((member, index) => (
+        <div key={index}>{member.nickname}</div>
+      ))}
+    </div>
+  ),
+}))
+
+vi.mock('./sidebar/sections/ActionSection', () => ({
+  ActionSection: ({ section }: ActionSectionProps) => (
+    <div data-testid="action-section">
+      <div>{section.title}</div>
+      <button>{section.action.label}</button>
+    </div>
+  ),
+}))
+
+// Mock hooks
+const mockUseSidebarContext = vi.fn()
+const mockUseSidebarData = vi.fn()
+const mockUseSidebarParams = vi.fn()
+
+vi.mock('@/lib/sidebar/hooks', () => ({
+  useSidebarContext: () => mockUseSidebarContext(),
+  useSidebarData: () => mockUseSidebarData(),
+  useSidebarParams: () => mockUseSidebarParams(),
 }))
 
 // --- Tests ---
 describe('AppSidebar', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    // Default mock returns
+    mockUseSidebarParams.mockReturnValue({ projectUrl: undefined })
+    mockUseSidebarData.mockReturnValue({
+      projects: mockProjects,
+      members: undefined,
+    })
+  })
+
   describe('Basic rendering', () => {
     it('should render sidebar', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar')).toBeInTheDocument()
     })
 
     it('should render sidebar header with user info', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar-header')).toBeInTheDocument()
       expect(screen.getByTestId('user-info')).toBeInTheDocument()
-      expect(screen.getByText('user1')).toBeInTheDocument()
     })
 
     it('should render sidebar content', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar-content')).toBeInTheDocument()
     })
 
     it('should render sidebar rail', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar-rail')).toBeInTheDocument()
     })
   })
 
   describe('Dashboard Sidebar', () => {
+    beforeEach(() => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: undefined,
+      })
+    })
+
     it('should render all dashboard sections', async () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const sections = sidebarConfigs.dashboard.sections
 
       await waitFor(() => {
-        sections.forEach(section => {
-          const elements = screen.getAllByText(section.title)
-          expect(elements.length).toBeGreaterThan(0)
-        })
+        expect(screen.getByText('Project List')).toBeInTheDocument()
+        expect(screen.getByText('Settings')).toBeInTheDocument()
       })
     })
 
@@ -90,114 +205,149 @@ describe('AppSidebar', () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
 
       await waitFor(() => {
-        // Mock 데이터에서 최소 하나의 프로젝트가 렌더링되어야 함
-        expect(screen.getByText('Project List')).toBeInTheDocument()
+        expect(screen.getByTestId('project-list-section')).toBeInTheDocument()
+        expect(screen.getByText('Project 1')).toBeInTheDocument()
+        expect(screen.getByText('Project 2')).toBeInTheDocument()
       })
     })
 
-    it('should render settings section', () => {
+    it('should have correct number of sections', () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const settingsElements = screen.getAllByText('Settings')
-      expect(settingsElements.length).toBeGreaterThan(0)
-    })
+      const sections = sidebarConfigs.dashboard.sections
 
-    it('should have correct number of groups', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
+      // Navigation sections + project list section
+      const navigationSections = screen.getAllByTestId('navigation-section')
+      const projectListSections = screen.getAllByTestId('project-list-section')
 
-      await waitFor(() => {
-        const groups = screen.getAllByTestId('sidebar-group')
-        const sections = sidebarConfigs.dashboard.sections
-        expect(groups.length).toBeGreaterThanOrEqual(sections.length)
-      })
+      expect(navigationSections.length + projectListSections.length).toBe(
+        sections.length
+      )
     })
   })
 
   describe('Project Sidebar', () => {
+    beforeEach(() => {
+      mockUseSidebarContext.mockReturnValue('project')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: mockMembers,
+      })
+    })
+
     it('should render all project sections', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
 
       await waitFor(() => {
-        expect(screen.getByText('Project Settings')).toBeInTheDocument()
-        expect(screen.getByText('Daily Scrum List')).toBeInTheDocument()
+        expect(screen.getByText('Project List')).toBeInTheDocument()
+        // Both ActionSection and MemberListSection have "Members" as title
         const membersElements = screen.getAllByText('Members')
         expect(membersElements.length).toBeGreaterThan(0)
       })
     })
 
-    it('should render project settings section', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
+    it('should render member list with members', async () => {
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
+
+      await waitFor(() => {
+        expect(screen.getByTestId('member-list-section')).toBeInTheDocument()
+        expect(screen.getByText('Alice')).toBeInTheDocument()
+        expect(screen.getByText('Bob')).toBeInTheDocument()
+      })
+    })
+
+    it('should render action section', async () => {
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
+
+      await waitFor(() => {
+        const actionSection = screen.getByTestId('action-section')
+        expect(actionSection).toBeInTheDocument()
+        expect(screen.getByText('프로젝트 참가 링크 생성')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Project Settings Sidebar', () => {
+    beforeEach(() => {
+      mockUseSidebarContext.mockReturnValue('project-settings')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: undefined,
+        members: undefined,
+      })
+    })
+
+    it('should render project settings sections', async () => {
+      renderWithRouter(<AppSidebar />, {
+        initialEntries: ['/projects/42/settings'],
+      })
 
       await waitFor(() => {
         expect(screen.getByText('Project Settings')).toBeInTheDocument()
       })
     })
 
-    it('should render daily scrum section', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
+    it('should render all settings navigation items', async () => {
+      renderWithRouter(<AppSidebar />, {
+        initialEntries: ['/projects/42/settings'],
+      })
 
       await waitFor(() => {
-        expect(screen.getByText('Daily Scrum List')).toBeInTheDocument()
+        expect(screen.getByText('User Profile')).toBeInTheDocument()
+        expect(screen.getByText('Project Management')).toBeInTheDocument()
+        expect(screen.getByText('Database Management')).toBeInTheDocument()
       })
     })
+  })
 
-    it('should use correct projectUrl in URLs', async () => {
+  describe('Data Loading', () => {
+    it('should handle empty project list', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
+      mockUseSidebarData.mockReturnValue({
+        projects: [],
+        members: undefined,
+      })
+
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
+
+      expect(screen.getByTestId('project-list-section')).toBeInTheDocument()
+    })
+
+    it('should handle empty member list', () => {
+      mockUseSidebarContext.mockReturnValue('project')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: [],
+      })
+
       renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
 
-      await waitFor(() => {
-        const settingsLinks = screen.getAllByRole('link', { name: /Settings/i })
-        const projectSettingsLink = settingsLinks.find(link =>
-          link.getAttribute('href')?.includes('/projects/42/settings')
-        )
-        expect(projectSettingsLink).toBeInTheDocument()
-      })
-    })
-
-    it('should have correct number of groups for project', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
-
-      await waitFor(() => {
-        const groups = screen.getAllByTestId('sidebar-group')
-        const sections = sidebarConfigs.project.sections
-        expect(groups.length).toBeGreaterThanOrEqual(sections.length)
-      })
+      expect(screen.getByTestId('member-list-section')).toBeInTheDocument()
     })
   })
 
-  describe('Active state', () => {
-    it('should mark current page as active in dashboard', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-
-      await waitFor(() => {
-        const buttons = screen.getAllByRole('button')
-        expect(buttons.length).toBeGreaterThan(0)
+  describe('Context Switching', () => {
+    it('should switch from dashboard to project context', async () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
+      const { rerender } = renderWithRouter(<AppSidebar />, {
+        initialEntries: ['/dashboard'],
       })
-    })
 
-    it('should mark current project as active', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
+      expect(screen.getByText('Project List')).toBeInTheDocument()
 
-      await waitFor(() => {
-        const buttons = screen.getAllByRole('button')
-        expect(buttons.length).toBeGreaterThan(0)
+      // Switch context
+      mockUseSidebarContext.mockReturnValue('project')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: mockMembers,
       })
-    })
-  })
 
-  describe('Navigation', () => {
-    it('should render all project links', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
+      rerender(<AppSidebar />)
 
       await waitFor(() => {
-        expect(screen.getByText('Project List')).toBeInTheDocument()
-      })
-    })
-
-    it('should render settings link in dashboard', async () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-
-      await waitFor(() => {
-        const settingsElements = screen.getAllByText('Settings')
-        expect(settingsElements.length).toBeGreaterThan(0)
+        expect(screen.getByTestId('member-list-section')).toBeInTheDocument()
       })
     })
   })
