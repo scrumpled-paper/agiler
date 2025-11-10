@@ -30,13 +30,13 @@ flags:
     paths:
       - apps/backend/
     target: 60% # 백엔드 커버리지 목표치를 60%로 설정합니다.
+    ignore:
+      - "src/main/java/scrumpledpaper/agiler/auth/**"
+      - "src/main/java/scrumpledpaper/agiler/common/config/**"
+      - "src/main/java/scrumpledpaper/agiler/user/controller/AuthController.java"
 
 # 커버리지 계산에서 제외할 경로를 지정합니다.
 ignore:
   - "**/node_modules"
   - "apps/backend/build"
-  - "apps/backend/config/S3Config.java"
   - "apps/frontend/dist"
-  - "apps/backend/src/main/java/scrumpledpaper/agiler/auth/**"
-  - "apps/backend/src/main/java/scrumpledpaper/agiler/common/config/**"
-  - "apps/backend/src/main/java/scrumpledpaper/agiler/user/controller/AuthController.java"
