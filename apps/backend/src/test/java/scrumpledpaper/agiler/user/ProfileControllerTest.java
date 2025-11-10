@@ -1,9 +1,8 @@
 package scrumpledpaper.agiler.user;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,10 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.PageResDto;
@@ -26,6 +21,10 @@ import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @Transactional
@@ -60,17 +59,17 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles", url)
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles", url)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProfileResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProfileResDto>>() {
-				});
+					new TypeReference<PageResDto<ProfileResDto>>() {
+					});
 
 			assertThat(page.getTotalElements()).isEqualTo(3);
 			assertThat(page.getContents()).hasSize(3);
@@ -85,12 +84,12 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles", nonExistingUrl)
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles", nonExistingUrl)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
@@ -107,12 +106,12 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles", url)
-						.header("Authorization", anotherAuth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles", url)
+									.cookie(new Cookie("accessToken", anotherAuth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isForbidden())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
@@ -128,12 +127,12 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles", url)
-						.header("Authorization", auth.bearer())
-						.param("page", "99")
-						.param("size", "10"))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles", url)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "99")
+									.param("size", "10"))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PAGE_NOT_FOUND.getCode());
@@ -159,11 +158,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/me", url)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/me", url)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
@@ -187,11 +186,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/me", url)
-						.header("Authorization", memberAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/me", url)
+									.cookie(new Cookie("accessToken", memberAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
@@ -212,11 +211,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/me", invalidProjectUrl)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/me", invalidProjectUrl)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
@@ -233,11 +232,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/me", url)
-						.header("Authorization", nonMemberAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/me", url)
+									.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isForbidden())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
@@ -265,11 +264,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, memberProfile.getId())
-						.header("Authorization", ownerAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, memberProfile.getId())
+									.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
@@ -294,11 +293,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, ownerProfile.getId())
-						.header("Authorization", memberAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, ownerProfile.getId())
+									.cookie(new Cookie("accessToken", memberAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
@@ -319,11 +318,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, myProfile.getId())
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, myProfile.getId())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
@@ -342,11 +341,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, nonExistentProfileId)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, nonExistentProfileId)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_PROFILE_NOT_FOUND.getMessage());
@@ -362,11 +361,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", invalidUrl, profileId)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", invalidUrl, profileId)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
@@ -384,11 +383,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, ownerProfile.getId())
-						.header("Authorization", nonMemberAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url, ownerProfile.getId())
+									.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isForbidden())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
@@ -408,11 +407,11 @@ public class ProfileControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url1, profile2.getId())
-						.header("Authorization", auth1.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}/profiles/{profileId}", url1, profile2.getId())
+									.cookie(new Cookie("accessToken", auth1.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_PROFILE_NOT_FOUND.getMessage());

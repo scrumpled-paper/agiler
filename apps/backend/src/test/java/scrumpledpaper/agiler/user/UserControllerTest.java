@@ -1,6 +1,7 @@
 package scrumpledpaper.agiler.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -54,16 +55,16 @@ public class UserControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			// when
 			String res = mockMvc.perform(
-					get("/api/v1/users")
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/users")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			UserResDto userResDto = objectMapper.readValue(res, UserResDto.class);
 			assertThat(userResDto.nickname()).isEqualTo(auth.getUser().getNickname());
 			Image image = imageRepository.findById(auth.getUser().getImageId())
-				.orElseThrow();
+					.orElseThrow();
 			assertThat(userResDto.imageUrl()).isEqualTo(image.getUrl());
 		}
 
@@ -75,11 +76,11 @@ public class UserControllerTest {
 			String accessToken = testDataFactory.createAccessToken(user);
 			// when
 			String res = mockMvc.perform(
-					get("/api/v1/users")
-						.header("Authorization", "Bearer " + accessToken)
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/users")
+									.cookie(new Cookie("accessToken", accessToken))
+									.contentType(MediaType.APPLICATION_JSON))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			assertThat(res).contains(ErrorCode.IMAGE_NOT_FOUND.getCode());
 		}
@@ -103,14 +104,14 @@ public class UserControllerTest {
 			String updateJson = objectMapper.writeValueAsString(updateReqDto);
 			// when
 			mockMvc.perform(
-					patch("/api/v1/users")
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(updateJson))
-				.andExpect(status().isNoContent());
+							patch("/api/v1/users")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(updateJson))
+					.andExpect(status().isNoContent());
 			// then
 			User updatedUser = userRepository.findById(auth.getUser().getId())
-				.orElseThrow();
+					.orElseThrow();
 			assertThat(updatedUser.getNickname()).isEqualTo(updateNickname);
 		}
 

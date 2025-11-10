@@ -1,27 +1,22 @@
 package scrumpledpaper.agiler.common;
 
+import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import scrumpledpaper.agiler.fixture.*;
+import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.project.entity.Role;
+import scrumpledpaper.agiler.project.repository.ProfileRepository;
+import scrumpledpaper.agiler.project.repository.ProjectRepository;
+import scrumpledpaper.agiler.user.entity.User;
+import scrumpledpaper.agiler.user.repository.UserRepository;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.stereotype.Component;
-
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import scrumpledpaper.agiler.fixture.ImageFixture;
-import scrumpledpaper.agiler.fixture.ProfileFixture;
-import scrumpledpaper.agiler.fixture.ProjectFixture;
-import scrumpledpaper.agiler.fixture.TokenFixture;
-import scrumpledpaper.agiler.fixture.UserFixture;
-import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.image.repository.ImageRepository;
-import scrumpledpaper.agiler.project.entity.Project;
-import scrumpledpaper.agiler.project.repository.ProjectRepository;
-import scrumpledpaper.agiler.project.entity.Profile;
-import scrumpledpaper.agiler.project.entity.Role;
-import scrumpledpaper.agiler.user.entity.User;
-import scrumpledpaper.agiler.project.repository.ProfileRepository;
-import scrumpledpaper.agiler.user.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
