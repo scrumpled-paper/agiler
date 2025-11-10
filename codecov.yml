@@ -37,5 +37,6 @@ ignore:
   - "apps/backend/build"
   - "apps/backend/config/S3Config.java"
   - "apps/frontend/dist"
-  - "apps/backend/src/main/java/scrumpledpaper/agiler/auth"
-
+  - "apps/backend/src/main/java/scrumpledpaper/agiler/auth/**"
+  - "apps/backend/src/main/java/scrumpledpaper/agiler/common/config/**"
+  - "apps/backend/src/main/java/scrumpledpaper/agiler/user/controller/AuthController.java"
