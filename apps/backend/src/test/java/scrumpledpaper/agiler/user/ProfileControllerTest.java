@@ -420,6 +420,127 @@ public class ProfileControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_PROFILE_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Update Project Profile Test")
+	class UpdateProjectProfileTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 프로젝트 프로필 수정 성공")
+		public void updateProjectProfileSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
+				"NewNickname",
+				"newEmail@example.com",
+				"New description");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/profiles", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Profile updatedProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			assertThat(updatedProfile.getNickname()).isEqualTo(updateReqDto.nickname());
+			assertThat(updatedProfile.getEmail()).isEqualTo(updateReqDto.email());
+			assertThat(updatedProfile.getDescription()).isEqualTo(updateReqDto.description());
+		}
+
+		@Test
+		@DisplayName("204 - 기존 값과 같은 값일때 프로필 수정 성공")
+		public void updateProjectProfileWithSameValuesSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
+				profile.getNickname(),
+				profile.getEmail(),
+				profile.getDescription()
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/profiles", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Profile updatedProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			assertThat(updatedProfile.getNickname()).isEqualTo(updateReqDto.nickname());
+			assertThat(updatedProfile.getEmail()).isEqualTo(updateReqDto.email());
+			assertThat(updatedProfile.getDescription()).isEqualTo(updateReqDto.description());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트")
+		public void updateProfileProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String invalidUrl = "invalid_url";
+			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
+				"NewNickname",
+				"newEmail@example.com",
+				"New description");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/profiles", invalidUrl)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 프로필 수정 시도")
+		public void updateProfileNotMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
+				"NewNickname",
+				"newEmail@example.com",
+				"New description");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/profiles", url)
+						.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
 }
 
 
