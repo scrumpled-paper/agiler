@@ -1,14 +1,13 @@
 package scrumpledpaper.agiler;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
-import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.TestDataFactory;
-import scrumpledpaper.agiler.common.utils.AuthTokenProvider;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.user.entity.User;
 
@@ -23,9 +22,6 @@ public class SecurityIntegrationTest {
 
     @Autowired
     private TestDataFactory testDataFactory;
-
-    @Autowired
-    private AuthTokenProvider authTokenProvider;
 
     @Test
     @DisplayName("공개 엔드포인트는 인증 없이 접근 가능해야 한다")
@@ -60,14 +56,13 @@ public class SecurityIntegrationTest {
     @DisplayName("보호된 엔드포인트는 유효한 토큰으로 접근 시 200 OK를 반환해야 한다")
     void protectedEndpointShouldReturn200WithValidToken() throws Exception {
         // Given
-        Image defaultImage = testDataFactory.createDefaultImage();
-        AuthContext auth = testDataFactory.createAuth(defaultImage);
-        User user = auth.getUser();
-        String validToken = authTokenProvider.createToken(user.getId());
+		Image image = testDataFactory.createDefaultImage();
+		User user = testDataFactory.createUser(image.getId());
+        String cookie = testDataFactory.createAccessToken(user);
 
         // When & Then
         mockMvc.perform(get("/api/v1/users")
-                        .header("Authorization", "Bearer " + validToken)
+						.cookie(new Cookie("accessToken", cookie))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

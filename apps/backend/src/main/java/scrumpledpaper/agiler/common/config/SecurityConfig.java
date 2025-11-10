@@ -36,7 +36,6 @@ public class SecurityConfig {
 			"/swagger-ui/**",
 			/* auth */
 			"/api/v1/auth/**",
-			"/oauth2/**",
 			/* health check */
 			"/actuator/**"
 	};
@@ -58,11 +57,11 @@ public class SecurityConfig {
 				)
 				.oauth2Login(oauth2 -> oauth2
 						.authorizationEndpoint(auth -> auth
-								.baseUri("/oauth2/authorization")
+								.baseUri("/api/oauth2/authorization")
 								.authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
 						)
 						.redirectionEndpoint(redirect -> redirect
-								.baseUri("/login/oauth2/code/*")
+								.baseUri("/api/login/oauth2/code/*")
 						)
 						.userInfoEndpoint(userInfo -> userInfo
 								.userService(customOAuth2UserService)

@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.image;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,10 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
-import scrumpledpaper.agiler.common.AuthContext;
+import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.fixture.ImageFixture;
-import scrumpledpaper.agiler.fixture.TokenFixture;
-import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlRequestDto;
@@ -23,7 +22,6 @@ import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.user.entity.User;
-import scrumpledpaper.agiler.user.repository.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,27 +37,23 @@ class S3IntegrationTest {
 	@Autowired
 	private ObjectMapper om;
 	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private TokenFixture tokenFixture;
+	private TestDataFactory testDataFactory;
 	@Autowired
 	private ImageRepository imageRepository;
-	private String accessToken;
 	@Autowired
 	private AmazonS3 amazonS3Client;
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 	private User user;
+	private String cookie;
 
 	@BeforeEach
 	void setUp() {
-		Image image = ImageFixture.createImage();
-		imageRepository.save(image);
-		User user = UserFixture.createUser(image);
+		Image image = testDataFactory.createDefaultImage();
+		User user = testDataFactory.createUser(image.getId());
 		this.user = user;
-		userRepository.save(user);
-		accessToken = tokenFixture.createAccessToken(user);
-		AuthContext authContext = new AuthContext(user, accessToken);
+		cookie = testDataFactory.createAccessToken(user);
+
 	}
 
 	@ParameterizedTest
@@ -78,7 +72,7 @@ class S3IntegrationTest {
 		String res = mockMvc.perform(
 						post("/api/v1/s3/pre-signed-url")
 								.contentType(MediaType.APPLICATION_JSON)
-								.header("Authorization", "Bearer " + accessToken)
+								.cookie(new Cookie("accessToken", cookie))
 								.content(om.writeValueAsString(req)))
 				.andExpect(status().isOk())
 				.andReturn()
@@ -111,7 +105,7 @@ class S3IntegrationTest {
 		mockMvc.perform(
 						post("/api/v1/s3/pre-signed-url")
 								.contentType(MediaType.APPLICATION_JSON)
-								.header("Authorization", "Bearer " + accessToken)
+								.cookie(new Cookie("accessToken", cookie))
 								.content(om.writeValueAsString(req)))
 				.andExpect(status().isBadRequest());
 	}
@@ -130,7 +124,7 @@ class S3IntegrationTest {
 		String res = mockMvc.perform(
 						post("/api/v1/s3/confirm-upload")
 								.contentType(MediaType.APPLICATION_JSON)
-								.header("Authorization", "Bearer " + accessToken)
+								.cookie(new Cookie("accessToken", cookie))
 								.content(om.writeValueAsString(req)))
 				.andExpect(status().isOk())
 				.andReturn()
@@ -160,7 +154,7 @@ class S3IntegrationTest {
 
 		// when
 		mockMvc.perform(delete("/api/v1/s3/{imageId}", image.getId())
-						.header("Authorization", "Bearer " + accessToken))
+						.cookie(new Cookie("accessToken", cookie)))
 				.andExpect(status().isNoContent());
 
 		// then
@@ -179,7 +173,7 @@ class S3IntegrationTest {
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/s3/{imageId}", nonExistentImageId)
-						.header("Authorization", "Bearer " + accessToken))
+						.cookie(new Cookie("accessToken", cookie)))
 				.andExpect(status().isNotFound());
 	}
 

@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.project;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -68,12 +69,12 @@ public class ProjectControllerTest {
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
 			String response = mockMvc.perform(
-					post("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(updateJson))
-				.andExpect(status().isCreated())
-				.andReturn().getResponse().getContentAsString();
+							post("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(updateJson))
+					.andExpect(status().isCreated())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			ProjectIdResDto projectIdResDto = objectMapper.readValue(response, ProjectIdResDto.class);
 			Project createdProject = testDataFactory.findProjectById(projectIdResDto.id());
@@ -84,8 +85,8 @@ public class ProjectControllerTest {
 			assertThat(createdProject.getSummary()).isEqualTo(createReqDto.summary());
 
 			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(
-				auth.getUser().getId(),
-				createdProject.getId()
+					auth.getUser().getId(),
+					createdProject.getId()
 			);
 			assertThat(ownerProfile.getRole()).isEqualTo(Role.OWNER);
 			assertThat(ownerProfile.getEmail()).isEqualTo(auth.getUser().getEmail());
@@ -103,12 +104,12 @@ public class ProjectControllerTest {
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 			// when
 			String response = mockMvc.perform(
-					post("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(updateJson))
-				.andExpect(status().isConflict())
-				.andReturn().getResponse().getContentAsString();
+							post("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(updateJson))
+					.andExpect(status().isConflict())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
 		}
@@ -131,12 +132,12 @@ public class ProjectControllerTest {
 			testDataFactory.createProject(url);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/check")
-						.header("Authorization", auth.bearer())
-						.param("url", url)
-				)
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/check")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("url", url)
+					)
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(response, ProjectCheckResDto.class);
 			assertThat(projectCheckResDto.isDuplicated()).isTrue();
@@ -150,12 +151,12 @@ public class ProjectControllerTest {
 			String url = "test-url_tag";
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/check")
-						.header("Authorization", auth.bearer())
-						.param("url", url)
-				)
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/check")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("url", url)
+					)
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			ProjectCheckResDto projectCheckResDto = objectMapper.readValue(response, ProjectCheckResDto.class);
 			assertThat(projectCheckResDto.isDuplicated()).isFalse();
@@ -163,16 +164,16 @@ public class ProjectControllerTest {
 
 		@ParameterizedTest
 		@ValueSource(strings = {
-			"test_url_tag",
-			"test__tag",
-			"_tag",
-			"test_",
-			"test",
-			"test#tag",
-			"test tag",
-			"test+tag_name",
-			"",
-			"very-long-project-name-here_very-long-tag-name-here-too"
+				"test_url_tag",
+				"test__tag",
+				"_tag",
+				"test_",
+				"test",
+				"test#tag",
+				"test tag",
+				"test+tag_name",
+				"",
+				"very-long-project-name-here_very-long-tag-name-here-too"
 		})
 		@DisplayName("400 - Invalid Project URL Format")
 		void invalidProjectUrlFormat(String invalidUrl) throws Exception {
@@ -180,10 +181,10 @@ public class ProjectControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			// when & then
 			mockMvc.perform(
-					get("/api/v1/projects/check")
-						.header("Authorization", auth.bearer())
-						.param("url", invalidUrl))
-				.andExpect(status().isBadRequest());
+							get("/api/v1/projects/check")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("url", invalidUrl))
+					.andExpect(status().isBadRequest());
 		}
 	}
 
@@ -203,17 +204,17 @@ public class ProjectControllerTest {
 			testDataFactory.createProjects(auth.getUser(), "project-url", 25);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					});
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(0);
 			assertThat(page.getTotalPages()).isEqualTo(3);
@@ -229,17 +230,17 @@ public class ProjectControllerTest {
 			testDataFactory.createProjects(auth.getUser(), "project-url", 25);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "1")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "1")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					});
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(1);
 			assertThat(page.getTotalPages()).isEqualTo(3);
@@ -255,17 +256,17 @@ public class ProjectControllerTest {
 			testDataFactory.createProjects(auth.getUser(), "project-url", 25);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "2")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "2")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					});
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(2);
 			assertThat(page.getTotalPages()).isEqualTo(3);
@@ -281,16 +282,16 @@ public class ProjectControllerTest {
 			testDataFactory.createProjects(auth.getUser(), "project-url", 25);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "1"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "1"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					});
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(1);
 			assertThat(page.getTotalPages()).isEqualTo(3);
@@ -305,17 +306,17 @@ public class ProjectControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					});
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(0);
 			assertThat(page.getTotalPages()).isEqualTo(0);
@@ -331,12 +332,12 @@ public class ProjectControllerTest {
 			testDataFactory.createProjects(auth.getUser(), "project-url", 25);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "10")
-						.param("size", "10"))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "10")
+									.param("size", "10"))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			assertThat(response).contains(ErrorCode.PAGE_NOT_FOUND.getCode());
 		}
@@ -356,18 +357,18 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(
-				response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				}
+					response,
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					}
 			);
 
 			assertThat(page.getContents()).hasSize(5);
@@ -387,47 +388,47 @@ public class ProjectControllerTest {
 
 			for (int i = 1; i <= 25; i++) {
 				testDataFactory.createProjectWithTime(
-					"project_" + i,
-					auth.getUser(),
-					baseTime.minusHours(25 - i)
+						"project_" + i,
+						auth.getUser(),
+						baseTime.minusHours(25 - i)
 				); // 25가 가장 최신
 			}
 
 			// when
 			PageResDto<ProjectInfoResDto> page1 = objectMapper.readValue(
-				mockMvc.perform(
-						get("/api/v1/projects/info")
-							.header("Authorization", auth.bearer())
-							.param("page", "0")
-							.param("size", "10"))
-					.andExpect(status().isOk())
-					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				}
+					mockMvc.perform(
+									get("/api/v1/projects/info")
+											.cookie(new Cookie("accessToken", auth.getToken()))
+											.param("page", "0")
+											.param("size", "10"))
+							.andExpect(status().isOk())
+							.andReturn().getResponse().getContentAsString(),
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					}
 			);
 
 			PageResDto<ProjectInfoResDto> page2 = objectMapper.readValue(
-				mockMvc.perform(
-						get("/api/v1/projects/info")
-							.header("Authorization", auth.bearer())
-							.param("page", "1")
-							.param("size", "10"))
-					.andExpect(status().isOk())
-					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				}
+					mockMvc.perform(
+									get("/api/v1/projects/info")
+											.cookie(new Cookie("accessToken", auth.getToken()))
+											.param("page", "1")
+											.param("size", "10"))
+							.andExpect(status().isOk())
+							.andReturn().getResponse().getContentAsString(),
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					}
 			);
 
 			PageResDto<ProjectInfoResDto> page3 = objectMapper.readValue(
-				mockMvc.perform(
-						get("/api/v1/projects/info")
-							.header("Authorization", auth.bearer())
-							.param("page", "2")
-							.param("size", "10"))
-					.andExpect(status().isOk())
-					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				}
+					mockMvc.perform(
+									get("/api/v1/projects/info")
+											.cookie(new Cookie("accessToken", auth.getToken()))
+											.param("page", "2")
+											.param("size", "10"))
+							.andExpect(status().isOk())
+							.andReturn().getResponse().getContentAsString(),
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					}
 			);
 
 			// then
@@ -451,11 +452,11 @@ public class ProjectControllerTest {
 			LocalDateTime baseTime = LocalDateTime.now();
 
 			Project project1 = testDataFactory.createProjectWithTime("project_1", owner.getUser(),
-				baseTime.minusDays(10));
+					baseTime.minusDays(10));
 			Project project2 = testDataFactory.createProjectWithTime("project_2", owner.getUser(),
-				baseTime.minusDays(9));
+					baseTime.minusDays(9));
 			Project project3 = testDataFactory.createProjectWithTime("project_3", owner.getUser(),
-				baseTime.minusDays(8));
+					baseTime.minusDays(8));
 
 			AuthContext member = testDataFactory.createAuth(testDataFactory.createDefaultImage());
 
@@ -466,18 +467,18 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", member.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", member.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectInfoResDto> page = objectMapper.readValue(
-				response,
-				new TypeReference<PageResDto<ProjectInfoResDto>>() {
-				}
+					response,
+					new TypeReference<PageResDto<ProjectInfoResDto>>() {
+					}
 			);
 			assertThat(page.getContents().get(0).url()).isEqualTo("project_2");
 			assertThat(page.getContents().get(1).url()).isEqualTo("project_1");
@@ -486,7 +487,7 @@ public class ProjectControllerTest {
 
 		@ParameterizedTest
 		@ValueSource(strings = {
-			"createdAt"
+				"createdAt"
 		})
 		@DisplayName("200 - @Valid 검증 통과")
 		void validatePageReqDto(String sort) throws Exception {
@@ -494,24 +495,24 @@ public class ProjectControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			// when & then
 			mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10")
-						.param("sort", sort))
-				.andExpect(status().isOk());
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10")
+									.param("sort", sort))
+					.andExpect(status().isOk());
 		}
 
 		@ParameterizedTest
 		@ValueSource(strings = {
-			"CREATEDAT",
-			"CreatedAt",
-			"createdat",
-			"createdat",
-			"NonExistingField",
-			"12345",
-			"",
-			"created-at"
+				"CREATEDAT",
+				"CreatedAt",
+				"createdat",
+				"createdat",
+				"NonExistingField",
+				"12345",
+				"",
+				"created-at"
 		})
 		@DisplayName("400 - @Valid 검증 실패")
 		void invalidatePageReqDto(String sort) throws Exception {
@@ -519,13 +520,13 @@ public class ProjectControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/info")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10")
-						.param("sort", sort))
-				.andExpect(status().isBadRequest())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/info")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10")
+									.param("sort", sort))
+					.andExpect(status().isBadRequest())
+					.andReturn().getResponse().getContentAsString();
 			// then
 			assertThat(response).contains(ErrorCode.INVALID_REQUEST.getCode());
 		}
@@ -548,17 +549,17 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(0);
@@ -576,17 +577,17 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "1")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "1")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(1);
@@ -604,17 +605,17 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "2")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "2")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(2);
@@ -632,16 +633,16 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "1"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "1"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(1);
@@ -658,17 +659,17 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				});
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					});
 
 			assertThat(page.getPageSize()).isEqualTo(10);
 			assertThat(page.getCurrentPage()).isEqualTo(0);
@@ -686,12 +687,12 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "3")
-						.param("size", "10"))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "3")
+									.param("size", "10"))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PAGE_NOT_FOUND.getCode());
@@ -712,18 +713,18 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(
-				response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				}
+					response,
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					}
 			);
 
 			assertThat(page.getContents()).hasSize(5);
@@ -743,47 +744,47 @@ public class ProjectControllerTest {
 
 			for (int i = 1; i <= 25; i++) {
 				testDataFactory.createProjectWithTime(
-					"project_" + i,
-					auth.getUser(),
-					baseTime.minusHours(25 - i)
+						"project_" + i,
+						auth.getUser(),
+						baseTime.minusHours(25 - i)
 				); // 25가 가장 최신
 			}
 
 			// when
 			PageResDto<ProjectSideResDto> page1 = objectMapper.readValue(
-				mockMvc.perform(
-						get("/api/v1/projects")
-							.header("Authorization", auth.bearer())
-							.param("page", "0")
-							.param("size", "10"))
-					.andExpect(status().isOk())
-					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				}
+					mockMvc.perform(
+									get("/api/v1/projects")
+											.cookie(new Cookie("accessToken", auth.getToken()))
+											.param("page", "0")
+											.param("size", "10"))
+							.andExpect(status().isOk())
+							.andReturn().getResponse().getContentAsString(),
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					}
 			);
 
 			PageResDto<ProjectSideResDto> page2 = objectMapper.readValue(
-				mockMvc.perform(
-						get("/api/v1/projects")
-							.header("Authorization", auth.bearer())
-							.param("page", "1")
-							.param("size", "10"))
-					.andExpect(status().isOk())
-					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				}
+					mockMvc.perform(
+									get("/api/v1/projects")
+											.cookie(new Cookie("accessToken", auth.getToken()))
+											.param("page", "1")
+											.param("size", "10"))
+							.andExpect(status().isOk())
+							.andReturn().getResponse().getContentAsString(),
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					}
 			);
 
 			PageResDto<ProjectSideResDto> page3 = objectMapper.readValue(
-				mockMvc.perform(
-						get("/api/v1/projects")
-							.header("Authorization", auth.bearer())
-							.param("page", "2")
-							.param("size", "10"))
-					.andExpect(status().isOk())
-					.andReturn().getResponse().getContentAsString(),
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				}
+					mockMvc.perform(
+									get("/api/v1/projects")
+											.cookie(new Cookie("accessToken", auth.getToken()))
+											.param("page", "2")
+											.param("size", "10"))
+							.andExpect(status().isOk())
+							.andReturn().getResponse().getContentAsString(),
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					}
 			);
 
 			// then
@@ -808,11 +809,11 @@ public class ProjectControllerTest {
 			LocalDateTime baseTime = LocalDateTime.now();
 
 			Project project1 = testDataFactory.createProjectWithTime("project_1", owner.getUser(),
-				baseTime.minusDays(10));
+					baseTime.minusDays(10));
 			Project project2 = testDataFactory.createProjectWithTime("project_2", owner.getUser(),
-				baseTime.minusDays(9));
+					baseTime.minusDays(9));
 			Project project3 = testDataFactory.createProjectWithTime("project_3", owner.getUser(),
-				baseTime.minusDays(8));
+					baseTime.minusDays(8));
 
 			AuthContext member = testDataFactory.createAuth(testDataFactory.createDefaultImage());
 
@@ -823,18 +824,18 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", member.bearer())
-						.param("page", "0")
-						.param("size", "10"))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", member.getToken()))
+									.param("page", "0")
+									.param("size", "10"))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			PageResDto<ProjectSideResDto> page = objectMapper.readValue(
-				response,
-				new TypeReference<PageResDto<ProjectSideResDto>>() {
-				}
+					response,
+					new TypeReference<PageResDto<ProjectSideResDto>>() {
+					}
 			);
 
 			assertThat(page.getContents().get(0).url()).isEqualTo("project_2");
@@ -851,23 +852,23 @@ public class ProjectControllerTest {
 
 			// when & then
 			mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10")
-						.param("sort", sort))
-				.andExpect(status().isOk());
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10")
+									.param("sort", sort))
+					.andExpect(status().isOk());
 		}
 
 		@ParameterizedTest
 		@ValueSource(strings = {
-			"CREATEDAT",
-			"CreatedAt",
-			"createdat",
-			"NonExistingField",
-			"12345",
-			"",
-			"created-at"
+				"CREATEDAT",
+				"CreatedAt",
+				"createdat",
+				"NonExistingField",
+				"12345",
+				"",
+				"created-at"
 		})
 		@DisplayName("400 - @Valid 검증 실패")
 		void invalidatePageReqDto(String sort) throws Exception {
@@ -876,13 +877,13 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects")
-						.header("Authorization", auth.bearer())
-						.param("page", "0")
-						.param("size", "10")
-						.param("sort", sort))
-				.andExpect(status().isBadRequest())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.param("page", "0")
+									.param("size", "10")
+									.param("sort", sort))
+					.andExpect(status().isBadRequest())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.INVALID_REQUEST.getCode());
@@ -908,11 +909,11 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}", project.getUrl())
-						.header("Authorization", auth.bearer())
-				)
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}", project.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+					)
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProjectDetailResDto projectDetailResDto = objectMapper.readValue(response, ProjectDetailResDto.class);
@@ -932,11 +933,11 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}", project.getUrl())
-						.header("Authorization", auth.bearer())
-				)
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}", project.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+					)
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProjectDetailResDto projectDetailResDto = objectMapper.readValue(response, ProjectDetailResDto.class);
@@ -954,11 +955,11 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}", nonExistingProjectUrl)
-						.header("Authorization", auth.bearer())
-				)
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}", nonExistingProjectUrl)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+					)
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
@@ -973,11 +974,11 @@ public class ProjectControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}", project.getUrl())
-						.header("Authorization", auth.bearer())
-				)
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
+							get("/api/v1/projects/{projectUrl}", project.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+					)
+					.andExpect(status().isForbidden())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
@@ -1000,20 +1001,20 @@ public class ProjectControllerTest {
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
-				"새로운 제목",
-				"another_url",
-				"새로운 요약"
+					"새로운 제목",
+					"another_url",
+					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}", url)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(requestBody))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							put("/api/v1/projects/{projectUrl}", url)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(requestBody))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProjectIdResDto result = objectMapper.readValue(response, ProjectIdResDto.class);
@@ -1033,20 +1034,20 @@ public class ProjectControllerTest {
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
-				"새로운 제목",
-				"test_url",
-				"새로운 요약"
+					"새로운 제목",
+					"test_url",
+					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}", url)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(requestBody))
-				.andExpect(status().isOk())
-				.andReturn().getResponse().getContentAsString();
+							put("/api/v1/projects/{projectUrl}", url)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(requestBody))
+					.andExpect(status().isOk())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			ProjectIdResDto result = objectMapper.readValue(response, ProjectIdResDto.class);
@@ -1064,19 +1065,19 @@ public class ProjectControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
-				"새로운 제목",
-				"test_url",
-				"새로운 요약"
+					"새로운 제목",
+					"test_url",
+					"새로운 요약"
 			);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}", "non-exist_url")
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(updateReqDto)))
-				.andExpect(status().isNotFound())
-				.andReturn().getResponse().getContentAsString();
+							put("/api/v1/projects/{projectUrl}", "non-exist_url")
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(objectMapper.writeValueAsString(updateReqDto)))
+					.andExpect(status().isNotFound())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getCode());
@@ -1091,20 +1092,20 @@ public class ProjectControllerTest {
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
-				"새로운 제목",
-				"another_url",
-				"새로운 요약"
+					"새로운 제목",
+					"another_url",
+					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
 
 			// when & then
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}", url)
-						.header("Authorization", anotherAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(updateReqDto)))
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
+							put("/api/v1/projects/{projectUrl}", url)
+									.cookie(new Cookie("accessToken", anotherAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(objectMapper.writeValueAsString(updateReqDto)))
+					.andExpect(status().isForbidden())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getCode());
@@ -1120,20 +1121,20 @@ public class ProjectControllerTest {
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(anotherAuth.getUser(), project, Role.MEMBER);
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
-				"새로운 제목",
-				"another_url",
-				"새로운 요약"
+					"새로운 제목",
+					"another_url",
+					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
 
 			// when & then
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}", url)
-						.header("Authorization", anotherAuth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(updateReqDto)))
-				.andExpect(status().isForbidden())
-				.andReturn().getResponse().getContentAsString();
+							put("/api/v1/projects/{projectUrl}", url)
+									.cookie(new Cookie("accessToken", anotherAuth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(objectMapper.writeValueAsString(updateReqDto)))
+					.andExpect(status().isForbidden())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_OWNER_REQUIRED.getCode());
@@ -1149,20 +1150,20 @@ public class ProjectControllerTest {
 			Project project1 = testDataFactory.createProjectAndOwnerProfile(url1, auth.getUser());
 			Project project2 = testDataFactory.createProjectAndOwnerProfile(url2, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
-				"새로운 제목",
-				url2,
-				"새로운 요약"
+					"새로운 제목",
+					url2,
+					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}", url1)
-						.header("Authorization", auth.bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(requestBody))
-				.andExpect(status().isConflict())
-				.andReturn().getResponse().getContentAsString();
+							put("/api/v1/projects/{projectUrl}", url1)
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(requestBody))
+					.andExpect(status().isConflict())
+					.andReturn().getResponse().getContentAsString();
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
