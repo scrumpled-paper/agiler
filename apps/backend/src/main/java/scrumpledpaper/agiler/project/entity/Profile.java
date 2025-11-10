@@ -52,4 +52,10 @@ public class Profile extends BaseEntity {
 
 	@Column(name = "description")
 	private String description;
+
+	public void updateDetails(String nickname, String email, String description) {
+		this.nickname = nickname;
+		this.email = email;
+		this.description = description;
+	}
 }

@@ -1,8 +1,9 @@
 package scrumpledpaper.agiler.user;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.Cookie;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.PageResDto;
@@ -18,13 +24,10 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @Transactional
@@ -166,7 +169,7 @@ public class ProfileControllerTest {
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
-			assertThat(profileResDto.memberId()).isEqualTo(profile.getId());
+			assertThat(profileResDto.profileId()).isEqualTo(profile.getId());
 			assertThat(profileResDto.nickname()).isEqualTo(profile.getNickname());
 			assertThat(profileResDto.imageUrl()).isEqualTo(defaultImage.getUrl());
 			assertThat(profileResDto.role()).isEqualTo(profile.getRole().name());
@@ -194,7 +197,7 @@ public class ProfileControllerTest {
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
-			assertThat(profileResDto.memberId()).isEqualTo(profile.getId());
+			assertThat(profileResDto.profileId()).isEqualTo(profile.getId());
 			assertThat(profileResDto.nickname()).isEqualTo(profile.getNickname());
 			assertThat(profileResDto.imageUrl()).isEqualTo(defaultImage.getUrl());
 			assertThat(profileResDto.role()).isEqualTo(profile.getRole().name());
@@ -272,7 +275,7 @@ public class ProfileControllerTest {
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
-			assertThat(profileResDto.memberId()).isEqualTo(memberProfile.getId());
+			assertThat(profileResDto.profileId()).isEqualTo(memberProfile.getId());
 			assertThat(profileResDto.nickname()).isEqualTo(memberProfile.getNickname());
 			assertThat(profileResDto.imageUrl()).isEqualTo(defaultImage.getUrl());
 			assertThat(profileResDto.role()).isEqualTo(Role.MEMBER.name());
@@ -301,7 +304,7 @@ public class ProfileControllerTest {
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
-			assertThat(profileResDto.memberId()).isEqualTo(ownerProfile.getId());
+			assertThat(profileResDto.profileId()).isEqualTo(ownerProfile.getId());
 			assertThat(profileResDto.nickname()).isEqualTo(ownerProfile.getNickname());
 			assertThat(profileResDto.role()).isEqualTo(Role.OWNER.name());
 			assertThat(profileResDto.email()).isEqualTo(ownerAuth.getUser().getEmail());
@@ -326,7 +329,7 @@ public class ProfileControllerTest {
 
 			// then
 			ProfileResDto profileResDto = objectMapper.readValue(response, ProfileResDto.class);
-			assertThat(profileResDto.memberId()).isEqualTo(myProfile.getId());
+			assertThat(profileResDto.profileId()).isEqualTo(myProfile.getId());
 			assertThat(profileResDto.email()).isEqualTo(auth.getUser().getEmail());
 		}
 

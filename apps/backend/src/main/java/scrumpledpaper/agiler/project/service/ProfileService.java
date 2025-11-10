@@ -11,6 +11,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
@@ -77,5 +78,15 @@ public class ProfileService {
 			.orElse("");
 
 		return profileMapper.toProfileResDto(profile, imageUrl);
+	}
+
+	public void updateProfile(long userId, long projectId, ProfileUpdateReqDto profileUpdateReqDto) {
+		Profile profile = getProfileByUserIdAndProjectId(userId, projectId);
+
+		profile.updateDetails(
+			profileUpdateReqDto.nickname(),
+			profileUpdateReqDto.email(),
+			profileUpdateReqDto.description()
+		);
 	}
 }
