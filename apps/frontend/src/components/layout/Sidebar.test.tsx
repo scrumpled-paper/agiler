@@ -1,16 +1,56 @@
-import { describe, it, expect, vi } from 'vitest'
-import { screen } from '@testing-library/react'
-import { AppSidebar } from './Sidebar'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { screen, waitFor } from '@testing-library/react'
+import { AppSidebar } from './sidebar/AppSidebar'
 import { renderWithRouter } from '@/test-utils/render-with-router'
-import { getDashboardSidebar, getProjectSidebar } from '@/lib/sidebar-config'
+import { sidebarConfigs } from '@/lib/sidebar/config'
+import type { ProjectInfo, ProjectMember } from '@/types'
+import type { NavigationSectionProps } from './sidebar/sections/NavigationSection'
+import type { NavigationItem } from '@/lib/sidebar/types'
+import type { ProjectListSectionProps } from './sidebar/sections/ProjectListSection'
+import type { MemberListSectionProps } from './sidebar/sections/MemberListSection'
+import type { ActionSectionProps } from './sidebar/sections/ActionSection'
 
 interface SidebarMenuButtonProps {
   children: React.ReactNode
   isActive?: boolean
 }
 
+// --- Mock Data ---
+const mockProjects: ProjectInfo[] = [
+  {
+    title: 'Project 1',
+    url: '/projects/1',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Test project 1',
+  },
+  {
+    title: 'Project 2',
+    url: '/projects/2',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Test project 2',
+  },
+]
+
+const mockMembers: ProjectMember[] = [
+  {
+    peopleId: 1,
+    nickname: 'Alice',
+    email: 'alice@example.com',
+    imageUrl: 'https://placehold.co/100x100',
+    role: 'Developer',
+    description: 'Frontend developer',
+  },
+  {
+    peopleId: 2,
+    nickname: 'Bob',
+    email: 'bob@example.com',
+    imageUrl: 'https://placehold.co/100x100',
+    role: 'Designer',
+    description: 'UI/UX designer',
+  },
+]
+
 // --- Mocks ---
-// AppSidebar가 사용하는 UI 프리미티브 컴포넌트들을 간단한 태그로 모킹합니다.
 vi.mock('@/components/ui/sidebar', () => ({
   Sidebar: ({ children }: { children: React.ReactNode }) => (
     <aside data-testid="sidebar">{children}</aside>
@@ -42,164 +82,273 @@ vi.mock('@/components/ui/sidebar', () => ({
   SidebarRail: () => <div data-testid="sidebar-rail" />,
 }))
 
-// 사용자 정보를 표시하는 자식 컴포넌트를 모킹합니다.
-vi.mock('@/components/layout/SidbarUserInfo', () => ({
-  SidebarUserInfo: ({ userName }: { userName: string }) => (
-    <div data-testid="user-info">{userName}</div>
+vi.mock('./sidebar/sections/UserInfoSection', () => ({
+  UserInfoSection: () => <div data-testid="user-info">Test User</div>,
+}))
+
+vi.mock('./sidebar/sections/NavigationSection', () => ({
+  NavigationSection: ({ section }: NavigationSectionProps) => (
+    <div data-testid="navigation-section">
+      {section.title && <div>{section.title}</div>}
+      {section.items.map((item: NavigationItem, index: number) => (
+        <a key={index} href={item.route}>
+          {item.label}
+        </a>
+      ))}
+    </div>
   ),
+}))
+
+vi.mock('./sidebar/sections/ProjectListSection', () => ({
+  ProjectListSection: ({ section, projects }: ProjectListSectionProps) => (
+    <div data-testid="project-list-section">
+      <div>{section.title}</div>
+      {projects?.map((project, index) => (
+        <a key={index} href={project.url}>
+          {project.title}
+        </a>
+      ))}
+    </div>
+  ),
+}))
+
+vi.mock('./sidebar/sections/MemberListSection', () => ({
+  MemberListSection: ({ section, members }: MemberListSectionProps) => (
+    <div data-testid="member-list-section">
+      <div>{section.title}</div>
+      {members?.map((member, index) => (
+        <div key={index}>{member.nickname}</div>
+      ))}
+    </div>
+  ),
+}))
+
+vi.mock('./sidebar/sections/ActionSection', () => ({
+  ActionSection: ({ section }: ActionSectionProps) => (
+    <div data-testid="action-section">
+      <div>{section.title}</div>
+      <button>{section.action.label}</button>
+    </div>
+  ),
+}))
+
+// Mock hooks
+const mockUseSidebarContext = vi.fn()
+const mockUseSidebarData = vi.fn()
+const mockUseSidebarParams = vi.fn()
+
+vi.mock('@/lib/sidebar/hooks', () => ({
+  useSidebarContext: () => mockUseSidebarContext(),
+  useSidebarData: () => mockUseSidebarData(),
+  useSidebarParams: () => mockUseSidebarParams(),
 }))
 
 // --- Tests ---
 describe('AppSidebar', () => {
-  // 섹션: 기본적인 렌더링을 확인합니다.
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    // Default mock returns
+    mockUseSidebarParams.mockReturnValue({ projectUrl: undefined })
+    mockUseSidebarData.mockReturnValue({
+      projects: mockProjects,
+      members: undefined,
+    })
+  })
+
   describe('Basic rendering', () => {
-    // 테스트: 사이드바의 기본 뼈대(<aside>)가 렌더링되는지 확인합니다.
     it('should render sidebar', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar')).toBeInTheDocument()
     })
 
-    // 테스트: 사이드바 헤더와 그 안의 유저 정보가 렌더링되는지 확인합니다.
     it('should render sidebar header with user info', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar-header')).toBeInTheDocument()
       expect(screen.getByTestId('user-info')).toBeInTheDocument()
-      expect(screen.getByText('user1')).toBeInTheDocument()
     })
 
-    // 테스트: 메뉴 항목들이 들어갈 메인 콘텐츠 영역이 렌더링되는지 확인합니다.
     it('should render sidebar content', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar-content')).toBeInTheDocument()
     })
 
-    // 테스트: 사이드바를 접고 펴는 데 사용되는 'rail' 영역이 렌더링되는지 확인합니다.
     it('should render sidebar rail', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
       expect(screen.getByTestId('sidebar-rail')).toBeInTheDocument()
     })
   })
 
-  // 섹션: 대시보드 관련 경로에 있을 때의 사이드바 동작을 확인합니다.
   describe('Dashboard Sidebar', () => {
-    // 테스트: 대시보드 사이드바의 모든 섹션 제목들이 렌더링되는지 확인합니다.
-    it('should render all dashboard sections', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const sections = getDashboardSidebar()
-      sections.forEach(section => {
-        expect(screen.getByText(section.title)).toBeInTheDocument()
+    beforeEach(() => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: undefined,
       })
     })
 
-    // 테스트: 프로젝트 목록 아이템들이 정상적으로 렌더링되는지 확인합니다.
-    it('should render project list items', () => {
+    it('should render all dashboard sections', async () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      expect(screen.getByText('Project 1')).toBeInTheDocument()
-      expect(screen.getByText('Project 2')).toBeInTheDocument()
+
+      await waitFor(() => {
+        expect(screen.getByText('Project List')).toBeInTheDocument()
+        expect(screen.getByText('Settings')).toBeInTheDocument()
+      })
     })
 
-    // 테스트: 'Settings' 섹션과 그 하위 메뉴가 렌더링되는지 확인합니다.
-    it('should render settings section', () => {
+    it('should render project list items', async () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      expect(screen.getByText('Settings')).toBeInTheDocument()
-      expect(screen.getByText('General Settings')).toBeInTheDocument()
+
+      await waitFor(() => {
+        expect(screen.getByTestId('project-list-section')).toBeInTheDocument()
+        expect(screen.getByText('Project 1')).toBeInTheDocument()
+        expect(screen.getByText('Project 2')).toBeInTheDocument()
+      })
     })
 
-    // 테스트: 렌더링된 그룹(섹션)의 수가 설정 파일의 섹션 수와 일치하는지 확인합니다.
-    it('should have correct number of groups', () => {
+    it('should have correct number of sections', () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const groups = screen.getAllByTestId('sidebar-group')
-      const sections = getDashboardSidebar()
-      expect(groups).toHaveLength(sections.length)
+      const sections = sidebarConfigs.dashboard.sections
+
+      // Navigation sections + project list section
+      const navigationSections = screen.getAllByTestId('navigation-section')
+      const projectListSections = screen.getAllByTestId('project-list-section')
+
+      expect(navigationSections.length + projectListSections.length).toBe(
+        sections.length
+      )
     })
   })
 
-  // 섹션: 특정 프로젝트 관련 경로에 있을 때의 사이드바 동작을 확인합니다.
   describe('Project Sidebar', () => {
-    // 테스트: 프로젝트 사이드바의 모든 섹션 제목들이 렌더링되는지 확인합니다.
-    it('should render all project sections', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
-      const sections = getProjectSidebar('1')
-      sections.forEach(section => {
-        expect(screen.getByText(section.title)).toBeInTheDocument()
+    beforeEach(() => {
+      mockUseSidebarContext.mockReturnValue('project')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: mockMembers,
       })
     })
 
-    // 테스트: 'Project Settings' 섹션이 렌더링되는지 확인합니다.
-    it('should render project settings section', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
-      expect(screen.getByText('Project Settings')).toBeInTheDocument()
-      expect(screen.getByText('Settings')).toBeInTheDocument()
-    })
-
-    // 테스트: 'Daily Scrum' 섹션이 렌더링되는지 확인합니다.
-    it('should render daily scrum section', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
-      expect(screen.getByText('Daily Scrum')).toBeInTheDocument()
-      expect(screen.getByText('Scrum List')).toBeInTheDocument()
-    })
-
-    // 테스트: URL의 projectId가 메뉴 링크에 동적으로 올바르게 반영되는지 확인합니다.
-    it('should use correct projectId in URLs', () => {
+    it('should render all project sections', async () => {
       renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
-      const settingsLink = screen.getByRole('link', { name: 'Settings' })
-      expect(settingsLink).toHaveAttribute('href', '/projects/42/settings')
-      const scrumLink = screen.getByRole('link', { name: 'Scrum List' })
-      expect(scrumLink).toHaveAttribute('href', '/projects/42/daily-scrum')
-    })
 
-    // 테스트: 프로젝트 페이지에서 렌더링된 그룹 수가 설정과 일치하는지 확인합니다.
-    it('should have correct number of groups for project', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
-      const groups = screen.getAllByTestId('sidebar-group')
-      const sections = getProjectSidebar('1')
-      expect(groups).toHaveLength(sections.length)
-    })
-  })
-
-  // 섹션: 현재 경로에 따라 메뉴가 '활성화' 상태가 되는지 확인합니다.
-  describe('Active state', () => {
-    // 테스트: 대시보드 경로에서 메뉴들의 활성/비활성 상태를 확인합니다.
-    it('should mark current page as active in dashboard', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const buttons = screen.getAllByRole('button')
-      const inactiveButtons = buttons.filter(
-        btn => btn.getAttribute('data-active') === 'false'
-      )
-      expect(inactiveButtons.length).toBeGreaterThan(0)
-    })
-
-    // 테스트: 현재 접속한 프로젝트 페이지의 메뉴가 '활성화' 상태인지 확인합니다.
-    it('should mark current project as active', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/1'] })
-      const buttons = screen.getAllByRole('button')
-      const activeButton = buttons.find(
-        btn =>
-          btn.getAttribute('data-active') === 'true' &&
-          btn.textContent?.includes('Project 1')
-      )
-      expect(activeButton).toBeInTheDocument()
-    })
-  })
-
-  // 섹션: 메뉴 항목들이 올바른 URL(href)로 연결되는지 확인합니다.
-  describe('Navigation', () => {
-    // 테스트: 프로젝트 목록의 링크들이 올바른 URL을 가지고 있는지 확인합니다.
-    it('should render all project links', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const project1Link = screen.getByRole('link', { name: 'Project 1' })
-      const project2Link = screen.getByRole('link', { name: 'Project 2' })
-      expect(project1Link).toHaveAttribute('href', '/projects/1')
-      expect(project2Link).toHaveAttribute('href', '/projects/2')
-    })
-
-    // 테스트: 대시보드의 'General Settings' 링크가 올바른 URL을 가지고 있는지 확인합니다.
-    it('should render settings link in dashboard', () => {
-      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
-      const settingsLink = screen.getByRole('link', {
-        name: 'General Settings',
+      await waitFor(() => {
+        expect(screen.getByText('Project List')).toBeInTheDocument()
+        // Both ActionSection and MemberListSection have "Members" as title
+        const membersElements = screen.getAllByText('Members')
+        expect(membersElements.length).toBeGreaterThan(0)
       })
-      expect(settingsLink).toHaveAttribute('href', '/dashboard/settings')
+    })
+
+    it('should render member list with members', async () => {
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
+
+      await waitFor(() => {
+        expect(screen.getByTestId('member-list-section')).toBeInTheDocument()
+        expect(screen.getByText('Alice')).toBeInTheDocument()
+        expect(screen.getByText('Bob')).toBeInTheDocument()
+      })
+    })
+
+    it('should render action section', async () => {
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
+
+      await waitFor(() => {
+        const actionSection = screen.getByTestId('action-section')
+        expect(actionSection).toBeInTheDocument()
+        expect(screen.getByText('프로젝트 참가 링크 생성')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Project Settings Sidebar', () => {
+    beforeEach(() => {
+      mockUseSidebarContext.mockReturnValue('project-settings')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: undefined,
+        members: undefined,
+      })
+    })
+
+    it('should render project settings sections', async () => {
+      renderWithRouter(<AppSidebar />, {
+        initialEntries: ['/projects/42/settings'],
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Project Settings')).toBeInTheDocument()
+      })
+    })
+
+    it('should render all settings navigation items', async () => {
+      renderWithRouter(<AppSidebar />, {
+        initialEntries: ['/projects/42/settings'],
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('User Profile')).toBeInTheDocument()
+        expect(screen.getByText('Project Management')).toBeInTheDocument()
+        expect(screen.getByText('Database Management')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Data Loading', () => {
+    it('should handle empty project list', () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
+      mockUseSidebarData.mockReturnValue({
+        projects: [],
+        members: undefined,
+      })
+
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/dashboard'] })
+
+      expect(screen.getByTestId('project-list-section')).toBeInTheDocument()
+    })
+
+    it('should handle empty member list', () => {
+      mockUseSidebarContext.mockReturnValue('project')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: [],
+      })
+
+      renderWithRouter(<AppSidebar />, { initialEntries: ['/projects/42'] })
+
+      expect(screen.getByTestId('member-list-section')).toBeInTheDocument()
+    })
+  })
+
+  describe('Context Switching', () => {
+    it('should switch from dashboard to project context', async () => {
+      mockUseSidebarContext.mockReturnValue('dashboard')
+      const { rerender } = renderWithRouter(<AppSidebar />, {
+        initialEntries: ['/dashboard'],
+      })
+
+      expect(screen.getByText('Project List')).toBeInTheDocument()
+
+      // Switch context
+      mockUseSidebarContext.mockReturnValue('project')
+      mockUseSidebarParams.mockReturnValue({ projectUrl: '42' })
+      mockUseSidebarData.mockReturnValue({
+        projects: mockProjects,
+        members: mockMembers,
+      })
+
+      rerender(<AppSidebar />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('member-list-section')).toBeInTheDocument()
+      })
     })
   })
 })

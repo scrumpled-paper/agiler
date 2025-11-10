@@ -137,3 +137,16 @@ dist
 
 *.idea/
 *.vscode/
+
+# Claude Code 관련
+.claude/
+.claude.json
+.claudeignore
+CLAUDE.md
+
+# MCP 서버 설정
+.claude.json
+
+# Claude가 생성한 임시 파일들
+.claude_*
+claude_temp/

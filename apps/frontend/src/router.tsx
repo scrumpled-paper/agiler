@@ -19,6 +19,10 @@ export const routers = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: 'login',
+        element: <div>login</div>,
+      },
+      {
         path: 'dashboard',
         children: [
           {
@@ -32,7 +36,7 @@ export const routers = createBrowserRouter([
         ],
       },
       {
-        path: 'projects/:projectId',
+        path: 'projects/:projectUrl',
         children: [
           {
             index: true,
