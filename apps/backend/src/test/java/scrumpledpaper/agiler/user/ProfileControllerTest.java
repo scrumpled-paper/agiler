@@ -609,6 +609,35 @@ public class ProfileControllerTest {
 		}
 
 		@Test
+		@DisplayName("204 - 프로젝트 Owner가 두명 이상일때 프로필 역할 수정 성공")
+		public void updateProjectProfileRoleMemberSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext anotherOwnerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createProfile(ownerAuth.getUser(), project, Role.OWNER);
+			Profile anotherOwnerProfile = testDataFactory.createProfile(anotherOwnerAuth.getUser(), project, Role.OWNER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(anotherOwnerProfile.getId(), Role.MEMBER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Profile updatedProfile = testDataFactory.findProfileByUserIdAndProjectId(anotherOwnerProfile.getUser().getId(), project.getId());
+			assertThat(updatedProfile.getRole()).isEqualTo(Role.MEMBER);
+		}
+
+
+		@Test
 		@DisplayName("404 - 존재하지 않는 프로젝트")
 		public void updateProfileRoleProjectNotFound() throws Exception {
 			// given
