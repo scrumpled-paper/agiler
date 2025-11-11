@@ -14,6 +14,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
@@ -172,5 +173,13 @@ public class ProjectService {
 	public void updateProfile(long userId, String projectUrl, ProfileUpdateReqDto profileUpdateReqDto) {
 		Project project = findProjectByUrl(projectUrl);
 		profileService.updateProfile(userId, project.getId(), profileUpdateReqDto);
+	}
+
+	@Transactional
+	public void updateProfileRole(long userId, String projectUrl, ProfileRoleUpdateReqDto profileRoleUpdateReqDto) {
+		Project project = findProjectByUrl(projectUrl);
+		validateProjectOwnerAccess(userId, project.getId());
+
+		profileService.updateProfileRole(profileRoleUpdateReqDto, project.getId());
 	}
 }
