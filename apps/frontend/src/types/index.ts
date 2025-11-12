@@ -58,7 +58,7 @@ export interface GetProjectMembersResponse {
 
 // API 요청 시 필요한 파라미터 타입
 export interface GetProjectMembersParams {
-  projectUrl: number
+  projectUrl: string
   size: number
   page: number
 }
