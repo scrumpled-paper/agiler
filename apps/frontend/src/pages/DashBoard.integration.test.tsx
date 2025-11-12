@@ -1,11 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import DashBoard from './DashBoard'
 import userEvent from '@testing-library/user-event'
+import { server } from '@/mocks/server'
+import { http, HttpResponse } from 'msw'
 
 // MSW는 setupTests.ts에서 자동으로 시작됨
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -26,6 +31,11 @@ const createWrapper = () => {
 }
 
 describe('Dashboard - 통합 테스트', () => {
+  // 각 테스트 후 MSW 핸들러를 원래대로 복원
+  afterEach(() => {
+    server.resetHandlers()
+  })
+
   describe('프로젝트 목록 조회', () => {
     it('사용자가 대시보드에서 프로젝트 목록을 볼 수 있다', async () => {
       // Given: MSW가 /api/v1/projects/info 응답 준비 (handlers.ts에 정의됨)
@@ -85,11 +95,6 @@ describe('Dashboard - 통합 테스트', () => {
 
     it('사용자가 페이지를 변경할 수 있다 (여러 페이지가 있을 때)', async () => {
       // Given: 여러 페이지가 있는 프로젝트 목록을 반환하도록 MSW 설정
-      const { server } = await import('@/mocks/server')
-      const { http, HttpResponse } = await import('msw')
-      const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
       server.use(
         http.get(`${API_BASE_URL}/api/v1/projects/info`, ({ request }) => {
           const url = new URL(request.url)
@@ -149,11 +154,6 @@ describe('Dashboard - 통합 테스트', () => {
   describe('에러 처리', () => {
     it('API 에러 시 에러 메시지가 표시된다', async () => {
       // Given: API 에러를 반환하도록 MSW 핸들러 오버라이드
-      const { server } = await import('@/mocks/server')
-      const { http, HttpResponse } = await import('msw')
-      const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
       server.use(
         http.get(`${API_BASE_URL}/api/v1/projects/info`, () => {
           return HttpResponse.json({ message: 'Error' }, { status: 500 })
