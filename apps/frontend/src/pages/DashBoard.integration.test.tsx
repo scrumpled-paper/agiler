@@ -83,41 +83,87 @@ describe('Dashboard - 통합 테스트', () => {
       })
     })
 
-    it.skip('사용자가 페이지를 변경할 수 있다 (여러 페이지가 있을 때)', async () => {
-      // Note: 현재 MSW mock은 totalPages: 1을 반환
-      // 실제 백엔드에서 여러 페이지가 있을 때 테스트 가능
+    it('사용자가 페이지를 변경할 수 있다 (여러 페이지가 있을 때)', async () => {
+      // Given: 여러 페이지가 있는 프로젝트 목록을 반환하도록 MSW 설정
+      const { server } = await import('@/mocks/server')
+      const { http, HttpResponse } = await import('msw')
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
+      server.use(
+        http.get(`${API_BASE_URL}/api/v1/projects/info`, ({ request }) => {
+          const url = new URL(request.url)
+          const page = Number(url.searchParams.get('page')) || 0
+
+          // 페이지별 다른 데이터 반환
+          const projectsByPage = [
+            [
+              {
+                title: 'Page 1 Project',
+                url: '/projects/page1',
+                imageUrl: 'https://placehold.co/600x400',
+                summary: 'First page project',
+              },
+            ],
+            [
+              {
+                title: 'Page 2 Project',
+                url: '/projects/page2',
+                imageUrl: 'https://placehold.co/600x400',
+                summary: 'Second page project',
+              },
+            ],
+          ]
+
+          return HttpResponse.json({
+            contents: projectsByPage[page] || [],
+            totalPages: 2,
+            totalElements: 2,
+            currentPage: page,
+            pageSize: 6,
+          })
+        })
+      )
+
       const user = userEvent.setup()
 
+      // When: Dashboard 렌더링
       render(<DashBoard />, { wrapper: createWrapper() })
 
       await waitFor(() => {
-        expect(screen.getByText('Agile Project')).toBeInTheDocument()
+        expect(screen.getByText('Page 1 Project')).toBeInTheDocument()
       })
 
-      // 페이지 2로 이동
-      const page2Button = screen.getByText('2')
-      await user.click(page2Button)
+      // 페이지 2 링크 찾기 (페이지네이션은 링크로 구현됨)
+      const page2Link = screen.getByRole('link', { name: '2' })
+      await user.click(page2Link)
 
-      // 새로운 데이터가 로드됨
+      // Then: 2페이지 데이터가 로드됨
       await waitFor(() => {
-        // 2페이지 데이터 검증
-        expect(screen.queryByText('Agile Project')).not.toBeInTheDocument()
+        expect(screen.queryByText('Page 1 Project')).not.toBeInTheDocument()
+        expect(screen.getByText('Page 2 Project')).toBeInTheDocument()
       })
     })
   })
 
   describe('에러 처리', () => {
-    it.skip('API 에러 시 에러 메시지가 표시된다', async () => {
-      // Note: 에러 케이스는 server.use()로 핸들러 오버라이드 필요
-      // 예시:
-      // server.use(
-      //   http.get(`${API_BASE_URL}/api/v1/projects/info`, () => {
-      //     return HttpResponse.json({ message: 'Error' }, { status: 500 })
-      //   })
-      // )
+    it('API 에러 시 에러 메시지가 표시된다', async () => {
+      // Given: API 에러를 반환하도록 MSW 핸들러 오버라이드
+      const { server } = await import('@/mocks/server')
+      const { http, HttpResponse } = await import('msw')
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
+      server.use(
+        http.get(`${API_BASE_URL}/api/v1/projects/info`, () => {
+          return HttpResponse.json({ message: 'Error' }, { status: 500 })
+        })
+      )
+
+      // When: Dashboard 렌더링
       render(<DashBoard />, { wrapper: createWrapper() })
 
+      // Then: 에러 메시지가 표시됨
       await waitFor(() => {
         expect(screen.getByText('에러가 발생했습니다.')).toBeInTheDocument()
       })
