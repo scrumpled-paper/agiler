@@ -13,6 +13,7 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.kanban.service.LabelService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
@@ -38,6 +39,7 @@ public class ProjectService {
 	private final ProjectMapper projectMapper;
 	private final UserService userService;
 	private final ImageService imageService;
+	private final LabelService labelService;
 	private final ProfileService profileService;
 	private final ProjectRepository projectRepository;
 
@@ -53,6 +55,7 @@ public class ProjectService {
 		projectRepository.save(savedProject);
 
 		profileService.createDefaultProfile(user, savedProject, Role.OWNER);
+		labelService.createDefaultLabels(savedProject);
 		return projectMapper.toDto(savedProject);
 	}
 
