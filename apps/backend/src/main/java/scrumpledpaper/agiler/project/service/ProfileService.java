@@ -5,15 +5,17 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.PageResDto;
+import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
-import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
+import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
@@ -27,6 +29,7 @@ public class ProfileService {
 	private final ProfileMapper profileMapper;
 	private final ImageService imageService;
 	private final ProfileRepository profileRepository;
+	private final ProjectValidator projectValidator;
 
 	public void createDefaultProfile(User user, Project savedProject, Role role) {
 		Profile defaultProfile = profileMapper.toEntity(user, savedProject, role);
@@ -37,22 +40,17 @@ public class ProfileService {
 		return profileRepository.findByUserId(userId, pageable);
 	}
 
-	public boolean existsByUserIdAndProjectId(long userId, long projectId) {
-		return profileRepository.existsByUserIdAndProjectId(userId, projectId);
-	}
-
-	public Profile getProfileByUserIdAndProjectId(long userId, long projectId) {
-		return profileRepository.findByUserIdAndProjectId(userId, projectId)
-			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
-	}
-
 	public Profile getProfileByProfileIdAndProjectId(long profileId, long projectId) {
 		return profileRepository.findByIdAndProjectId(profileId, projectId)
 			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_PROFILE_NOT_FOUND));
 	}
 
-	public Page<ProfileResDto> getProfileResDtosByProjectId(long projectId, Pageable pageable) {
-		return profileRepository.findByProjectId(projectId, pageable)
+	@Transactional(readOnly = true)
+	public PageResDto<ProfileResDto> getProjectMembersByUrl(long userId, String projectUrl, Pageable pageable) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Page<ProfileResDto> page = profileRepository.findByProjectId(project.getId(), pageable)
 			.map(profile -> {
 				String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
 					.map(imageService::getImageUrlById)
@@ -60,10 +58,28 @@ public class ProfileService {
 
 				return profileMapper.toProfileResDto(profile, imageUrl);
 			});
+
+		PageValidator.validatePageInRange(page);
+		return PageResDto.from(page);
 	}
 
-	public ProfileResDto getProjectProfileResDto(long profileId, long projectId) {
-		Profile profile = getProfileByProfileIdAndProjectId(profileId, projectId);
+	@Transactional(readOnly = true)
+	public ProfileResDto getProjectProfileById(long userId, String projectUrl, Long targetProfileId) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+		Profile targetProfile = getProfileByProfileIdAndProjectId(targetProfileId, project.getId());
+
+		String imageUrl = Optional.ofNullable(targetProfile.getUser().getImageId())
+			.map(imageService::getImageUrlById)
+			.orElse("");
+
+		return profileMapper.toProfileResDto(targetProfile, imageUrl);
+	}
+
+	@Transactional(readOnly = true)
+	public ProfileResDto getMyProjectProfile(Long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Profile profile = context.profile();
 
 		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
 			.map(imageService::getImageUrlById)
@@ -72,24 +88,29 @@ public class ProfileService {
 		return profileMapper.toProfileResDto(profile, imageUrl);
 	}
 
-	public ProfileResDto getMyProjectProfileResDto(long userId, long projectId) {
-		Profile profile = getProfileByUserIdAndProjectId(userId, projectId);
-
-		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
-			.map(imageService::getImageUrlById)
-			.orElse("");
-
-		return profileMapper.toProfileResDto(profile, imageUrl);
-	}
-
-	public void updateProfile(long userId, long projectId, ProfileUpdateReqDto profileUpdateReqDto) {
-		Profile profile = getProfileByUserIdAndProjectId(userId, projectId);
+	@Transactional
+	public void updateProfile(long userId, String projectUrl, ProfileUpdateReqDto profileUpdateReqDto) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Profile profile = context.profile();
 
 		profile.updateDetails(
 			profileUpdateReqDto.nickname(),
 			profileUpdateReqDto.email(),
 			profileUpdateReqDto.description()
 		);
+	}
+
+	@Transactional
+	public void updateProfileRole(long userId, String projectUrl, long targetProfileId, String newRole) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		projectValidator.validateOwner(context.profile());
+		Project project = context.project();
+		Role role = Role.from(newRole);
+
+		Profile targetProfile = getProfileByProfileIdAndProjectId(targetProfileId, project.getId());
+		ensureOwnerRemainsInProject(targetProfileId, project.getId(), role);
+
+		targetProfile.updateRole(role);
 	}
 
 	public void ensureOwnerRemainsInProject(long targetProfileId, long projectId, Role role) {
@@ -100,14 +121,5 @@ public class ProfileService {
 		if (remainingOwnerCount <= 0) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_MINIMUM_REQUIRED);
 		}
-	}
-
-	public void updateProfileRole(ProfileRoleUpdateReqDto profileRoleUpdateReqDto, long projectId) {
-		long targetProfileId = profileRoleUpdateReqDto.profileId();
-		Profile profile = getProfileByProfileIdAndProjectId(targetProfileId, projectId);
-		Role newRole = Role.from(profileRoleUpdateReqDto.role());
-
-		ensureOwnerRemainsInProject(targetProfileId, projectId, newRole);
-		profile.updateRole(newRole);
 	}
 }

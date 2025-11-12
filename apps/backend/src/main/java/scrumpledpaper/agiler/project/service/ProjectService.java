@@ -13,9 +13,8 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
-import scrumpledpaper.agiler.project.dto.ProfileResDto;
-import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
-import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
+import scrumpledpaper.agiler.kanban.service.LabelService;
+import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
@@ -38,8 +37,10 @@ public class ProjectService {
 	private final ProjectMapper projectMapper;
 	private final UserService userService;
 	private final ImageService imageService;
+	private final LabelService labelService;
 	private final ProfileService profileService;
 	private final ProjectRepository projectRepository;
+	private final ProjectValidator projectValidator;
 
 	@Transactional
 	public ProjectIdResDto createProject(long userId, ProjectCreateReqDto projectCreateReqDto) {
@@ -53,6 +54,7 @@ public class ProjectService {
 		projectRepository.save(savedProject);
 
 		profileService.createDefaultProfile(user, savedProject, Role.OWNER);
+		labelService.createDefaultLabels(savedProject);
 		return projectMapper.toDto(savedProject);
 	}
 
@@ -97,8 +99,8 @@ public class ProjectService {
 
 	@Transactional(readOnly = true)
 	public ProjectDetailResDto getProjectDetailByUrl(long userId, String projectUrl) {
-		Project project = findProjectByUrl(projectUrl);
-		validateProjectAccess(userId, project.getId());
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
 
 		String imageUrl = Optional.ofNullable(project.getImageId())
 			.map(imageService::getImageUrlById)
@@ -109,8 +111,9 @@ public class ProjectService {
 
 	@Transactional
 	public ProjectIdResDto updateProjectDetailByUrl(long userId, String projectUrl,	ProjectUpdateReqDto projectUpdateReqDto) {
-		Project project = findProjectByUrl(projectUrl);
-		validateProjectOwnerAccess(userId, project.getId());
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		projectValidator.validateOwner(context.profile());
+		Project project = context.project();
 
 		if (!project.getUrl().equals(projectUpdateReqDto.url()) &&
 			alreadyExistProjectUrl(projectUpdateReqDto.url())) {
@@ -124,62 +127,5 @@ public class ProjectService {
 		);
 
 		return projectMapper.toDto(project);
-	}
-
-	private Project findProjectByUrl(String projectUrl) {
-		return projectRepository.findByUrl(projectUrl)
-			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
-	}
-
-	private void validateProjectAccess(Long userId, Long projectId) {
-		if (!profileService.existsByUserIdAndProjectId(userId, projectId)) {
-			throw new CustomException(ErrorCode.PROJECT_NOT_MEMBER);
-		}
-	}
-
-	private void validateProjectOwnerAccess(Long userId, Long projectId) {
-		Profile profile = profileService.getProfileByUserIdAndProjectId(userId, projectId);
-		if (profile.getRole() != Role.OWNER) {
-			throw new CustomException(ErrorCode.PROJECT_OWNER_REQUIRED);
-		}
-	}
-
-	@Transactional(readOnly = true)
-	public PageResDto<ProfileResDto> getProjectMembersByUrl(long userId, String projectUrl, Pageable pageable) {
-		Project project = findProjectByUrl(projectUrl);
-		validateProjectAccess(userId, project.getId());
-
-		Page<ProfileResDto> page = profileService.getProfileResDtosByProjectId(project.getId(), pageable);
-
-		PageValidator.validatePageInRange(page);
-		return PageResDto.from(page);
-	}
-
-	@Transactional(readOnly = true)
-	public ProfileResDto getMyProjectProfile(Long userId, String ProjectUrl) {
-		Project project = findProjectByUrl(ProjectUrl);
-		return profileService.getMyProjectProfileResDto(userId, project.getId());
-	}
-
-	@Transactional(readOnly = true)
-	public ProfileResDto getProjectProfileById(long userId, String projectUrl, Long profileId) {
-		Project project = findProjectByUrl(projectUrl);
-		validateProjectAccess(userId, project.getId());
-
-		return profileService.getProjectProfileResDto(profileId, project.getId());
-	}
-
-	@Transactional
-	public void updateProfile(long userId, String projectUrl, ProfileUpdateReqDto profileUpdateReqDto) {
-		Project project = findProjectByUrl(projectUrl);
-		profileService.updateProfile(userId, project.getId(), profileUpdateReqDto);
-	}
-
-	@Transactional
-	public void updateProfileRole(long userId, String projectUrl, ProfileRoleUpdateReqDto profileRoleUpdateReqDto) {
-		Project project = findProjectByUrl(projectUrl);
-		validateProjectOwnerAccess(userId, project.getId());
-
-		profileService.updateProfileRole(profileRoleUpdateReqDto, project.getId());
 	}
 }

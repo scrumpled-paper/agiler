@@ -20,6 +20,8 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
+import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
@@ -92,6 +94,10 @@ public class ProjectControllerTest {
 			assertThat(ownerProfile.getEmail()).isEqualTo(auth.getUser().getEmail());
 			assertThat(ownerProfile.getNickname()).isEqualTo(auth.getUser().getNickname());
 			assertThat(ownerProfile.getImageId()).isEqualTo(auth.getUser().getImageId());
+
+			List<Label> labels = testDataFactory.findLabelsByProjectId(createdProject.getId());
+			DefaultLabel[] defaultLabels = DefaultLabel.values();
+			assertThat(labels).hasSize(defaultLabels.length);
 		}
 
 		@Test

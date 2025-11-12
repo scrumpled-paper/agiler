@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import scrumpledpaper.agiler.fixture.*;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.kanban.entity.Label;
+import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
@@ -24,6 +26,7 @@ public class TestDataFactory {
 	private final TokenFixture tokenFixture;
 	private final UserRepository userRepository;
 	private final ImageRepository imageRepository;
+	private final LabelRepository labelRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
 	private final EntityManager entityManager;
@@ -141,5 +144,9 @@ public class TestDataFactory {
 	public Profile createProfile(User user, Project project, Role role) {
 		Profile profile = ProfileFixture.createProfile(user, project, role);
 		return profileRepository.save(profile);
+	}
+
+	public List<Label> findLabelsByProjectId(Long projectId) {
+		return labelRepository.findByProjectId(projectId);
 	}
 }
