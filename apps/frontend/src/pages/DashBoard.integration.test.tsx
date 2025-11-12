@@ -142,7 +142,7 @@ describe('Dashboard - 통합 테스트', () => {
         () => {
           expect(screen.getByText('Page 1 Project')).toBeInTheDocument()
         },
-        { timeout: 10000 }
+        { timeout: 5000 }
       )
 
       // 페이지 2 링크 찾기 (페이지네이션은 링크로 구현됨)
@@ -178,7 +178,7 @@ describe('Dashboard - 통합 테스트', () => {
       // Then: 로딩이 끝나고 에러 메시지가 표시됨
       await waitFor(
         () => {
-          expect(screen.getByText(/에러가 발생했습니다/)).toBeInTheDocument()
+          expect(screen.getByText('에러가 발생했습니다')).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
