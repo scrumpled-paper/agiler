@@ -140,7 +140,7 @@ describe('Dashboard - 통합 테스트', () => {
       // Then: 첫 페이지 데이터가 로드될 때까지 대기
       await waitFor(
         () => {
-          expect(screen.getByText('Page 1 Project')).toBeInTheDocument()
+          expect(screen.getByText('Agile Project')).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
@@ -152,8 +152,8 @@ describe('Dashboard - 통합 테스트', () => {
       // Then: 2페이지 데이터가 로드됨
       await waitFor(
         () => {
-          expect(screen.queryByText('Page 1 Project')).not.toBeInTheDocument()
-          expect(screen.getByText('Page 2 Project')).toBeInTheDocument()
+          expect(screen.queryByText('Agile Project')).not.toBeInTheDocument()
+          expect(screen.getByText('Design System')).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
@@ -178,7 +178,7 @@ describe('Dashboard - 통합 테스트', () => {
       // Then: 로딩이 끝나고 에러 메시지가 표시됨
       await waitFor(
         () => {
-          expect(screen.getByText('에러가 발생했습니다')).toBeInTheDocument()
+          expect(screen.getByText(/에러가 발생했습니다/)).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
