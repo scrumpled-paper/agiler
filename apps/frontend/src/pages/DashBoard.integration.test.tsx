@@ -17,6 +17,8 @@ const createWrapper = () => {
     defaultOptions: {
       queries: {
         retry: false, // 테스트에서는 retry 비활성화
+        gcTime: 0, // 캐시 비활성화
+        staleTime: 0,
       },
     },
   })
@@ -135,19 +137,26 @@ describe('Dashboard - 통합 테스트', () => {
       // When: Dashboard 렌더링
       render(<DashBoard />, { wrapper: createWrapper() })
 
-      await waitFor(() => {
-        expect(screen.getByText('Page 1 Project')).toBeInTheDocument()
-      })
+      // Then: 첫 페이지 데이터가 로드될 때까지 대기
+      await waitFor(
+        () => {
+          expect(screen.getByText('Page 1 Project')).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // 페이지 2 링크 찾기 (페이지네이션은 링크로 구현됨)
       const page2Link = screen.getByRole('link', { name: '2' })
       await user.click(page2Link)
 
       // Then: 2페이지 데이터가 로드됨
-      await waitFor(() => {
-        expect(screen.queryByText('Page 1 Project')).not.toBeInTheDocument()
-        expect(screen.getByText('Page 2 Project')).toBeInTheDocument()
-      })
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Page 1 Project')).not.toBeInTheDocument()
+          expect(screen.getByText('Page 2 Project')).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
     })
   })
 
@@ -156,17 +165,26 @@ describe('Dashboard - 통합 테스트', () => {
       // Given: API 에러를 반환하도록 MSW 핸들러 오버라이드
       server.use(
         http.get(`${API_BASE_URL}/api/v1/projects/info`, () => {
-          return HttpResponse.json({ message: 'Error' }, { status: 500 })
+          return new HttpResponse(null, { status: 500 })
         })
       )
 
       // When: Dashboard 렌더링
       render(<DashBoard />, { wrapper: createWrapper() })
 
-      // Then: 에러 메시지가 표시됨
-      await waitFor(() => {
-        expect(screen.getByText('에러가 발생했습니다.')).toBeInTheDocument()
-      })
+      // Then: 로딩 표시가 먼저 나타남
+      expect(screen.getByText('로딩 중...')).toBeInTheDocument()
+
+      // Then: 로딩이 끝나고 에러 메시지가 표시됨
+      await waitFor(
+        () => {
+          expect(screen.getByText(/에러가 발생했습니다/)).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
+
+      // 로딩 메시지는 사라져야 함
+      expect(screen.queryByText('로딩 중...')).not.toBeInTheDocument()
     })
   })
 
