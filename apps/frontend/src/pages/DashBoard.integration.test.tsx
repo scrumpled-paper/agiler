@@ -137,15 +137,17 @@ describe('Dashboard - 통합 테스트', () => {
       // When: Dashboard 렌더링
       render(<DashBoard />, { wrapper: createWrapper() })
 
-      // Then: 첫 페이지 데이터가 로드될 때까지 대기
+      // Then: 첫 페이지 데이터와 페이지네이션이 로드될 때까지 대기
       await waitFor(
         () => {
           expect(screen.getByText('Agile Project')).toBeInTheDocument()
+          // MSW 핸들러 오버라이드가 적용되어 2페이지 링크가 렌더링될 때까지 대기
+          expect(screen.getByRole('link', { name: '2' })).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
 
-      // 페이지 2 링크 찾기 (페이지네이션은 링크로 구현됨)
+      // 페이지 2 링크 클릭
       const page2Link = screen.getByRole('link', { name: '2' })
       await user.click(page2Link)
 
@@ -178,7 +180,7 @@ describe('Dashboard - 통합 테스트', () => {
       // Then: 로딩이 끝나고 에러 메시지가 표시됨
       await waitFor(
         () => {
-          expect(screen.getByText(/에러가 발생했습니다/)).toBeInTheDocument()
+          expect(screen.getByText('에러가 발생했습니다.')).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
