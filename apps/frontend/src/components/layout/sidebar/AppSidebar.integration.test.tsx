@@ -194,7 +194,6 @@ describe('AppSidebar - 통합 테스트', () => {
 
   describe('섹션별 렌더링', () => {
     it('ProjectListSection이 렌더링된다', async () => {
-      // render(<AppSidebar />, { wrapper: createWrapper('/') })
       renderWithRouter('/')
       await waitFor(() => {
         // 프로젝트 리스트 제목 또는 아이템 확인
@@ -205,9 +204,6 @@ describe('AppSidebar - 통합 테스트', () => {
     it('MemberListSection은 project 컨텍스트에서만 렌더링된다', async () => {
       // Dashboard에서는 멤버가 없어야 함
       const { unmount } = renderWithRouter('/dashboard')
-      // render(<AppSidebar />, {
-      //   wrapper: createWrapper('/dashboard'),
-      // })
 
       await waitFor(() => {
         expect(screen.queryByText('Alice')).not.toBeInTheDocument()
@@ -216,9 +212,6 @@ describe('AppSidebar - 통합 테스트', () => {
       unmount()
 
       // Project 페이지에서는 멤버가 있어야 함
-      // render(<AppSidebar />, {
-      //   wrapper: createWrapper('/projects/agile-project'),
-      // })
       renderWithRouter('/projects/agile-project')
 
       await waitFor(() => {
