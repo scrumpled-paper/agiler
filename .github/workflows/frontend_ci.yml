@@ -9,10 +9,16 @@ on:
       - '.github/workflows/frontend_ci.yml'
   workflow_dispatch:
 
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     name: Build and Test Frontend
     runs-on: ubuntu-latest
+    env:
+      CI: true
     defaults:
       run:
         working-directory: ./apps/frontend
@@ -24,21 +30,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23'
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version: "23"
+          cache: "npm"
+          cache-dependency-path: "apps/frontend/package-lock.json"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests and generate coverage
         run: npm run test
+
+      - name: Build
+        run: npm run build
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
