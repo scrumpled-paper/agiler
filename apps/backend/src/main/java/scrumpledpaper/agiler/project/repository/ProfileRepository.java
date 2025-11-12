@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Role;
 
 public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	Optional<Profile> findByUserIdAndProjectId(Long userId, Long projectId);
@@ -18,4 +19,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	Page<Profile> findByProjectId(Long projectId, Pageable pageable);
 
 	Optional<Profile> findByIdAndProjectId(Long profileId, Long projectId);
+
+	long countByProjectIdAndRoleAndIdNot(Long projectId, Role role, Long excludeProfileId);
 }

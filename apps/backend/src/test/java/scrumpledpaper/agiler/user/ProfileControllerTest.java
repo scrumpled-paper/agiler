@@ -8,7 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -541,9 +545,243 @@ public class ProfileControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Update Project Profile Role Test")
+	class UpdateProjectProfileRoleTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@ParameterizedTest
+		@DisplayName("204 - 프로젝트 프로필 역할 수정 성공")
+		@ValueSource(strings = {"OWNER", "owner", "Owner"})
+		public void updateProjectProfileRoleOwnerSuccess(String role) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), role);
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Profile updatedProfile = testDataFactory.findProfileByUserIdAndProjectId(memberAuth.getUser().getId(), project.getId());
+			assertThat(updatedProfile.getRole()).isEqualTo(Role.OWNER);
+		}
+
+		@ParameterizedTest
+		@DisplayName("204 - 프로젝트 프로필 역할 수정 성공")
+		@ValueSource(strings = {"MEMBER", "member", "Member"})
+		public void updateProjectProfileRoleMemberSuccess(String role) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), role);
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Profile updatedProfile = testDataFactory.findProfileByUserIdAndProjectId(memberAuth.getUser().getId(), project.getId());
+			assertThat(updatedProfile.getRole()).isEqualTo(Role.MEMBER);
+		}
+
+		@Test
+		@DisplayName("204 - 프로젝트 Owner가 두명 이상일때 프로필 역할 수정 성공")
+		public void updateProjectProfileRoleMemberSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext anotherOwnerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createProfile(ownerAuth.getUser(), project, Role.OWNER);
+			Profile anotherOwnerProfile = testDataFactory.createProfile(anotherOwnerAuth.getUser(), project, Role.OWNER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(anotherOwnerProfile.getId(), Role.MEMBER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Profile updatedProfile = testDataFactory.findProfileByUserIdAndProjectId(anotherOwnerProfile.getUser().getId(), project.getId());
+			assertThat(updatedProfile.getRole()).isEqualTo(Role.MEMBER);
+		}
+
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트")
+		public void updateProfileRoleProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String invalidUrl = "invalid_url";
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(9999L, Role.MEMBER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", invalidUrl)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+		
+		@Test
+		@DisplayName("403 - 프로젝트 오너가 아닌 사용자가 프로필 역할 수정 시도")
+		public void updateProfileRoleNotOwner() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), Role.OWNER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", memberAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_OWNER_REQUIRED.getMessage());
+		}
+		
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자의 프로필 역할 수정 시도")
+		public void updateProfileRoleNotMember() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), Role.OWNER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("400 - 프로젝트의 마지막 오너의 역할을 변경하려는 경우")
+		public void updateProfileRoleLastOwner() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(ownerAuth.getUser().getId(),
+				project.getId());
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(ownerProfile.getId(), Role.MEMBER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_OWNER_MINIMUM_REQUIRED.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 프로젝트가 참여자가 아닌 프로필의 룰을 변경하는 경우")
+		public void updateProfileRoleNotFoundProfile() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(9999L, Role.MEMBER.toString());
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_PROFILE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("400 - 잘못된 역할로 프로필 역할 수정 시도")
+		public void updateProfileRoleInvalidRole() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
+			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(),
+				"INVALID_ROLE");
+			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/role", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.INVALID_ROLE.getMessage());
+		}
+	}
 }
-
-
-
-
-

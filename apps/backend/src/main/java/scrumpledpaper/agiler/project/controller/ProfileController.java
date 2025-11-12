@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.common.PageReqDto;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.service.ProjectService;
 
@@ -65,6 +67,16 @@ public class ProfileController {
 		@PathVariable String projectUrl,
 		@RequestBody @Valid ProfileUpdateReqDto profileUpdateReqDto) {
 		projectService.updateProfile(customUserDetails.getUserId(), projectUrl, profileUpdateReqDto);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{projectUrl}/profiles/role")
+	public ResponseEntity<Void> updateProfileRole(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid ProfileRoleUpdateReqDto profileRoleUpdateReqDto) {
+		projectService.updateProfileRole(customUserDetails.getUserId(), projectUrl,	profileRoleUpdateReqDto);
 		return ResponseEntity.noContent().build();
 	}
 }

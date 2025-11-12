@@ -58,4 +58,8 @@ public class Profile extends BaseEntity {
 		this.email = email;
 		this.description = description;
 	}
+
+	public void updateRole(Role role) {
+		this.role = role;
+	}
 }
