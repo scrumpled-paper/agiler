@@ -92,21 +92,22 @@ public class ProfileService {
 		);
 	}
 
-	public void ensureOwnerRemainsInProject(long projectId, Role newRole) {
-		if (newRole == Role.OWNER) {
+	public void ensureOwnerRemainsInProject(long targetProfileId, long projectId, Role role) {
+		if (role == Role.OWNER) {
 			return;
 		}
-		long ownerCount = profileRepository.countByProjectIdAndRole(projectId, Role.OWNER);
-		if (ownerCount <= 1) {
+		long remainingOwnerCount = profileRepository.countByProjectIdAndRoleAndIdNot(projectId, Role.OWNER, targetProfileId);
+		if (remainingOwnerCount <= 0) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_MINIMUM_REQUIRED);
 		}
 	}
 
 	public void updateProfileRole(ProfileRoleUpdateReqDto profileRoleUpdateReqDto, long projectId) {
-		Profile profile = getProfileByProfileIdAndProjectId(profileRoleUpdateReqDto.profileId(), projectId);
+		long targetProfileId = profileRoleUpdateReqDto.profileId();
+		Profile profile = getProfileByProfileIdAndProjectId(targetProfileId, projectId);
 		Role newRole = Role.from(profileRoleUpdateReqDto.role());
 
-		ensureOwnerRemainsInProject(projectId, newRole);
+		ensureOwnerRemainsInProject(targetProfileId, projectId, newRole);
 		profile.updateRole(newRole);
 	}
 }

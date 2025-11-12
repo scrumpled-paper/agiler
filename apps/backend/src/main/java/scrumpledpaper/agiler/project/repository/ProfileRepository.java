@@ -20,5 +20,5 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 	Optional<Profile> findByIdAndProjectId(Long profileId, Long projectId);
 
-	long countByProjectIdAndRole(long projectId, Role role);
+	long countByProjectIdAndRoleAndIdNot(Long projectId, Role role, Long excludeProfileId);
 }
