@@ -149,4 +149,9 @@ public class TestDataFactory {
 	public List<Label> findLabelsByProjectId(Long projectId) {
 		return labelRepository.findByProjectId(projectId);
 	}
+
+	public Label createLabel(Project project, String name, String description, String color) {
+		Label label = LabelFixture.createLabel(project, name, color, description);
+		return labelRepository.save(label);
+	}
 }
