@@ -1,7 +1,7 @@
 package scrumpledpaper.agiler.kanban.dto;
 
 public record LabelResDto(
-	Long id,
+	long id,
 	String name,
 	String description,
 	String color
