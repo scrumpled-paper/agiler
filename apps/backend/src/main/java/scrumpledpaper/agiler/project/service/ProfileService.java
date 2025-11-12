@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
@@ -14,6 +15,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
+import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
@@ -105,16 +107,20 @@ public class ProfileService {
 		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
 		projectValidator.validateOwner(context.profile());
 		Project project = context.project();
+		Role role = Role.from(newRole);
 
 		Profile targetProfile = getProfileByProfileIdAndProjectId(targetProfileId, project.getId());
-		ensureOwnerRemainsInProject(targetProfile, project.getId());
+		ensureOwnerRemainsInProject(targetProfileId, project.getId(), role);
 
-		targetProfile.updateRole(Role.from(newRole));
+		targetProfile.updateRole(role);
 	}
 
-	public void ensureOwnerRemainsInProject(Profile profile, long projectId) {
-		long ownerCount = profileRepository.countByProjectIdAndRole(projectId, Role.OWNER);
-		if (profile.getRole() == Role.OWNER && ownerCount <= 1) {
+	public void ensureOwnerRemainsInProject(long targetProfileId, long projectId, Role role) {
+		if (role == Role.OWNER) {
+			return;
+		}
+		long remainingOwnerCount = profileRepository.countByProjectIdAndRoleAndIdNot(projectId, Role.OWNER, targetProfileId);
+		if (remainingOwnerCount <= 0) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_MINIMUM_REQUIRED);
 		}
 	}

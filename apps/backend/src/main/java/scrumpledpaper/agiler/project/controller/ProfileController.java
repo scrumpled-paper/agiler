@@ -83,4 +83,14 @@ public class ProfileController {
 			profileRoleUpdateReqDto.role());
 		return ResponseEntity.noContent().build();
 	}
+
+	@PatchMapping("/{projectUrl}/profiles/role")
+	public ResponseEntity<Void> updateProfileRole(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid ProfileRoleUpdateReqDto profileRoleUpdateReqDto) {
+		projectService.updateProfileRole(customUserDetails.getUserId(), projectUrl,	profileRoleUpdateReqDto);
+		return ResponseEntity.noContent().build();
+	}
 }
