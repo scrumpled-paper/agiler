@@ -1,7 +1,10 @@
 package scrumpledpaper.agiler.kanban.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +16,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.LabelListResDto;
+import scrumpledpaper.agiler.kanban.dto.LabelResDto;
 import scrumpledpaper.agiler.kanban.service.LabelService;
 
 @RestController
@@ -29,6 +34,16 @@ public class LabelController {
 		@RequestBody @Valid LabelCreateReqDto labelCreateReqDto) {
 		labelService.createLabel(customUserDetails.getUserId(), projectUrl, labelCreateReqDto);
 		return ResponseEntity.created(null).build();
+	}
+
+	@GetMapping("/{projectUrl}/labels")
+	public ResponseEntity<LabelListResDto> getLabels(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl) {
+		List<LabelResDto> labels = labelService.getLabelList(customUserDetails.getUserId(), projectUrl);
+		LabelListResDto labelListResDto = new LabelListResDto(labels, labels.size());
+		return ResponseEntity.ok(labelListResDto);
 	}
 }
 

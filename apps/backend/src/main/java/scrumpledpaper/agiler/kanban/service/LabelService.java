@@ -1,12 +1,14 @@
 package scrumpledpaper.agiler.kanban.service;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.LabelResDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.mapper.LabelMapper;
@@ -37,5 +39,15 @@ public class LabelService {
 
 		Label label = labelMapper.toEntity(project, labelCreateReqDto);
 		labelRepository.save(label);
+	}
+
+	public List<LabelResDto> getLabelList(long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		List<Label> labels = labelRepository.findByProjectId(project.getId());
+		return labels.stream()
+			.map(labelMapper::toDto)
+			.toList();
 	}
 }
