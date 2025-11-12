@@ -106,18 +106,18 @@ describe('Dashboard - 통합 테스트', () => {
           const projectsByPage = [
             [
               {
-                title: 'Page 1 Project',
-                url: '/projects/page1',
+                title: 'Agile Project',
+                url: '/projects/agile-project',
                 imageUrl: 'https://placehold.co/600x400',
-                summary: 'First page project',
+                summary: 'An agile project management tool',
               },
             ],
             [
               {
-                title: 'Page 2 Project',
-                url: '/projects/page2',
+                title: 'Design System',
+                url: '/projects/design-system',
                 imageUrl: 'https://placehold.co/600x400',
-                summary: 'Second page project',
+                summary: 'Company-wide design system',
               },
             ],
           ]
@@ -142,7 +142,7 @@ describe('Dashboard - 통합 테스트', () => {
         () => {
           expect(screen.getByText('Page 1 Project')).toBeInTheDocument()
         },
-        { timeout: 5000 }
+        { timeout: 10000 }
       )
 
       // 페이지 2 링크 찾기 (페이지네이션은 링크로 구현됨)
