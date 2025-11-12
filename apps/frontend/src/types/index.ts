@@ -1,18 +1,3 @@
-export interface ContentItem {
-  title: string
-  url: string
-  imageUrl: string
-  summary: string
-}
-
-export interface PaginatedContentResponse {
-  contents: ContentItem[]
-  pageSize: number
-  currentPage: number
-  totalPages: number
-  totalItems: number
-}
-
 export interface UserInfo {
   nickname: string
   email?: string

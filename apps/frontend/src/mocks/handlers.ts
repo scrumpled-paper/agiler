@@ -56,33 +56,37 @@ export const handlers = [
   }),
 
   // 프로젝트 멤버 조회
-  http.get(`${API_BASE_URL}/api/v1/projects/:projectUrl/people`, () => {
-    const response: GetProjectMembersResponse = {
-      contents: [
-        {
-          peopleId: 1,
-          nickname: 'Alice',
-          email: 'alice@example.com',
-          imageUrl: 'https://placehold.co/100x100',
-          role: 'Developer',
-          description: 'Frontend developer',
-        },
-        {
-          peopleId: 2,
-          nickname: 'Bob',
-          email: 'bob@example.com',
-          imageUrl: 'https://placehold.co/100x100',
-          role: 'Designer',
-          description: 'UI/UX designer',
-        },
-      ],
-      totalPages: 1,
-      number: 0,
-      size: 5,
-    }
+  http.get(
+    `${API_BASE_URL}/api/v1/projects/:projectUrl/people`,
+    ({ params }) => {
+      console.log('[MSW] 프로젝트 멤버 조회 호출됨:', params.projectUrl)
+      const response: GetProjectMembersResponse = {
+        contents: [
+          {
+            peopleId: 1,
+            nickname: 'Alice',
+            email: 'alice@example.com',
+            imageUrl: 'https://placehold.co/100x100',
+            role: 'Developer',
+            description: 'Frontend developer',
+          },
+          {
+            peopleId: 2,
+            nickname: 'Bob',
+            email: 'bob@example.com',
+            imageUrl: 'https://placehold.co/100x100',
+            role: 'Designer',
+            description: 'UI/UX designer',
+          },
+        ],
+        totalPages: 1,
+        number: 0,
+        size: 5,
+      }
 
-    return HttpResponse.json(response)
-  }),
+      return HttpResponse.json(response)
+    }
+  ),
 
   // 프로젝트 URL 검증
   http.get(
