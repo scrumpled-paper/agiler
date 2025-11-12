@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
@@ -91,17 +92,21 @@ public class ProfileService {
 		);
 	}
 
-	public void ensureOwnerRemainsInProject(Profile profile, long projectId) {
+	public void ensureOwnerRemainsInProject(long projectId, Role newRole) {
+		if (newRole == Role.OWNER) {
+			return;
+		}
 		long ownerCount = profileRepository.countByProjectIdAndRole(projectId, Role.OWNER);
-		if (profile.getRole() == Role.OWNER && ownerCount <= 1) {
+		if (ownerCount <= 1) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_MINIMUM_REQUIRED);
 		}
 	}
 
 	public void updateProfileRole(ProfileRoleUpdateReqDto profileRoleUpdateReqDto, long projectId) {
 		Profile profile = getProfileByProfileIdAndProjectId(profileRoleUpdateReqDto.profileId(), projectId);
-		ensureOwnerRemainsInProject(profile, projectId);
+		Role newRole = Role.from(profileRoleUpdateReqDto.role());
 
-		profile.updateRole(Role.from(profileRoleUpdateReqDto.role()));
+		ensureOwnerRemainsInProject(projectId, newRole);
+		profile.updateRole(newRole);
 	}
 }
