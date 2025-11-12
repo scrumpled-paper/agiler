@@ -21,20 +21,20 @@ import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
-import scrumpledpaper.agiler.project.service.ProjectService;
+import scrumpledpaper.agiler.project.service.ProfileService;
 
 @RestController
 @RequestMapping("/api/v1/projects")
 @RequiredArgsConstructor
 public class ProfileController {
-	private final ProjectService projectService;
+	private final ProfileService profileService;
 
 	@GetMapping({"/{projectUrl}/profiles/me"})
 	public ResponseEntity<ProfileResDto> getMyProjectProfile(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl) {
-		ProfileResDto profileResDto = projectService.getMyProjectProfile(customUserDetails.getUserId(), projectUrl);
+		ProfileResDto profileResDto = profileService.getMyProjectProfile(customUserDetails.getUserId(), projectUrl);
 		return ResponseEntity.ok(profileResDto);
 	}
 
@@ -46,7 +46,7 @@ public class ProfileController {
 		@ModelAttribute @Valid PageReqDto pageReqDto) {
 		Pageable pageable = pageReqDto.toPageable();
 
-		PageResDto<ProfileResDto> pageResDto = projectService.getProjectMembersByUrl(customUserDetails.getUserId(), projectUrl, pageable);
+		PageResDto<ProfileResDto> pageResDto = profileService.getProjectMembersByUrl(customUserDetails.getUserId(), projectUrl, pageable);
 		return ResponseEntity.ok().body(pageResDto);
 	}
 
@@ -56,7 +56,7 @@ public class ProfileController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@PathVariable Long profileId) {
-		ProfileResDto profileResDto = projectService.getProjectProfileById(customUserDetails.getUserId(), projectUrl, profileId);
+		ProfileResDto profileResDto = profileService.getProjectProfileById(customUserDetails.getUserId(), projectUrl, profileId);
 		return ResponseEntity.ok(profileResDto);
 	}
 
@@ -66,7 +66,7 @@ public class ProfileController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@RequestBody @Valid ProfileUpdateReqDto profileUpdateReqDto) {
-		projectService.updateProfile(customUserDetails.getUserId(), projectUrl, profileUpdateReqDto);
+		profileService.updateProfile(customUserDetails.getUserId(), projectUrl, profileUpdateReqDto);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -76,7 +76,11 @@ public class ProfileController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@RequestBody @Valid ProfileRoleUpdateReqDto profileRoleUpdateReqDto) {
-		projectService.updateProfileRole(customUserDetails.getUserId(), projectUrl,	profileRoleUpdateReqDto);
+		profileService.updateProfileRole(
+			customUserDetails.getUserId(),
+			projectUrl,
+			profileRoleUpdateReqDto.profileId(),
+			profileRoleUpdateReqDto.role());
 		return ResponseEntity.noContent().build();
 	}
 }
