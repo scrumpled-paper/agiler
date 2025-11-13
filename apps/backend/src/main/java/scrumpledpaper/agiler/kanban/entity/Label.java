@@ -39,4 +39,10 @@ public class Label extends BaseEntity {
 
 	@Column(name = "description")
 	private String description;
+
+	public void update(String name, String color, String description) {
+		this.name = name;
+		this.color = color;
+		this.description = description;
+	}
 }
