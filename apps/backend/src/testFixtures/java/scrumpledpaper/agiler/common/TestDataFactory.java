@@ -154,4 +154,8 @@ public class TestDataFactory {
 		Label label = LabelFixture.createLabel(project, name, color, description);
 		return labelRepository.save(label);
 	}
+
+	public Label findLabelById(Long id) {
+		return labelRepository.findById(id).orElseThrow();
+	}
 }
