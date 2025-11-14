@@ -10,7 +10,7 @@ import { http, HttpResponse } from 'msw'
 // MSW는 setupTests.ts에서 자동으로 시작됨
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  import.meta.env.VITE_API_BASE_URL || 'http://43.200.4.72:8080'
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
