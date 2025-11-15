@@ -28,6 +28,6 @@ public class IssueTemplateController {
 		@PathVariable String projectUrl,
 		@RequestBody @Valid IssueTemplateCreateReqDto issueTemplateCreateReqDto) {
 		issueTemplateService.createIssueTemplate(customUserDetails.getUserId(), projectUrl, issueTemplateCreateReqDto);
-		return ResponseEntity.created(null).build();
+		return ResponseEntity.noContent().build();
 	}
 }

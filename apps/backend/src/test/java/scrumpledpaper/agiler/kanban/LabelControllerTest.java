@@ -49,7 +49,7 @@ public class LabelControllerTest {
 		}
 
 		@Test
-		@DisplayName("201 - 라벨 생성 성공")
+		@DisplayName("204 - 라벨 생성 성공")
 		public void labelCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -64,7 +64,7 @@ public class LabelControllerTest {
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
-				.andExpect(status().isCreated())
+				.andExpect(status().isNoContent())
 				.andReturn().getResponse().getContentAsString();
 
 			// then
