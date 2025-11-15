@@ -7,4 +7,6 @@ import scrumpledpaper.agiler.template.entity.IssueTemplate;
 
 public interface IssueTemplateRepository extends JpaRepository<IssueTemplate, Long> {
 	List<IssueTemplate> findByProjectId(Long projectId);
+
+	List<IssueTemplate> findAllByProjectId(Long id);
 }
