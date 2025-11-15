@@ -270,4 +270,66 @@ public class IssueTemplateControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("get issue template list")
+	class GetIssueTemplateList {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 이슈 생성 템플릿 리스트 조회 성공")
+		public void getIssueTemplateListSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			IssueTemplate template1 = testDataFactory.createIssueTemplate(
+				project,
+				"버그",
+				"버그 이슈 템플릿",
+				"Template 1"
+			);
+			IssueTemplate template2 = testDataFactory.createIssueTemplate(
+				project,
+				"기능",
+				"기능 이슈 템플릿",
+				"Template 2"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(template1.getTitle());
+			assertThat(response).contains(template2.getTitle());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 리스트 조회 시도")
+		public void getIssueTemplateListForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, testDataFactory.createAuth(defaultImage).getUser());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
 }
