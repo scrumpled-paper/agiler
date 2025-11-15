@@ -12,8 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
@@ -39,4 +39,10 @@ public class IssueTemplate extends BaseEntity {
 
 	@Column(name = "contents")
 	private String contents;
+
+	public void update(String title, String description, String contents) {
+		this.title = title;
+		this.description = description;
+		this.contents = contents;
+	}
 }
