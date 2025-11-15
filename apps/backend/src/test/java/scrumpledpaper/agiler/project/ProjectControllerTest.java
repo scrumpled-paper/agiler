@@ -32,6 +32,8 @@ import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Role;
+import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
+import scrumpledpaper.agiler.template.entity.IssueTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -98,6 +100,10 @@ public class ProjectControllerTest {
 			List<Label> labels = testDataFactory.findLabelsByProjectId(createdProject.getId());
 			DefaultLabel[] defaultLabels = DefaultLabel.values();
 			assertThat(labels).hasSize(defaultLabels.length);
+
+			List<IssueTemplate> issueTemplates = testDataFactory.findIssueTemplatesByProjectId(createdProject.getId());
+			DefaultIssueTemplate[] defaultIssueTemplates = DefaultIssueTemplate.values();
+			assertThat(issueTemplates).hasSize(defaultIssueTemplates.length);
 		}
 
 		@Test

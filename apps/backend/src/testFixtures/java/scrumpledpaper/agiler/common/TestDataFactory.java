@@ -13,6 +13,8 @@ import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
+import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.repository.IssueTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
@@ -29,6 +31,7 @@ public class TestDataFactory {
 	private final LabelRepository labelRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
+	private final IssueTemplateRepository issueTemplateRepository;
 	private final EntityManager entityManager;
 
 	public Image createDefaultImage() {
@@ -157,5 +160,9 @@ public class TestDataFactory {
 
 	public Label findLabelById(Long id) {
 		return labelRepository.findById(id).orElseThrow();
+	}
+
+	public List<IssueTemplate> findIssueTemplatesByProjectId(Long projectId) {
+		return issueTemplateRepository.findByProjectId(projectId);
 	}
 }
