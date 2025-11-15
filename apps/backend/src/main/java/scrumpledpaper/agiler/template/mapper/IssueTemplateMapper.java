@@ -11,5 +11,8 @@ import scrumpledpaper.agiler.template.entity.IssueTemplate;
 @Mapper(componentModel = "spring")
 public interface IssueTemplateMapper {
 	@Mapping(target = "id", ignore = true)
+	IssueTemplate toEntity(Project project, DefaultIssueTemplate defaultIssueTemplate);
+
+	@Mapping(target = "id", ignore = true)
 	IssueTemplate toEntity(Project project, IssueTemplateCreateReqDto issueTemplateCreateReqDto);
 }

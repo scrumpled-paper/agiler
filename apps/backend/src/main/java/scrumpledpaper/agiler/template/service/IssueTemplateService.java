@@ -28,3 +28,14 @@ public class IssueTemplateService {
 				.toList()
 		);
 	}
+
+	@Transactional
+	public void createIssueTemplate(long userId, String projectUrl, IssueTemplateCreateReqDto issueTemplateCreateReqDto) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		issueTemplateRepository.save(
+			issueTemplateMapper.toEntity(project, issueTemplateCreateReqDto)
+		);
+	}
+}
