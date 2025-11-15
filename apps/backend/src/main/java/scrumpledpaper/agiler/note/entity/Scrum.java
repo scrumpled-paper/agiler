@@ -1,7 +1,5 @@
 package scrumpledpaper.agiler.note.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,14 +12,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "note")
-public class Note extends BaseEntity {
+@Table(name = "scrum")
+public class Scrum extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -30,10 +28,6 @@ public class Note extends BaseEntity {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "project_id")
 	private Project project;
-
-	@Column(name = "type", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private NoteType type;
 
 	@Column(name = "title", nullable = false)
 	private String title;
