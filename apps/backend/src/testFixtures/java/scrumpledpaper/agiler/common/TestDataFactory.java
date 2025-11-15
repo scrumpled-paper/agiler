@@ -165,4 +165,18 @@ public class TestDataFactory {
 	public List<IssueTemplate> findIssueTemplatesByProjectId(Long projectId) {
 		return issueTemplateRepository.findByProjectId(projectId);
 	}
+
+	public IssueTemplate createIssueTemplate(Project project, String title, String description, String contents) {
+		IssueTemplate issueTemplate = IssueTemplateFixture.createIssueTemplate(
+			project,
+			title,
+			description,
+			contents
+		);
+		return issueTemplateRepository.save(issueTemplate);
+	}
+
+	public IssueTemplate findIssueTemplateById(Long id) {
+		return issueTemplateRepository.findById(id).orElseThrow();
+	}
 }
