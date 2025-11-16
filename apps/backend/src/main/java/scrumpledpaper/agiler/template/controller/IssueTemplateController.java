@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateResDto;
@@ -67,5 +69,15 @@ public class IssueTemplateController {
 		@PathVariable Long templateId) {
 		IssueTemplateDetailResDto template = issueTemplateService.getIssueTemplate(customUserDetails.getUserId(), projectUrl, templateId);
 		return ResponseEntity.ok(template);
+	}
+
+	@DeleteMapping("/{projectUrl}/issues/templates")
+	public ResponseEntity<Void> deleteTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody IssueTemplateDeleteReqDto issueTemplateDeleteReqDto) {
+		issueTemplateService.deleteIssueTemplate(customUserDetails.getUserId(), projectUrl, issueTemplateDeleteReqDto.templateId());
+		return ResponseEntity.noContent().build();
 	}
 }

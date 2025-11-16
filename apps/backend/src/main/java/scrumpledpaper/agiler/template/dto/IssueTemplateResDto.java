@@ -1,7 +1,7 @@
 package scrumpledpaper.agiler.template.dto;
 
 public record IssueTemplateResDto(
-	long id,
+	long templateId,
 	String title,
 	String description
 ) {}
