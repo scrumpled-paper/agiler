@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateUpdateReqDto;
@@ -56,5 +57,15 @@ public class IssueTemplateController {
 		List<IssueTemplateResDto> templates = issueTemplateService.getIssueTemplateList(customUserDetails.getUserId(), projectUrl);
 		IssueTemplateListResDto labelListResDto = new IssueTemplateListResDto(templates, templates.size());
 		return ResponseEntity.ok(labelListResDto);
+	}
+
+	@GetMapping("/{projectUrl}/issues/templates/{templateId}")
+	public ResponseEntity<IssueTemplateDetailResDto> getTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long templateId) {
+		IssueTemplateDetailResDto template = issueTemplateService.getIssueTemplate(customUserDetails.getUserId(), projectUrl, templateId);
+		return ResponseEntity.ok(template);
 	}
 }
