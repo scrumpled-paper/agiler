@@ -13,7 +13,7 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
-import scrumpledpaper.agiler.template.dto.IssueTemplateListResDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
@@ -71,5 +71,12 @@ public class IssueTemplateService {
 		return issueTemplates.stream()
 			.map(issueTemplateMapper::toDto)
 			.toList();
+	}
+
+	public IssueTemplateDetailResDto getIssueTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		IssueTemplate issueTemplate = findById(templateId);
+		return issueTemplateMapper.toDetailDto(issueTemplate);
 	}
 }
