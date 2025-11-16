@@ -1,6 +1,7 @@
 package scrumpledpaper.agiler.template.service;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,8 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateListResDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateResDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
@@ -58,5 +61,15 @@ public class IssueTemplateService {
 	private IssueTemplate findById(Long id) {
 		return issueTemplateRepository.findById(id)
 			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND));
+	}
+
+	public List<IssueTemplateResDto> getIssueTemplateList(long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		List<IssueTemplate> issueTemplates = issueTemplateRepository.findAllByProjectId(project.getId());
+		return issueTemplates.stream()
+			.map(issueTemplateMapper::toDto)
+			.toList();
 	}
 }

@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateResDto;
 import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
 
@@ -21,4 +22,6 @@ public interface IssueTemplateMapper {
 	@Mapping(target = "description", source = "issueTemplateCreateReqDto.description")
 	@Mapping(target = "contents", source = "issueTemplateCreateReqDto.contents")
 	IssueTemplate toEntity(Project project, IssueTemplateCreateReqDto issueTemplateCreateReqDto);
+
+	IssueTemplateResDto toDto(IssueTemplate issueTemplate);
 }
