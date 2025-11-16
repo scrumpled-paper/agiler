@@ -451,7 +451,7 @@ public class IssueTemplateControllerTest {
 
 			// when
 			mockMvc.perform(
-					delete("/api/v1/projects/{projectUrl}/issues/templates/{templateId}", url, template.getId())
+					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(deleteJson))
@@ -482,7 +482,7 @@ public class IssueTemplateControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					delete("/api/v1/projects/{projectUrl}/issues/templates/{templateId}", url, template.getId())
+					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
 						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(deleteJson))
