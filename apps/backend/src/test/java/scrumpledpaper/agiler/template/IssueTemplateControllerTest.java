@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
 
 @IntegrationTest
@@ -71,12 +72,11 @@ public class IssueTemplateControllerTest {
 
 			// then
 			List<IssueTemplate> issueTemplates = testDataFactory.findIssueTemplatesByProjectId(project.getId());
-			assertThat(issueTemplates)
-				.anyMatch(issueTemplate ->
-					issueTemplate.getTitle().equals(createReqDto.title()) &&
-						issueTemplate.getDescription().equals(createReqDto.description()) &&
-						issueTemplate.getContents().equals(createReqDto.contents())
-				);
+			assert(issueTemplates.stream().anyMatch(issueTemplate ->
+				issueTemplate.getTitle().equals(createReqDto.title()) &&
+				issueTemplate.getDescription().equals(createReqDto.description()) &&
+				issueTemplate.getContents().equals(createReqDto.contents())
+			));
 		}
 
 		@Test
@@ -122,6 +122,144 @@ public class IssueTemplateControllerTest {
 			// when
 			String response = mockMvc.perform(
 					post("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("update issue template")
+	class UpdateIssueTemplate {
+		private IssueTemplate existingTemplate;
+
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 이슈 생성 템플릿 수정 성공")
+		public void issueUpdateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			existingTemplate = testDataFactory.createIssueTemplate(
+				project,
+				"버그",
+				"버그 이슈 템플릿",
+				"Old Template"
+			);
+			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+				existingTemplate.getId(),
+				"update template",
+				"update issue template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			IssueTemplate updatedTemplate = testDataFactory.findIssueTemplateById(existingTemplate.getId());
+			assertThat(updatedTemplate.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updatedTemplate.getDescription()).isEqualTo(updateReqDto.description());
+			assertThat(updatedTemplate.getContents()).isEqualTo(updateReqDto.contents());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈 템플릿 수정 시도")
+		public void issueUpdateTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update issue template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 수정 시도")
+		public void issueUpdateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			existingTemplate = testDataFactory.createIssueTemplate(
+				project,
+				"버그",
+				"버그 이슈 템플릿",
+				"Old Template"
+			);
+			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update issue template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 템플릿 수정 시도")
+		public void issueUpdateProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non_existing_url";
+			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update issue template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/issues/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))

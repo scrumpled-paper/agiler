@@ -26,7 +26,9 @@ public enum ErrorCode {
 	PROJECT_OWNER_MINIMUM_REQUIRED(400, "P006", "프로젝트 관리자는 최소 한 명 이상이어야 합니다."),
 	INVALID_ROLE(400, "P007", "유효하지 않은 역할입니다."),
 
-	LABEL_NOT_FOUND(404, "L001", "라벨을 찾을 수 없습니다.");
+	LABEL_NOT_FOUND(404, "L001", "라벨을 찾을 수 없습니다."),
+
+	ISSUE_TEMPLATE_NOT_FOUND(404, "T001", "이슈 템플릿을 찾을 수 없습니다.");
 
 	private final int status;
 	private final String code;
