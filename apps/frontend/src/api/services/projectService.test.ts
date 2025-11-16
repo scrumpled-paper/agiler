@@ -36,8 +36,8 @@ describe('projectService', () => {
         ],
         totalPages: 1,
         totalElements: 1,
-        pageNumber: 0,
-        size: 6,
+        currentPage: 0,
+        pageSize: 6,
       }
 
       vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
@@ -108,10 +108,10 @@ describe('projectService', () => {
             summary: 'Test project 1',
           },
         ],
+        currentPage: 0,
         totalPages: 1,
         totalElements: 1,
-        pageNumber: 0,
-        size: 6,
+        pageSize: 6,
       }
 
       vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
@@ -185,8 +185,7 @@ describe('projectService', () => {
           },
         ],
         totalPages: 1,
-        totalElements: 1,
-        pageNumber: 0,
+        number: 0,
         size: 5,
       }
 

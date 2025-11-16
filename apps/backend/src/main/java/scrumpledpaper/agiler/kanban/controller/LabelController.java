@@ -58,5 +58,26 @@ public class LabelController {
 		labelService.updateLabel(customUserDetails.getUserId(), projectUrl, labelId, labelUpdateReqDto);
 		return ResponseEntity.noContent().build();
 	}
+
+	@GetMapping("/{projectUrl}/labels")
+	public ResponseEntity<LabelListResDto> getLabels(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl) {
+		List<LabelResDto> labels = labelService.getLabelList(customUserDetails.getUserId(), projectUrl);
+		LabelListResDto labelListResDto = new LabelListResDto(labels, labels.size());
+		return ResponseEntity.ok(labelListResDto);
+	}
+
+	@PutMapping("/{projectUrl}/labels/{labelId}")
+	public ResponseEntity<Void> updateLabel(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long labelId,
+		@RequestBody @Valid LabelUpdateReqDto labelUpdateReqDto) {
+		labelService.updateLabel(customUserDetails.getUserId(), projectUrl, labelId, labelUpdateReqDto);
+		return ResponseEntity.noContent().build();
+	}
 }
 
