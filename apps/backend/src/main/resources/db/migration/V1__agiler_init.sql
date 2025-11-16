@@ -113,10 +113,9 @@ CREATE TABLE `issue_status_history` (
     FOREIGN KEY (`to_kanban_config`) REFERENCES `kanban_config`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `note` (
+CREATE TABLE `retro` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `project_id` BIGINT NOT NULL,
-    `type` ENUM('RETRO', 'SCRUM', 'MEETING') NOT NULL,
     `title` VARCHAR(20) NOT NULL,
     `contents` TEXT,
     `created_at` DATETIME NOT NULL,
@@ -125,14 +124,58 @@ CREATE TABLE `note` (
     FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `note_profile` (
+CREATE TABLE `scrum` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `note_id` BIGINT NOT NULL,
+    `project_id` BIGINT NOT NULL,
+    `title` VARCHAR(20) NOT NULL,
+    `contents` TEXT,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `meeting` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `project_id` BIGINT NOT NULL,
+    `title` VARCHAR(20) NOT NULL,
+    `contents` TEXT,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `retro_profile` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `retro_id` BIGINT NOT NULL,
     `profile_id` BIGINT NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME,
-    FOREIGN KEY (`note_id`) REFERENCES `note`(`id`),
+    FOREIGN KEY (`retro_id`) REFERENCES `retro`(`id`),
+    FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `meeting_profile` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `meeting_id` BIGINT NOT NULL,
+    `profile_id` BIGINT NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    FOREIGN KEY (`meeting_id`) REFERENCES `meeting`(`id`),
+    FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `scrum_profile` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `scrum_id` BIGINT NOT NULL,
+    `profile_id` BIGINT NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    FOREIGN KEY (`scrum_id`) REFERENCES `scrum`(`id`),
     FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

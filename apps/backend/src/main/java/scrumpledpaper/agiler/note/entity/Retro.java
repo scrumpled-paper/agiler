@@ -1,4 +1,4 @@
-package scrumpledpaper.agiler.template.entity;
+package scrumpledpaper.agiler.note.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,20 +8,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
-@Table(name = "issue_template")
-public class IssueTemplate extends BaseEntity {
+@Table(name = "retro")
+public class Retro extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -33,9 +29,6 @@ public class IssueTemplate extends BaseEntity {
 
 	@Column(name = "title", nullable = false)
 	private String title;
-
-	@Column(name = "description")
-	private String description;
 
 	@Column(name = "contents")
 	private String contents;

@@ -35,7 +35,7 @@ public class LabelController {
 		@PathVariable String projectUrl,
 		@RequestBody @Valid LabelCreateReqDto labelCreateReqDto) {
 		labelService.createLabel(customUserDetails.getUserId(), projectUrl, labelCreateReqDto);
-		return ResponseEntity.created(null).build();
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/{projectUrl}/labels")
@@ -59,4 +59,3 @@ public class LabelController {
 		return ResponseEntity.noContent().build();
 	}
 }
-

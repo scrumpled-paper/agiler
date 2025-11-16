@@ -28,6 +28,7 @@ import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
+import scrumpledpaper.agiler.template.service.IssueTemplateService;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.service.UserService;
 
@@ -39,6 +40,7 @@ public class ProjectService {
 	private final ImageService imageService;
 	private final LabelService labelService;
 	private final ProfileService profileService;
+	private final IssueTemplateService issueTemplateService;
 	private final ProjectRepository projectRepository;
 	private final ProjectValidator projectValidator;
 
@@ -55,6 +57,7 @@ public class ProjectService {
 
 		profileService.createDefaultProfile(user, savedProject, Role.OWNER);
 		labelService.createDefaultLabels(savedProject);
+		issueTemplateService.createDefaultIssueTemplates(savedProject);
 		return projectMapper.toDto(savedProject);
 	}
 
