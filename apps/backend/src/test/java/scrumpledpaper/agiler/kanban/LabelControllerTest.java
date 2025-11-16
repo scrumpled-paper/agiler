@@ -142,4 +142,80 @@ public class LabelControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Get Labels Tests")
+	class GetLabelsTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 라벨 목록 조회 성공")
+		public void getLabelsSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Label label1 = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
+			Label label2 = testDataFactory.createLabel(project, "Label 2", "Description 2", "#222222");
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(label1.getName());
+			assertThat(response).contains(label2.getName());
+			assertThat(response).contains(label1.getColor());
+			assertThat(response).contains(label2.getColor());
+			assertThat(response).contains(label1.getDescription());
+			assertThat(response).contains(label2.getDescription());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 라벨 목록 조회 요청")
+		public void getLabelsForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 라벨 목록 조회 요청")
+		public void getLabelsProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non_existent_project";
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
 }

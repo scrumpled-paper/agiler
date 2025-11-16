@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.LabelResDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -15,4 +16,6 @@ public interface LabelMapper {
 
 	@Mapping(target = "id", ignore = true)
 	Label toEntity(Project project, DefaultLabel defaultLabel);
+
+	LabelResDto toDto(Label label);
 }
