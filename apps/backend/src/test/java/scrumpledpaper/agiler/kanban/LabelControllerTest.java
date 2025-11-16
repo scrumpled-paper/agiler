@@ -218,4 +218,112 @@ public class LabelControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Update Label Tests")
+	class UpdateLabelTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 라벨 수정 성공")
+		public void labelUpdateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Label label = testDataFactory.createLabel(project, "Old Label", "Old Description", "#000000");
+			LabelCreateReqDto updateReqDto = new LabelCreateReqDto("Updated Label", "Updated Description", "#FFFFFF");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/labels/{labelId}", url, label.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent());
+
+			// then
+			Label updatedLabel = testDataFactory.findLabelById(label.getId());
+			assertThat(updatedLabel.getName()).isEqualTo(updateReqDto.name());
+			assertThat(updatedLabel.getDescription()).isEqualTo(updateReqDto.description());
+			assertThat(updatedLabel.getColor()).isEqualTo(updateReqDto.color());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 라벨 ID의 수정 요청")
+		public void labelUpdateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Long nonExistentLabelId = 9999L;
+			LabelCreateReqDto updateReqDto = new LabelCreateReqDto("Updated Label", "Updated Description", "#FFFFFF");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/labels/{labelId}", url, nonExistentLabelId)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.LABEL_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 라벨 수정 요청")
+		public void labelUpdateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Label label = testDataFactory.createLabel(project, "Old Label", "Old Description", "#000000");
+			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
+			LabelCreateReqDto updateReqDto = new LabelCreateReqDto("Updated Label", "Updated Description", "#FFFFFF");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/labels/{labelId}", url, label.getId())
+						.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 라벨 수정 요청")
+		public void labelUpdateProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non_existent_project";
+			Project project = testDataFactory.createProjectAndOwnerProfile("some_other_url", auth.getUser());
+			Label label = testDataFactory.createLabel(project, "Old Label", "Old Description", "#000000");
+			LabelCreateReqDto updateReqDto = new LabelCreateReqDto("Updated Label", "Updated Description", "#FFFFFF");
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/labels/{labelId}", url, label.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
 }

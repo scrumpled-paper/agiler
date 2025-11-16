@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.LabelResDto;
+import scrumpledpaper.agiler.kanban.dto.LabelUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.mapper.LabelMapper;
@@ -49,5 +52,17 @@ public class LabelService {
 		return labels.stream()
 			.map(labelMapper::toDto)
 			.toList();
+	}
+
+	@Transactional
+	public void updateLabel(long userId, String projectUrl, Long labelId, LabelUpdateReqDto labelUpdateReqDto) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Label label = findLabelById(labelId);
+		label.update(labelUpdateReqDto.name(), labelUpdateReqDto.color(), labelUpdateReqDto.description());
+	}
+
+	public Label findLabelById(Long labelId) {
+		return labelRepository.findById(labelId).orElseThrow(() -> new CustomException(ErrorCode.LABEL_NOT_FOUND));
 	}
 }
