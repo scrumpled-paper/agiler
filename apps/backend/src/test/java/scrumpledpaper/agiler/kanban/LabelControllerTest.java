@@ -69,11 +69,12 @@ public class LabelControllerTest {
 
 			// then
 			List<Label> labels = testDataFactory.findLabelsByProjectId(project.getId());
-			assert(labels.stream().anyMatch(label ->
-				label.getName().equals(createReqDto.name()) &&
-				label.getDescription().equals(createReqDto.description()) &&
-				label.getColor().equals(createReqDto.color())
-			));
+			assertThat(labels)
+				.anyMatch(label ->
+					label.getName().equals(createReqDto.name()) &&
+					label.getDescription().equals(createReqDto.description()) &&
+					label.getColor().equals(createReqDto.color())
+				);
 		}
 
 		@ParameterizedTest

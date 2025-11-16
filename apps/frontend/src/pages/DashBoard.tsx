@@ -2,20 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import UserProfileBox from '@/components/UserProfileBox'
 import ProjectList from '@/components/ProjectList'
 import { useState } from 'react'
-import { fetchMockContents } from '@/utils/mockData'
+import { getProjectList } from '@/api/services/projectService'
 
 export default function DashBoard() {
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1) // UI는 1-based pagination
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['contents', currentPage],
-    queryFn: () => fetchMockContents(currentPage, 6),
-    // keepPreviousData: true, // 페이지 전환 시 이전 데이터 유지
+    queryKey: ['projects', 'dashboard', currentPage],
+    queryFn: () => getProjectList({ page: currentPage - 1, size: 6 }), // API는 0-based
   })
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    // window.scrollTo({ top: 0, behavior: 'smooth' })
+    setCurrentPage(page) // UI page (1-based)
   }
 
   if (isLoading) {
@@ -41,7 +39,7 @@ export default function DashBoard() {
 
       <ProjectList
         contents={data.contents}
-        currentPage={currentPage}
+        currentPage={currentPage} // UI page (1-based)
         totalPages={data.totalPages}
         onPageChange={handlePageChange}
       />

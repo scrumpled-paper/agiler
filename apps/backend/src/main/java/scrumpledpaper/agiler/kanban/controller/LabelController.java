@@ -59,4 +59,3 @@ public class LabelController {
 		return ResponseEntity.noContent().build();
 	}
 }
-
