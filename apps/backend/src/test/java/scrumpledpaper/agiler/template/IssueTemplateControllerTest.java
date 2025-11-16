@@ -72,11 +72,12 @@ public class IssueTemplateControllerTest {
 
 			// then
 			List<IssueTemplate> issueTemplates = testDataFactory.findIssueTemplatesByProjectId(project.getId());
-			assert(issueTemplates.stream().anyMatch(issueTemplate ->
-				issueTemplate.getTitle().equals(createReqDto.title()) &&
-				issueTemplate.getDescription().equals(createReqDto.description()) &&
-				issueTemplate.getContents().equals(createReqDto.contents())
-			));
+			assertThat(issueTemplates)
+				.anyMatch(issueTemplate ->
+					issueTemplate.getTitle().equals(createReqDto.title()) &&
+						issueTemplate.getDescription().equals(createReqDto.description()) &&
+						issueTemplate.getContents().equals(createReqDto.contents())
+				);
 		}
 
 		@Test
