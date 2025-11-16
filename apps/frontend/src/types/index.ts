@@ -1,18 +1,3 @@
-export interface ContentItem {
-  title: string
-  url: string
-  imageUrl: string
-  summary: string
-}
-
-export interface PaginatedContentResponse {
-  contents: ContentItem[]
-  pageSize: number
-  currentPage: number
-  totalPages: number
-  totalItems: number
-}
-
 export interface UserInfo {
   nickname: string
   email?: string
@@ -58,7 +43,7 @@ export interface GetProjectMembersResponse {
 
 // API 요청 시 필요한 파라미터 타입
 export interface GetProjectMembersParams {
-  projectUrl: number
+  projectUrl: string
   size: number
   page: number
 }

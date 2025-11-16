@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import ProjectCard from './ProjectCard'
 import PaginationDemo from './Pagination'
-import type { ContentItem } from '@/types/index'
+import type { ProjectInfo } from '@/types/index'
 import { Button } from './ui/button'
 import JoinProjectModal from './JoinProjectModal'
 
 interface ProjectListProps {
-  contents: ContentItem[]
+  contents: ProjectInfo[]
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
@@ -34,7 +34,7 @@ export default function ProjectList({
         </Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {contents.map((item: ContentItem) => (
+        {contents.map((item: ProjectInfo) => (
           <ProjectCard props={item} key={item.url} />
         ))}
       </div>
