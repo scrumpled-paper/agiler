@@ -35,9 +35,9 @@ describe('sidebarConfigs', () => {
   })
 
   it('should have user-info header for all contexts', () => {
-    expect(sidebarConfigs.dashboard.header.type).toBe('user-info')
-    expect(sidebarConfigs.project.header.type).toBe('user-info')
-    expect(sidebarConfigs['project-settings'].header.type).toBe('user-info')
+    expect(sidebarConfigs.dashboard.header?.type).toBe('user-info')
+    expect(sidebarConfigs.project.header?.type).toBe('user-info')
+    expect(sidebarConfigs['project-settings'].header?.type).toBe('user-info')
   })
 
   it('should have sections array for all contexts', () => {

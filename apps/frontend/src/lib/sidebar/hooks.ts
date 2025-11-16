@@ -4,8 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useLocation, useParams } from 'react-router-dom'
 import type { SidebarContext, SidebarData } from './types'
 import { getSidebarContext } from './config'
-import { generateMockContents } from '@/utils/mockData'
-import { fetchMockProjectMembers } from '@/utils/mockData'
+import { getProjectList, getProjectMember } from '@/api/services/projectService'
 import type { ProjectInfo } from '@/types'
 
 /**
@@ -21,17 +20,11 @@ export const useSidebarContext = (): SidebarContext => {
  */
 export const useProjectList = () => {
   return useQuery<ProjectInfo[]>({
-    queryKey: ['projects'],
+    queryKey: ['projects', 'sidebar'],
     queryFn: async () => {
-      // TODO: 실제 API 호출로 대체
-      // 현재는 mock 데이터 사용
-      const mockContents = generateMockContents(10)
-      return mockContents.map(item => ({
-        title: item.title,
-        url: item.url,
-        imageUrl: item.imageUrl,
-        summary: item.summary,
-      }))
+      // 사이드바용: 페이지네이션 없이 모든 프로젝트 조회
+      const response = await getProjectList({ page: 0, size: 100 })
+      return response.contents
     },
   })
 }
@@ -45,9 +38,13 @@ export const useProjectMembers = (projectUrl?: string, enabled = true) => {
     queryFn: () => {
       if (!projectUrl) throw new Error('projectUrl is required')
 
-      return fetchMockProjectMembers({
-        projectUrl: Number(projectUrl),
-        size: 5,
+      console.log(
+        '[useProjectMembers] Fetching members for projectUrl:',
+        projectUrl
+      )
+      return getProjectMember({
+        projectUrl,
+        size: 10,
         page: 0,
       })
     },
