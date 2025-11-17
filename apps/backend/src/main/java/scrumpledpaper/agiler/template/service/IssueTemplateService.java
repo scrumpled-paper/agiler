@@ -67,7 +67,7 @@ public class IssueTemplateService {
 		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
 		Project project = context.project();
 
-		List<IssueTemplate> issueTemplates = issueTemplateRepository.findAllByProjectId(project.getId());
+		List<IssueTemplate> issueTemplates = issueTemplateRepository.findByProjectId(project.getId());
 		return issueTemplates.stream()
 			.map(issueTemplateMapper::toDto)
 			.toList();
