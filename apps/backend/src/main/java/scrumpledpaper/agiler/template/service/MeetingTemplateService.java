@@ -13,6 +13,8 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateDetailResDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultMeetingTemplate;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
@@ -70,6 +72,14 @@ public class MeetingTemplateService {
 		return meetingTemplates.stream()
 			.map(meetingTemplateMapper::toDto)
 			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public MeetingTemplateDetailResDto getMeetingTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		MeetingTemplate meetingTemplate = findById(templateId);
+		return meetingTemplateMapper.toDetailDto(meetingTemplate);
 	}
 
 }

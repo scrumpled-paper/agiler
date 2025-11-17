@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateUpdateReqDto;
@@ -49,6 +50,7 @@ public class MeetingTemplateController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@GetMapping("/{projectUrl}/meetings/templates")
 	public ResponseEntity<MeetingTemplateListResDto> getMeetingTemplates(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -56,6 +58,16 @@ public class MeetingTemplateController {
 		List<MeetingTemplateResDto> templates = meetingTemplateService.getMeetingTemplateList(customUserDetails.getUserId(), projectUrl);
 		MeetingTemplateListResDto meetingTemplateListResDto = new MeetingTemplateListResDto(templates, templates.size());
 		return ResponseEntity.ok(meetingTemplateListResDto);
+	}
+
+	@GetMapping("/{projectUrl}/meetings/templates/{templateId}")
+	public ResponseEntity<MeetingTemplateDetailResDto> getMeetingTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long templateId) {
+		MeetingTemplateDetailResDto template = meetingTemplateService.getMeetingTemplate(customUserDetails.getUserId(), projectUrl, templateId);
+		return ResponseEntity.ok(template);
 	}
 
 }

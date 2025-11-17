@@ -5,6 +5,8 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateDetailResDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateResDto;
 import scrumpledpaper.agiler.template.entity.DefaultMeetingTemplate;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 
@@ -25,5 +27,6 @@ public interface MeetingTemplateMapper {
 	@Mapping(target = "templateId", source = "id")
 	MeetingTemplateResDto toDto(MeetingTemplate meetingTemplate);
 
+	MeetingTemplateDetailResDto toDetailDto(MeetingTemplate meetingTemplate);
 }
 
