@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
@@ -57,6 +58,16 @@ public class ScrumTemplateController {
 		List<ScrumTemplateResDto> templates = scrumTemplateService.getScrumTemplateList(customUserDetails.getUserId(), projectUrl);
 		ScrumTemplateListResDto scrumTemplateListResDto = new ScrumTemplateListResDto(templates, templates.size());
 		return ResponseEntity.ok(scrumTemplateListResDto);
+	}
+
+	@GetMapping("/{projectUrl}/scrums/templates/{templateId}")
+	public ResponseEntity<ScrumTemplateDetailResDto> getScrumTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long templateId) {
+		ScrumTemplateDetailResDto template = scrumTemplateService.getScrumTemplate(customUserDetails.getUserId(), projectUrl, templateId);
+		return ResponseEntity.ok(template);
 	}
 
 }

@@ -73,4 +73,12 @@ public class ScrumTemplateService {
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public ScrumTemplateDetailResDto getScrumTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		ScrumTemplate scrumTemplate = findById(templateId);
+		return scrumTemplateMapper.toDetailDto(scrumTemplate);
+	}
+
 }
