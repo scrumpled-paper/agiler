@@ -1,7 +1,11 @@
 package scrumpledpaper.agiler.template.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +18,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateListResDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.service.MeetingTemplateService;
 
@@ -41,6 +47,15 @@ public class MeetingTemplateController {
 		@RequestBody @Valid MeetingTemplateUpdateReqDto meetingTemplateUpdateReqDto) {
 		meetingTemplateService.updateMeetingTemplate(customUserDetails.getUserId(), projectUrl, meetingTemplateUpdateReqDto);
 		return ResponseEntity.noContent().build();
+	}
+
+	public ResponseEntity<MeetingTemplateListResDto> getMeetingTemplates(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl) {
+		List<MeetingTemplateResDto> templates = meetingTemplateService.getMeetingTemplateList(customUserDetails.getUserId(), projectUrl);
+		MeetingTemplateListResDto meetingTemplateListResDto = new MeetingTemplateListResDto(templates, templates.size());
+		return ResponseEntity.ok(meetingTemplateListResDto);
 	}
 
 }

@@ -1,5 +1,8 @@
 package scrumpledpaper.agiler.template.service;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,22 @@ public class MeetingTemplateService {
 			meetingTemplateUpdateReqDto.description(),
 			meetingTemplateUpdateReqDto.contents()
 		);
+	}
+
+	private MeetingTemplate findById(Long id) {
+		return meetingTemplateRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEETING_TEMPLATE_NOT_FOUND));
+	}
+
+	@Transactional(readOnly = true)
+	public List<MeetingTemplateResDto> getMeetingTemplateList(long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		List<MeetingTemplate> meetingTemplates = meetingTemplateRepository.findByProjectId(project.getId());
+		return meetingTemplates.stream()
+			.map(meetingTemplateMapper::toDto)
+			.toList();
 	}
 
 }

@@ -22,5 +22,8 @@ public interface MeetingTemplateMapper {
 	@Mapping(target = "contents", source = "meetingTemplateCreateReqDto.contents")
 	MeetingTemplate toEntity(Project project, MeetingTemplateCreateReqDto meetingTemplateCreateReqDto);
 
+	@Mapping(target = "templateId", source = "id")
+	MeetingTemplateResDto toDto(MeetingTemplate meetingTemplate);
+
 }
 
