@@ -65,4 +65,12 @@ public class LabelService {
 	public Label findLabelById(Long labelId) {
 		return labelRepository.findById(labelId).orElseThrow(() -> new CustomException(ErrorCode.LABEL_NOT_FOUND));
 	}
+
+	@Transactional
+	public void deleteLabels(long userId, String projectUrl, long id) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Label label = findLabelById(id);
+		labelRepository.delete(label);
+	}
 }
