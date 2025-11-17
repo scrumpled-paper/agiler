@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 
 @IntegrationTest
@@ -123,6 +124,144 @@ public class MeetingTemplateControllerTest {
 			// when
 			String response = mockMvc.perform(
 					post("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("update meeting template")
+	class UpdateMeetingTemplate {
+		private MeetingTemplate existingTemplate;
+
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 회의 생성 템플릿 수정 성공")
+		public void meetingTemplateUpdateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			existingTemplate = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Old Template"
+			);
+			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
+				existingTemplate.getId(),
+				"update template",
+				"update meeting template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			MeetingTemplate updatedTemplate = testDataFactory.findMeetingTemplateById(existingTemplate.getId());
+			assertThat(updatedTemplate.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updatedTemplate.getDescription()).isEqualTo(updateReqDto.description());
+			assertThat(updatedTemplate.getContents()).isEqualTo(updateReqDto.contents());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 회의 템플릿 수정 시도")
+		public void meetingTemplateUpdateTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update meeting template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.MEETING_TEMPLATE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 회의 생성 템플릿 수정 시도")
+		public void meetingTemplateUpdateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			existingTemplate = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Old Template"
+			);
+			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update meeting template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 회의 템플릿 수정 시도")
+		public void meetingTemplateUpdateProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non_existing_url";
+			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update meeting template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/meetings/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
