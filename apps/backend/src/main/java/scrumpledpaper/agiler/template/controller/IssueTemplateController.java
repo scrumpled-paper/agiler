@@ -32,7 +32,7 @@ public class IssueTemplateController {
 	private final IssueTemplateService issueTemplateService;
 
 	@PostMapping("/{projectUrl}/issues/templates")
-	public ResponseEntity<Void> createTemplate(
+	public ResponseEntity<Void> createIssueTemplate(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
@@ -42,7 +42,7 @@ public class IssueTemplateController {
 	}
 
 	@PutMapping("/{projectUrl}/issues/templates")
-	public ResponseEntity<Void> updateTemplate(
+	public ResponseEntity<Void> updateIssueTemplate(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
@@ -52,7 +52,7 @@ public class IssueTemplateController {
 	}
 
 	@GetMapping("/{projectUrl}/issues/templates")
-	public ResponseEntity<IssueTemplateListResDto> getTemplates(
+	public ResponseEntity<IssueTemplateListResDto> getIssueTemplates(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl) {
@@ -62,7 +62,7 @@ public class IssueTemplateController {
 	}
 
 	@GetMapping("/{projectUrl}/issues/templates/{templateId}")
-	public ResponseEntity<IssueTemplateDetailResDto> getTemplate(
+	public ResponseEntity<IssueTemplateDetailResDto> getIssueTemplate(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
@@ -72,7 +72,7 @@ public class IssueTemplateController {
 	}
 
 	@DeleteMapping("/{projectUrl}/issues/templates")
-	public ResponseEntity<Void> deleteTemplate(
+	public ResponseEntity<Void> deleteIssueTemplate(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,

@@ -50,7 +50,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("204 - 이슈 생성 템플릿 생성 성공")
-		public void issueCreateSuccess() throws Exception {
+		public void issueTemplateCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
@@ -83,7 +83,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 생성 시도")
-		public void issueCreateForbidden() throws Exception {
+		public void issueTemplateCreateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
@@ -110,7 +110,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 템플릿 생성 시도")
-		public void issueCreateProjectNotFound() throws Exception {
+		public void issueTemplateCreateProjectNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "non_existing_url";
@@ -147,7 +147,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("204 - 이슈 생성 템플릿 수정 성공")
-		public void issueUpdateSuccess() throws Exception {
+		public void issueTemplateUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
@@ -184,7 +184,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("404 - 존재하지 않는 이슈 템플릿 수정 시도")
-		public void issueUpdateTemplateNotFound() throws Exception {
+		public void issueTemplateUpdateTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
@@ -212,7 +212,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 수정 시도")
-		public void issueUpdateForbidden() throws Exception {
+		public void issueTemplateUpdateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
@@ -247,7 +247,7 @@ public class IssueTemplateControllerTest {
 
 		@Test
 		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 템플릿 수정 시도")
-		public void issueUpdateProjectNotFound() throws Exception {
+		public void issueTemplateUpdateProjectNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "non_existing_url";
