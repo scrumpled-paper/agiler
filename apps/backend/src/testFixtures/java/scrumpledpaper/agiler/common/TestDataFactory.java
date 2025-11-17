@@ -14,9 +14,11 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 import scrumpledpaper.agiler.template.repository.IssueTemplateRepository;
+import scrumpledpaper.agiler.template.repository.MeetingTemplateRepository;
 import scrumpledpaper.agiler.template.repository.RetroTemplateRepository;
 import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
@@ -38,6 +40,7 @@ public class TestDataFactory {
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
+	private final MeetingTemplateRepository meetingTemplateRepository;
 	private final EntityManager entityManager;
 
 	public Image createDefaultImage() {
@@ -222,4 +225,21 @@ public class TestDataFactory {
 		return retroTemplateRepository.findById(id).orElseThrow();
 	}
 
+	public List<MeetingTemplate> findMeetingTemplatesByProjectId(Long projectId) {
+		return meetingTemplateRepository.findByProjectId(projectId);
+	}
+
+	public MeetingTemplate createMeetingTemplate(Project project, String title, String description, String contents) {
+		MeetingTemplate meetingTemplate = MeetingTemplateFixture.createMeetingTemplate(
+			project,
+			title,
+			description,
+			contents
+		);
+		return meetingTemplateRepository.save(meetingTemplate);
+	}
+
+	public MeetingTemplate findMeetingTemplateById(Long id) {
+		return meetingTemplateRepository.findById(id).orElseThrow();
+	}
 }
