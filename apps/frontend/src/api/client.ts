@@ -6,17 +6,12 @@ const API_BASE_URL =
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  withCredentials: true, // 쿠키 자동 전송 활성화 (OAuth2 인증용)
 })
 
-// 요청 인터셉터
+// 요청 인터셉터 (쿠키 기반 인증이므로 Authorization 헤더 불필요)
 apiClient.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
+  config => config,
   error => Promise.reject(error)
 )
 

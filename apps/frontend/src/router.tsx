@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import NotFound from './pages/NotFound'
 import Home from './pages/Home'
+import Login from './pages/Login'
 import DashBoard from './pages/DashBoard'
 import Project from './pages/Project'
 import ProjectSetting from './pages/ProjectSetting'
@@ -9,6 +11,10 @@ import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
 
 export const routers = createBrowserRouter([
+  {
+    path: '/login',
+    element: <Login />,
+  },
   {
     path: '/',
     element: <MainLayout />,
@@ -19,19 +25,23 @@ export const routers = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: 'login',
-        element: <div>login</div>,
-      },
-      {
         path: 'dashboard',
         children: [
           {
             index: true,
-            element: <DashBoard />,
+            element: (
+              <ProtectedRoute>
+                <DashBoard />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'settings',
-            element: <ProjectSetting />,
+            element: (
+              <ProtectedRoute>
+                <ProjectSetting />
+              </ProtectedRoute>
+            ),
           },
         ],
       },
@@ -40,22 +50,38 @@ export const routers = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Project />,
+            element: (
+              <ProtectedRoute>
+                <Project />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'settings',
-            element: <ProjectSetting />,
+            element: (
+              <ProtectedRoute>
+                <ProjectSetting />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'daily-scrum',
             children: [
               {
                 index: true,
-                element: <DailyScrumList />,
+                element: (
+                  <ProtectedRoute>
+                    <DailyScrumList />
+                  </ProtectedRoute>
+                ),
               },
               {
                 path: ':scrumId',
-                element: <DailyScrum />,
+                element: (
+                  <ProtectedRoute>
+                    <DailyScrum />
+                  </ProtectedRoute>
+                ),
               },
             ],
           },
