@@ -24,6 +24,7 @@ public interface IssueTemplateMapper {
 	@Mapping(target = "contents", source = "issueTemplateCreateReqDto.contents")
 	IssueTemplate toEntity(Project project, IssueTemplateCreateReqDto issueTemplateCreateReqDto);
 
+	@Mapping(target = "templateId", source = "id")
 	IssueTemplateResDto toDto(IssueTemplate issueTemplate);
 
 	IssueTemplateDetailResDto toDetailDto(IssueTemplate issueTemplate);

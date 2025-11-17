@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateResDto;
 import scrumpledpaper.agiler.template.entity.DefaultScrumTemplate;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
@@ -21,4 +22,8 @@ public interface ScrumTemplateMapper {
 	@Mapping(target = "description", source = "scrumTemplateCreateReqDto.description")
 	@Mapping(target = "contents", source = "scrumTemplateCreateReqDto.contents")
 	ScrumTemplate toEntity(Project project, ScrumTemplateCreateReqDto scrumTemplateCreateReqDto);
+
+	@Mapping(target = "templateId", source = "id")
+	ScrumTemplateResDto toDto(ScrumTemplate scrumTemplate);
+
 }

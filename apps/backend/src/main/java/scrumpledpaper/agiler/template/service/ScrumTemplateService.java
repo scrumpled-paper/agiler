@@ -1,6 +1,7 @@
 package scrumpledpaper.agiler.template.service;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultScrumTemplate;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
@@ -58,6 +60,17 @@ public class ScrumTemplateService {
 	private ScrumTemplate findById(Long id) {
 		return scrumTemplateRepository.findById(id)
 			.orElseThrow(() -> new CustomException(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND));
+	}
+
+	@Transactional(readOnly = true)
+	public List<ScrumTemplateResDto> getScrumTemplateList(long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		List<ScrumTemplate> scrumTemplates = scrumTemplateRepository.findByProjectId(project.getId());
+		return scrumTemplates.stream()
+			.map(scrumTemplateMapper::toDto)
+			.toList();
 	}
 
 }

@@ -1,7 +1,10 @@
 package scrumpledpaper.agiler.template.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +17,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateListResDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.service.ScrumTemplateService;
 
@@ -42,6 +47,16 @@ public class ScrumTemplateController {
 		@RequestBody @Valid ScrumTemplateUpdateReqDto scrumTemplateUpdateReqDto) {
 		scrumTemplateService.updateScrumTemplate(customUserDetails.getUserId(), projectUrl, scrumTemplateUpdateReqDto);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/{projectUrl}/scrums/templates")
+	public ResponseEntity<ScrumTemplateListResDto> getScrumTemplates(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl) {
+		List<ScrumTemplateResDto> templates = scrumTemplateService.getScrumTemplateList(customUserDetails.getUserId(), projectUrl);
+		ScrumTemplateListResDto scrumTemplateListResDto = new ScrumTemplateListResDto(templates, templates.size());
+		return ResponseEntity.ok(scrumTemplateListResDto);
 	}
 
 }
