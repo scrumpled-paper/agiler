@@ -1,11 +1,19 @@
 import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
+import type { User } from '@/api/services/authService'
 
 // MSW 핸들러: 상대 경로와 절대 URL 모두 매칭
 // - 개발: /api/v1/... (Vite 프록시)
 // - 테스트/프로덕션: https://agiler.p-e.kr/api/v1/...
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'https://agiler.p-e.kr'
+
+export const MOCK_USER: User = {
+  id: 1,
+  email: 'test@agiler.com',
+  nickname: 'AgileTester',
+  imageUrl: 'https://via.placeholder.com/150',
+}
 
 // 각 경로에 대해 상대/절대 핸들러 모두 생성
 const createHandlers = (
@@ -27,12 +35,12 @@ const createPostHandlers = (
 export const handlers = [
   // 현재 사용자 정보 조회
   ...createHandlers('/api/v1/users/', () => {
-    return HttpResponse.json({
-      id: 1,
-      email: 'test@example.com',
-      nickname: '테스트유저',
-      imageUrl: 'https://via.placeholder.com/150',
-    })
+    return HttpResponse.json(MOCK_USER)
+  }),
+
+  // 로그아웃
+  ...createPostHandlers('/api/v1/logout', () => {
+    return HttpResponse.json({ message: 'Logged out successfully' })
   }),
 
   // 프로젝트 목록 조회 (메인 페이지용)
