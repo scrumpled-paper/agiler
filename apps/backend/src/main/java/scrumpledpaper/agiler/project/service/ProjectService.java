@@ -60,7 +60,7 @@ public class ProjectService {
 		profileService.createDefaultProfile(user, savedProject, Role.OWNER);
 		labelService.createDefaultLabels(savedProject);
 		issueTemplateService.createDefaultIssueTemplates(savedProject);
-		scrumTemplateService.createDefaultIssueTemplates(savedProject);
+		scrumTemplateService.createDefaultScrumTemplates(savedProject);
 		return projectMapper.toDto(savedProject);
 	}
 

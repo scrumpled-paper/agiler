@@ -186,4 +186,18 @@ public class TestDataFactory {
 	public List<ScrumTemplate> findScrumTemplatesByProjectId(Long projectId) {
 		return scrumTemplateRepository.findByProjectId(projectId);
 	}
+
+	public ScrumTemplate createScrumTemplate(Project project, String title, String description, String contents) {
+		ScrumTemplate scrumTemplate = ScrumTemplateFixture.createScrumTemplate(
+			project,
+			title,
+			description,
+			contents
+		);
+		return scrumTemplateRepository.save(scrumTemplate);
+	}
+
+	public ScrumTemplate findScrumTemplateById(Long id) {
+		return scrumTemplateRepository.findById(id).orElseThrow();
+	}
 }

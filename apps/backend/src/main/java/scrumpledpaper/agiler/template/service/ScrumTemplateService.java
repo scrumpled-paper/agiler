@@ -6,11 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultScrumTemplate;
+import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 import scrumpledpaper.agiler.template.mapper.ScrumTemplateMapper;
 import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 
@@ -21,7 +25,7 @@ public class ScrumTemplateService {
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final ProjectValidator projectValidator;
 
-	public void createDefaultIssueTemplates(Project project) {
+	public void createDefaultScrumTemplates(Project project) {
 		scrumTemplateRepository.saveAll(
 			Arrays.stream(DefaultScrumTemplate.values())
 				.map(defaultScrumTemplate -> scrumTemplateMapper.toEntity(project, defaultScrumTemplate))
@@ -38,4 +42,22 @@ public class ScrumTemplateService {
 			scrumTemplateMapper.toEntity(project, scrumTemplateCreateReqDto)
 		);
 	}
+
+	@Transactional
+	public void updateScrumTemplate(long userId, String projectUrl, ScrumTemplateUpdateReqDto scrumTemplateUpdateReqDto) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		ScrumTemplate scrumTemplate = findById(scrumTemplateUpdateReqDto.templateId());
+		scrumTemplate.update(
+			scrumTemplateUpdateReqDto.title(),
+			scrumTemplateUpdateReqDto.description(),
+			scrumTemplateUpdateReqDto.contents()
+		);
+	}
+
+	private ScrumTemplate findById(Long id) {
+		return scrumTemplateRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND));
+	}
+
 }
