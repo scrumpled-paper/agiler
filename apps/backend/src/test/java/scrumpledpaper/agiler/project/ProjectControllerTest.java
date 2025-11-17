@@ -33,9 +33,11 @@ import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
+import scrumpledpaper.agiler.template.entity.DefaultMeetingTemplate;
 import scrumpledpaper.agiler.template.entity.DefaultRetroTemplate;
 import scrumpledpaper.agiler.template.entity.DefaultScrumTemplate;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
@@ -117,6 +119,9 @@ public class ProjectControllerTest {
 			DefaultRetroTemplate[] defaultRetroTemplates = DefaultRetroTemplate.values();
 			assertThat(retroTemplates).hasSize(defaultRetroTemplates.length);
 
+			List<MeetingTemplate> meetingTemplates = testDataFactory.findMeetingTemplatesByProjectId(createdProject.getId());
+			DefaultMeetingTemplate[] defaultMeetingTemplates = DefaultMeetingTemplate.values();
+			assertThat(meetingTemplates).hasSize(defaultMeetingTemplates.length);
 		}
 
 		@Test
