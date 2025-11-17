@@ -82,5 +82,12 @@ public class MeetingTemplateService {
 		return meetingTemplateMapper.toDetailDto(meetingTemplate);
 	}
 
+	@Transactional
+	public void deleteMeetingTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		MeetingTemplate meetingTemplate = findById(templateId);
+		meetingTemplateRepository.delete(meetingTemplate);
+	}
 }
 

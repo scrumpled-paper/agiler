@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateResDto;
@@ -70,5 +71,14 @@ public class MeetingTemplateController {
 		return ResponseEntity.ok(template);
 	}
 
+	@DeleteMapping("/{projectUrl}/meetings/templates")
+	public ResponseEntity<Void> deleteMeetingTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody MeetingTemplateDeleteReqDto meetingTemplateDeleteReqDto) {
+		meetingTemplateService.deleteMeetingTemplate(customUserDetails.getUserId(), projectUrl, meetingTemplateDeleteReqDto.templateId());
+		return ResponseEntity.noContent().build();
+	}
 }
 
