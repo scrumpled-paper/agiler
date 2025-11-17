@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.LabelDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.LabelListResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelUpdateReqDto;
@@ -56,6 +58,16 @@ public class LabelController {
 		@PathVariable Long labelId,
 		@RequestBody @Valid LabelUpdateReqDto labelUpdateReqDto) {
 		labelService.updateLabel(customUserDetails.getUserId(), projectUrl, labelId, labelUpdateReqDto);
+		return ResponseEntity.noContent().build();
+	}
+
+	@DeleteMapping("/{projectUrl}/labels")
+	public ResponseEntity<Void> deleteLabels(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid LabelDeleteReqDto labelDeleteReqDto) {
+		labelService.deleteLabels(customUserDetails.getUserId(), projectUrl, labelDeleteReqDto.labelId());
 		return ResponseEntity.noContent().build();
 	}
 }
