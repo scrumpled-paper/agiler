@@ -79,4 +79,11 @@ public class IssueTemplateService {
 		IssueTemplate issueTemplate = findById(templateId);
 		return issueTemplateMapper.toDetailDto(issueTemplate);
 	}
+
+	public void deleteIssueTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		IssueTemplate issueTemplate = findById(templateId);
+		issueTemplateRepository.delete(issueTemplate);
+	}
 }

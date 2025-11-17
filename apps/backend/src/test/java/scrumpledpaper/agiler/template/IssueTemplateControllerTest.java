@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.IssueTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.IssueTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
 
@@ -416,6 +417,104 @@ public class IssueTemplateControllerTest {
 					get("/api/v1/projects/{projectUrl}/issues/templates/{templateId}", url, 9999L)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("delete issue template")
+	class DeleteIssueTemplate {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 이슈 생성 템플릿 삭제 성공")
+		public void deleteIssueTemplateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			IssueTemplate template = testDataFactory.createIssueTemplate(
+				project,
+				"버그",
+				"버그 이슈 템플릿",
+				"Template Detail"
+			);
+			IssueTemplateDeleteReqDto deleteReqDto = new IssueTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThatThrownBy(() -> testDataFactory.findIssueTemplateById(template.getId()))
+				.isInstanceOf(Exception.class);
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 삭제 시도")
+		public void deleteIssueTemplateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			IssueTemplate template = testDataFactory.createIssueTemplate(
+				project,
+				"버그",
+				"버그 이슈 템플릿",
+				"Template Detail"
+			);
+			IssueTemplateDeleteReqDto deleteReqDto = new IssueTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈 템플릿 삭제 시도")
+		public void deleteIssueTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createIssueTemplate(
+				project,
+				"버그",
+				"버그 이슈 템플릿",
+				"Template Detail"
+			);
+			IssueTemplateDeleteReqDto deleteReqDto = new IssueTemplateDeleteReqDto(9999L);
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 
