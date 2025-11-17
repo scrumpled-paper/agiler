@@ -336,5 +336,94 @@ public class MeetingTemplateControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("get meeting template detail")
+	class GetMeetingTemplateDetail {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 회의 생성 템플릿 상세 조회 성공")
+		public void getMeetingTemplateDetailSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplate template = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template Detail"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/meetings/templates/{templateId}", url, template.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(template.getTitle());
+			assertThat(response).contains(template.getContents());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 회의 생성 템플릿 상세 조회 시도")
+		public void getMeetingTemplateDetailForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
+			MeetingTemplate template = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template Detail"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/meetings/templates/{templateId}", url, template.getId())
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 회의 템플릿 상세 조회 시도")
+		public void getMeetingTemplateDetailNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template Detail"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/meetings/templates/{templateId}", url, 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.MEETING_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
+
 }
 
