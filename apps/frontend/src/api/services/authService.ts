@@ -12,6 +12,10 @@ export const authService = {
    * 로그아웃 - 서버의 accessToken 쿠키 삭제
    */
   logout: async (): Promise<void> => {
+    if (import.meta.env.DEV) {
+      localStorage.removeItem('mockUser')
+      return
+    }
     await apiClient.post('/api/v1/logout')
   },
 

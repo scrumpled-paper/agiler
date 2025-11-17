@@ -2,7 +2,8 @@ import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://43.200.4.72'
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://agiler.p-e.kr'
 
 export default function Login() {
   const [searchParams] = useSearchParams()

@@ -24,7 +24,6 @@ export function NavigationSection({ section }: NavigationSectionProps) {
     }
     return route
   }
-  console.log(section)
 
   return (
     <SidebarGroup>

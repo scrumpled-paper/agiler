@@ -14,6 +14,15 @@ export function useAuth() {
   } = useQuery<User | null>({
     queryKey: ['currentUser'],
     queryFn: async () => {
+      // 개발 환경: localStorage에 mockUser가 있으면 사용 (테스트용)
+      if (import.meta.env.DEV) {
+        const mockUser = localStorage.getItem('mockUser')
+        if (mockUser) {
+          console.log('🔧 [DEV] Using mock user from localStorage')
+          return JSON.parse(mockUser) as User
+        }
+      }
+
       try {
         return await authService.getCurrentUser()
       } catch {
@@ -28,6 +37,10 @@ export function useAuth() {
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
+      // 개발 환경: mockUser 삭제
+      if (import.meta.env.DEV) {
+        localStorage.removeItem('mockUser')
+      }
       // 사용자 정보 캐시 초기화
       queryClient.setQueryData(['currentUser'], null)
       queryClient.clear()

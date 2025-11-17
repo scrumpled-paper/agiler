@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+// 개발 환경에서는 Vite 프록시 사용, 프로덕션에서는 실제 URL 사용
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://43.200.4.72:8080'
+  import.meta.env.MODE === 'development'
+    ? '' // 개발 환경: Vite 프록시 사용 (vite.config.ts의 /api 프록시)
+    : import.meta.env.VITE_API_BASE_URL || 'https://agiler.p-e.kr'
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

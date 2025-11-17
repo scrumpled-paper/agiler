@@ -21,7 +21,6 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         items: [
           { label: 'Settings', route: '/dashboard/settings' },
           { label: 'Help', route: '/help' },
-          { label: 'Logout', route: '/login' },
         ],
       },
       {
