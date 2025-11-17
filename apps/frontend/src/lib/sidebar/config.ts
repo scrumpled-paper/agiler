@@ -21,7 +21,16 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         items: [
           { label: 'Settings', route: '/dashboard/settings' },
           { label: 'Help', route: '/help' },
+          { label: 'Logout', route: '/login' },
         ],
+      },
+      {
+        type: 'action',
+        title: 'Logout',
+        action: {
+          label: 'Logout',
+          onClick: 'logoutLink',
+        },
       },
     ],
   },
@@ -52,14 +61,14 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           { label: 'Meeting', icon: '📝', route: ':projectUrl/meeting' },
         ],
       },
-      {
-        type: 'action',
-        title: 'Members',
-        action: {
-          label: '프로젝트 참가 링크 생성',
-          onClick: 'generateLink',
-        },
-      },
+      // {
+      //   type: 'action',
+      //   title: 'Members',
+      //   action: {
+      //     label: '프로젝트 참가 링크 생성',
+      //     onClick: 'generateLink',
+      //   },
+      // },
       {
         type: 'display',
         title: 'Members',
@@ -67,6 +76,14 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         dataKey: 'members',
         hasShowMore: true,
         showMoreRoute: ':projectUrl/settings/members',
+      },
+      {
+        type: 'action',
+        title: 'Logout',
+        action: {
+          label: 'Logout',
+          onClick: 'logoutLink',
+        },
       },
     ],
   },

@@ -25,10 +25,12 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { getBreadcrumbs } from '@/lib/breadcrumbs'
+import { useAuth } from '@/hooks/use-auth'
 
 export function AppHeader() {
   const location = useLocation()
   const params = useParams<{ projectUrl?: string; scrumId?: string }>()
+  const { logout, isLoggingOut } = useAuth()
 
   // 경로에 따른 브레드크럼 생성
   const breadcrumbs = getBreadcrumbs(location.pathname, params)
@@ -74,7 +76,11 @@ export function AppHeader() {
           {/* 프로젝트 페이지에서만 표시되는 액션 */}
           {showProjectActions && (
             <>
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => alert('프로젝트 참가 링크 생성 기능은 준비 중')}
+              >
                 Share
                 <Share2 className="ml-2 h-4 w-4" />
               </Button>
@@ -122,24 +128,32 @@ export function AppHeader() {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-white">
               {showProjectActions && (
                 <>
-                  <DropdownMenuItem>Page settings</DropdownMenuItem>
-                  <DropdownMenuItem>Analytics</DropdownMenuItem>
-                  <DropdownMenuItem>Lock page</DropdownMenuItem>
+                  {/* <DropdownMenuItem>Page settings</DropdownMenuItem>
+                  <DropdownMenuItem>Analytics</DropdownMenuItem> */}
+                  <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
+                    Logout
+                  </DropdownMenuItem>
                 </>
               )}
               {isDashboard && (
                 <>
-                  <DropdownMenuItem>Dashboard settings</DropdownMenuItem>
-                  <DropdownMenuItem>Export data</DropdownMenuItem>
+                  {/* <DropdownMenuItem>Dashboard settings</DropdownMenuItem> */}
+                  {/* <DropdownMenuItem>Export data</DropdownMenuItem> */}
+                  <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
+                    Logout
+                  </DropdownMenuItem>
                 </>
               )}
               {isHome && (
                 <>
-                  <DropdownMenuItem>Preferences</DropdownMenuItem>
-                  <DropdownMenuItem>Help</DropdownMenuItem>
+                  {/* <DropdownMenuItem>Preferences</DropdownMenuItem> */}
+                  {/* <DropdownMenuItem>Help</DropdownMenuItem> */}
+                  <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
+                    Logout
+                  </DropdownMenuItem>
                 </>
               )}
             </DropdownMenuContent>

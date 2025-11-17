@@ -24,10 +24,11 @@ export function NavigationSection({ section }: NavigationSectionProps) {
     }
     return route
   }
+  console.log(section)
 
   return (
     <SidebarGroup>
-      {section.title && (
+      {section.displayTitle && (
         <SidebarGroupLabel>
           {section.icon && <span className="mr-2">{section.icon}</span>}
           {section.title}
