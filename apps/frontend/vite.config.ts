@@ -13,6 +13,15 @@ export default mergeConfig(
         '@': path.resolve(__dirname, './src'),
       },
     },
+    server: {
+      proxy: {
+        '/api': {
+          target: 'https://agiler.p-e.kr',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
   }),
   defineVitestConfig({
     test: {

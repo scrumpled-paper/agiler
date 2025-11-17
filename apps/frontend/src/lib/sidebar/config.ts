@@ -23,6 +23,14 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           { label: 'Help', route: '/help' },
         ],
       },
+      {
+        type: 'action',
+        title: 'Logout',
+        action: {
+          label: 'Logout',
+          onClick: 'logoutLink',
+        },
+      },
     ],
   },
 
@@ -52,14 +60,15 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           { label: 'Meeting', icon: '📝', route: ':projectUrl/meeting' },
         ],
       },
-      {
-        type: 'action',
-        title: 'Members',
-        action: {
-          label: '프로젝트 참가 링크 생성',
-          onClick: 'generateLink',
-        },
-      },
+      // 프로젝트 참가 링크 ui 개선될 수 있어서 남겨두었습니다.
+      // {
+      //   type: 'action',
+      //   title: 'Members',
+      //   action: {
+      //     label: '프로젝트 참가 링크 생성',
+      //     onClick: 'generateLink',
+      //   },
+      // },
       {
         type: 'display',
         title: 'Members',
@@ -67,6 +76,14 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         dataKey: 'members',
         hasShowMore: true,
         showMoreRoute: ':projectUrl/settings/members',
+      },
+      {
+        type: 'action',
+        title: 'Logout',
+        action: {
+          label: 'Logout',
+          onClick: 'logoutLink',
+        },
       },
     ],
   },

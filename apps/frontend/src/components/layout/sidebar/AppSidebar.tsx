@@ -25,13 +25,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const params = useSidebarParams()
   const config = sidebarConfigs[context]
 
-  console.log(
-    '[AppSidebar] context:',
-    context,
-    'projectUrl:',
-    params.projectUrl
-  )
-
   // 필요한 데이터 페칭
   const data = useSidebarData(context, params.projectUrl)
 
