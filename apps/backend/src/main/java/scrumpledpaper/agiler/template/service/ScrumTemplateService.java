@@ -13,6 +13,7 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateResDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultScrumTemplate;
@@ -81,4 +82,11 @@ public class ScrumTemplateService {
 		return scrumTemplateMapper.toDetailDto(scrumTemplate);
 	}
 
+	@Transactional
+	public void deleteScrumTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		ScrumTemplate scrumTemplate = findById(templateId);
+		scrumTemplateRepository.delete(scrumTemplate);
+	}
 }
