@@ -13,6 +13,7 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateResDto;
 import scrumpledpaper.agiler.template.entity.DefaultRetroTemplate;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
@@ -70,6 +71,14 @@ public class RetroTemplateService {
 		return retroTemplates.stream()
 			.map(retroTemplateMapper::toDto)
 			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public RetroTemplateDetailResDto getRetroTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		RetroTemplate retroTemplate = findById(templateId);
+		return retroTemplateMapper.toDetailDto(retroTemplate);
 	}
 
 }

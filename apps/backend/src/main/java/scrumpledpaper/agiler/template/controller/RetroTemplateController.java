@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateUpdateReqDto;
@@ -56,5 +58,16 @@ public class RetroTemplateController {
 		RetroTemplateListResDto retroTemplateListResDto = new RetroTemplateListResDto(templates, templates.size());
 		return ResponseEntity.ok(retroTemplateListResDto);
 	}
+
+	@GetMapping("/{projectUrl}/retros/templates/{templateId}")
+	public ResponseEntity<RetroTemplateDetailResDto> getRetroTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long templateId) {
+		RetroTemplateDetailResDto template = retroTemplateService.getRetroTemplate(customUserDetails.getUserId(), projectUrl, templateId);
+		return ResponseEntity.ok(template);
+	}
+
 }
 

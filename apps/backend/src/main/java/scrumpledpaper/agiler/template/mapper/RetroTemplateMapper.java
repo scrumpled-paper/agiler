@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateResDto;
 import scrumpledpaper.agiler.template.entity.DefaultRetroTemplate;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
@@ -26,5 +27,6 @@ public interface RetroTemplateMapper {
 	@Mapping(target = "templateId", source = "id")
 	RetroTemplateResDto toDto(RetroTemplate retroTemplate);
 
+	RetroTemplateDetailResDto toDetailDto(RetroTemplate retroTemplate);
 }
 
