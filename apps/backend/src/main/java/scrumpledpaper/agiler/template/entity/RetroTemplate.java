@@ -8,13 +8,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "retro_template")
 public class RetroTemplate extends BaseEntity {

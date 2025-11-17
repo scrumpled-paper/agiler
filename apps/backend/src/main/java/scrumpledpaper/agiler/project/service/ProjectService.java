@@ -29,6 +29,7 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProjectMapper;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.template.service.IssueTemplateService;
+import scrumpledpaper.agiler.template.service.RetroTemplateService;
 import scrumpledpaper.agiler.template.service.ScrumTemplateService;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.service.UserService;
@@ -42,6 +43,7 @@ public class ProjectService {
 	private final LabelService labelService;
 	private final ProfileService profileService;
 	private final IssueTemplateService issueTemplateService;
+	private final RetroTemplateService retroTemplateService;
 	private final ScrumTemplateService scrumTemplateService;
 	private final ProjectRepository projectRepository;
 	private final ProjectValidator projectValidator;
@@ -61,6 +63,7 @@ public class ProjectService {
 		labelService.createDefaultLabels(savedProject);
 		issueTemplateService.createDefaultIssueTemplates(savedProject);
 		scrumTemplateService.createDefaultScrumTemplates(savedProject);
+		retroTemplateService.createDefaultRetroTemplates(savedProject);
 		return projectMapper.toDto(savedProject);
 	}
 
