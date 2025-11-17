@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
 
@@ -425,4 +426,103 @@ public class RetroTemplateControllerTest {
 			assertThat(response).contains(ErrorCode.RETRO_TEMPLATE_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("delete retro template")
+	class DeleteRetroTemplate {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 회고 생성 템플릿 삭제 성공")
+		public void deleteRetroTemplateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			RetroTemplate template = testDataFactory.createRetroTemplate(
+				project,
+				"회고",
+				"회고 템플릿",
+				"Template Detail"
+			);
+			RetroTemplateDeleteReqDto deleteReqDto = new RetroTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThatThrownBy(() -> testDataFactory.findRetroTemplateById(template.getId()))
+				.isInstanceOf(Exception.class);
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 회고 생성 템플릿 삭제 시도")
+		public void deleteRetroTemplateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			RetroTemplate template = testDataFactory.createRetroTemplate(
+				project,
+				"회고",
+				"회고 템플릿",
+				"Template Detail"
+			);
+			RetroTemplateDeleteReqDto deleteReqDto = new RetroTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 회고 템플릿 삭제 시도")
+		public void deleteRetroTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createRetroTemplate(
+				project,
+				"회고",
+				"회고 템플릿",
+				"Template Detail"
+			);
+			RetroTemplateDeleteReqDto deleteReqDto = new RetroTemplateDeleteReqDto(9999L);
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.RETRO_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
+}
 
