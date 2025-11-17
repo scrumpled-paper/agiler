@@ -8,13 +8,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "meeting_template")
 public class MeetingTemplate extends BaseEntity {
@@ -29,6 +33,9 @@ public class MeetingTemplate extends BaseEntity {
 
 	@Column(name = "title", nullable = false)
 	private String title;
+
+	@Column(name = "description")
+	private String description;
 
 	@Column(name = "contents")
 	private String contents;
