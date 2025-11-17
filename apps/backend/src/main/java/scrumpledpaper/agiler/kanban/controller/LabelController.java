@@ -67,7 +67,7 @@ public class LabelController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@RequestBody @Valid LabelDeleteReqDto labelDeleteReqDto) {
-		labelService.deleteLabels(customUserDetails.getUserId(), projectUrl, labelDeleteReqDto.id());
+		labelService.deleteLabels(customUserDetails.getUserId(), projectUrl, labelDeleteReqDto.labelId());
 		return ResponseEntity.noContent().build();
 	}
 }
