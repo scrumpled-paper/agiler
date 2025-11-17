@@ -21,9 +21,11 @@ import jakarta.servlet.http.Cookie;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.TestDataFactory;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
 
 @IntegrationTest
@@ -122,6 +124,144 @@ public class RetroTemplateControllerTest {
 			// when
 			String response = mockMvc.perform(
 					post("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("update retro template")
+	class UpdateRetroTemplate {
+		private RetroTemplate existingTemplate;
+
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 회고 생성 템플릿 수정 성공")
+		public void retroTemplateUpdateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			existingTemplate = testDataFactory.createRetroTemplate(
+				project,
+				"회고",
+				"회고 템플릿",
+				"Old Template"
+			);
+			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
+				existingTemplate.getId(),
+				"update template",
+				"update retro template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			RetroTemplate updatedTemplate = testDataFactory.findRetroTemplateById(existingTemplate.getId());
+			assertThat(updatedTemplate.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updatedTemplate.getDescription()).isEqualTo(updateReqDto.description());
+			assertThat(updatedTemplate.getContents()).isEqualTo(updateReqDto.contents());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 회고 템플릿 수정 시도")
+		public void retroTemplateUpdateTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update retro template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.RETRO_TEMPLATE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 회고 생성 템플릿 수정 시도")
+		public void retroTemplateUpdateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			existingTemplate = testDataFactory.createRetroTemplate(
+				project,
+				"회고",
+				"회고 템플릿",
+				"Old Template"
+			);
+			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update retro template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/retros/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 회고 템플릿 수정 시도")
+		public void retroTemplateUpdateProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non_existing_url";
+			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
+				9999L,
+				"update template",
+				"update retro template",
+				"Updated Template"
+			);
+			String updateJson = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/retros/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))

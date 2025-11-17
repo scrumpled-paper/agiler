@@ -208,4 +208,18 @@ public class TestDataFactory {
 		return retroTemplateRepository.findByProjectId(projectId);
 	}
 
+	public RetroTemplate createRetroTemplate(Project project, String title, String description, String contents) {
+		RetroTemplate retroTemplate = RetroTemplateFixture.createRetroTemplate(
+			project,
+			title,
+			description,
+			contents
+		);
+		return retroTemplateRepository.save(retroTemplate);
+	}
+
+	public RetroTemplate findRetroTemplateById(Long id) {
+		return retroTemplateRepository.findById(id).orElseThrow();
+	}
+
 }
