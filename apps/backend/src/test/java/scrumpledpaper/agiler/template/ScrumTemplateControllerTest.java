@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
@@ -426,4 +427,101 @@ public class ScrumTemplateControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("delete scrum template")
+	class DeleteScrumTemplate {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 스크럼 생성 템플릿 삭제 성공")
+		public void deleteScrumTemplateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ScrumTemplate template = testDataFactory.createScrumTemplate(
+				project,
+				"스크럼",
+				"스크럼 템플릿",
+				"Template Detail"
+			);
+			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThatThrownBy(() -> testDataFactory.findScrumTemplateById(template.getId()))
+				.isInstanceOf(Exception.class);
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 삭제 시도")
+		public void deleteScrumTemplateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ScrumTemplate template = testDataFactory.createScrumTemplate(
+				project,
+				"스크럼",
+				"스크럼 템플릿",
+				"Template Detail"
+			);
+			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 스크럼 템플릿 삭제 시도")
+		public void deleteScrumTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createScrumTemplate(
+				project,
+				"스크럼",
+				"스크럼 템플릿",
+				"Template Detail"
+			);
+			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(9999L);
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
 }
