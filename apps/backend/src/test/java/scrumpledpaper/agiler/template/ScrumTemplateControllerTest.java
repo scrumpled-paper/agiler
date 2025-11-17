@@ -273,4 +273,67 @@ public class ScrumTemplateControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("get scrum template list")
+	class GetScrumTemplateList {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 스크럼 생성 템플릿 리스트 조회 성공")
+		public void getScrumTemplateListSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ScrumTemplate template1 = testDataFactory.createScrumTemplate(
+				project,
+				"스크럼",
+				"스크럼 템플릿",
+				"Template 1"
+			);
+			ScrumTemplate template2 = testDataFactory.createScrumTemplate(
+				project,
+				"데일리",
+				"데일리 스크럼 템플릿",
+				"Template 2"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/scrums/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(template1.getTitle());
+			assertThat(response).contains(template2.getTitle());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 리스트 조회 시도")
+		public void getScrumTemplateListForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/scrums/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
+
 }
