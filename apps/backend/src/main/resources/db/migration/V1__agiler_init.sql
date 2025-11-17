@@ -219,6 +219,7 @@ CREATE TABLE `meeting_template` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `project_id` BIGINT NOT NULL,
     `title` VARCHAR(20) NOT NULL,
+    `description` VARCHAR(100),
     `contents` TEXT,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
