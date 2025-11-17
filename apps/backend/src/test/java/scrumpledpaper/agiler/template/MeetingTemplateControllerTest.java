@@ -273,5 +273,68 @@ public class MeetingTemplateControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("get meeting template list")
+	class GetMeetingTemplateList {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 회의 생성 템플릿 리스트 조회 성공")
+		public void getMeetingTemplateListSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplate template1 = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template 1"
+			);
+			MeetingTemplate template2 = testDataFactory.createMeetingTemplate(
+				project,
+				"스프린트",
+				"스프린트 템플릿",
+				"Template 2"
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(template1.getTitle());
+			assertThat(response).contains(template2.getTitle());
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 회의 생성 템플릿 리스트 조회 시도")
+		public void getMeetingTemplateListForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
+
 }
 
