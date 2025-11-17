@@ -24,14 +24,14 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
-import scrumpledpaper.agiler.template.dto.IssueTemplateCreateReqDto;
-import scrumpledpaper.agiler.template.dto.IssueTemplateDeleteReqDto;
-import scrumpledpaper.agiler.template.dto.IssueTemplateUpdateReqDto;
-import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateDeleteReqDto;
+import scrumpledpaper.agiler.template.dto.ScrumTemplateUpdateReqDto;
+import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
 @IntegrationTest
 @Transactional
-public class IssueTemplateControllerTest {
+public class ScrumTemplateControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
@@ -41,30 +41,30 @@ public class IssueTemplateControllerTest {
 	Image defaultImage;
 
 	@Nested
-	@DisplayName("create issue template")
-	class CreateIssueTemplate {
+	@DisplayName("Create Scrum Template")
+	class CreateScrumTemplate {
 		@BeforeEach
 		void setUp() {
 			defaultImage = testDataFactory.createDefaultImage();
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 생성 템플릿 생성 성공")
-		public void issueTemplateCreateSuccess() throws Exception {
+		@DisplayName("204 - 스크럼 생성 템플릿 생성 성공")
+		public void scrumTemplateCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			IssueTemplateCreateReqDto createReqDto = new IssueTemplateCreateReqDto(
-				"버그",
-				"버그 이슈 템플릿",
-				"Test Template"
+			ScrumTemplateCreateReqDto createReqDto = new ScrumTemplateCreateReqDto(
+				"스크럼 템플릿 제목",
+				"스크럼 템플릿 설명",
+				"스크럼 템플릿 내용"
 			);
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 
 			// when
-			String response = mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/issues/templates", url)
+			mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -72,32 +72,33 @@ public class IssueTemplateControllerTest {
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			List<IssueTemplate> issueTemplates = testDataFactory.findIssueTemplatesByProjectId(project.getId());
-			assertThat(issueTemplates)
-				.anyMatch(issueTemplate ->
-					issueTemplate.getTitle().equals(createReqDto.title()) &&
-						issueTemplate.getDescription().equals(createReqDto.description()) &&
-						issueTemplate.getContents().equals(createReqDto.contents())
+			List<ScrumTemplate> scrumTemplates = testDataFactory.findScrumTemplatesByProjectId(project.getId());
+			assertThat(scrumTemplates)
+				.anyMatch(scrumTemplate ->
+					scrumTemplate.getTitle().equals(createReqDto.title()) &&
+					scrumTemplate.getDescription().equals(createReqDto.description()) &&
+					scrumTemplate.getContents().equals(createReqDto.contents())
 				);
 		}
 
 		@Test
-		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 생성 시도")
-		public void issueTemplateCreateForbidden() throws Exception {
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 생성 시도")
+		public void scrumTemplateCreateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
-			testDataFactory.createProjectAndOwnerProfile(url, testDataFactory.createAuth(defaultImage).getUser());
-			IssueTemplateCreateReqDto createReqDto = new IssueTemplateCreateReqDto(
-				"버그",
-				"버그 이슈 템플릿",
-				"Test Template"
+			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			ScrumTemplateCreateReqDto createReqDto = new ScrumTemplateCreateReqDto(
+				"스크럼 템플릿 제목",
+				"스크럼 템플릿 설명",
+				"스크럼 템플릿 내용"
 			);
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/issues/templates", url)
+					post("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -109,21 +110,21 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 템플릿 생성 시도")
-		public void issueTemplateCreateProjectNotFound() throws Exception {
+		@DisplayName("404 - 존재하지 않는 프로젝트에 스크럼 템플릿 생성 시도")
+		public void scrumTemplateCreateProjectNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "non_existing_url";
-			IssueTemplateCreateReqDto createReqDto = new IssueTemplateCreateReqDto(
-				"버그",
-				"버그 이슈 템플릿",
-				"Test Template"
+			ScrumTemplateCreateReqDto createReqDto = new ScrumTemplateCreateReqDto(
+				"스크럼 템플릿 제목",
+				"스크럼 템플릿 설명",
+				"스크럼 템플릿 내용"
 			);
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/issues/templates", url)
+					post("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -136,9 +137,9 @@ public class IssueTemplateControllerTest {
 	}
 
 	@Nested
-	@DisplayName("update issue template")
-	class UpdateIssueTemplate {
-		private IssueTemplate existingTemplate;
+	@DisplayName("update scrum template")
+	class UpdateScrumTemplate {
+		private ScrumTemplate existingTemplate;
 
 		@BeforeEach
 		void setUp() {
@@ -146,29 +147,29 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 생성 템플릿 수정 성공")
-		public void issueTemplateUpdateSuccess() throws Exception {
+		@DisplayName("204 - 스크럼 생성 템플릿 수정 성공")
+		public void scrumTemplateUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			existingTemplate = testDataFactory.createIssueTemplate(
+			existingTemplate = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Old Template"
 			);
-			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				existingTemplate.getId(),
 				"update template",
-				"update issue template",
+				"update scrum template",
 				"Updated Template"
 			);
 			String updateJson = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+					put("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -176,30 +177,30 @@ public class IssueTemplateControllerTest {
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			IssueTemplate updatedTemplate = testDataFactory.findIssueTemplateById(existingTemplate.getId());
+			ScrumTemplate updatedTemplate = testDataFactory.findScrumTemplateById(existingTemplate.getId());
 			assertThat(updatedTemplate.getTitle()).isEqualTo(updateReqDto.title());
 			assertThat(updatedTemplate.getDescription()).isEqualTo(updateReqDto.description());
 			assertThat(updatedTemplate.getContents()).isEqualTo(updateReqDto.contents());
 		}
 
 		@Test
-		@DisplayName("404 - 존재하지 않는 이슈 템플릿 수정 시도")
-		public void issueTemplateUpdateTemplateNotFound() throws Exception {
+		@DisplayName("404 - 존재하지 않는 스크럼 템플릿 수정 시도")
+		public void scrumTemplateUpdateTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
-			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				9999L,
 				"update template",
-				"update issue template",
+				"update scrum template",
 				"Updated Template"
 			);
 			String updateJson = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+					put("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -207,34 +208,34 @@ public class IssueTemplateControllerTest {
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			assertThat(response).contains(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND.getMessage());
+			assertThat(response).contains(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND.getMessage());
 		}
 
 		@Test
-		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 수정 시도")
-		public void issueTemplateUpdateForbidden() throws Exception {
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 수정 시도")
+		public void scrumTemplateUpdateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			existingTemplate = testDataFactory.createIssueTemplate(
+			existingTemplate = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Old Template"
 			);
-			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				9999L,
 				"update template",
-				"update issue template",
+				"update scrum template",
 				"Updated Template"
 			);
 			String updateJson = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+					put("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -246,22 +247,22 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 템플릿 수정 시도")
-		public void issueTemplateUpdateProjectNotFound() throws Exception {
+		@DisplayName("404 - 존재하지 않는 프로젝트에 스크럼 템플릿 수정 시도")
+		public void scrumTemplateUpdateProjectNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "non_existing_url";
-			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
+			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				9999L,
 				"update template",
-				"update issue template",
+				"update scrum template",
 				"Updated Template"
 			);
 			String updateJson = objectMapper.writeValueAsString(updateReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					put("/api/v1/projects/{projectUrl}/issues/templates", url)
+					put("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
@@ -274,36 +275,36 @@ public class IssueTemplateControllerTest {
 	}
 
 	@Nested
-	@DisplayName("get issue template list")
-	class GetIssueTemplateList {
+	@DisplayName("get scrum template list")
+	class GetScrumTemplateList {
 		@BeforeEach
 		void setUp() {
 			defaultImage = testDataFactory.createDefaultImage();
 		}
 
 		@Test
-		@DisplayName("200 - 이슈 생성 템플릿 리스트 조회 성공")
-		public void getIssueTemplateListSuccess() throws Exception {
+		@DisplayName("200 - 스크럼 생성 템플릿 리스트 조회 성공")
+		public void getScrumTemplateListSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			IssueTemplate template1 = testDataFactory.createIssueTemplate(
+			ScrumTemplate template1 = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template 1"
 			);
-			IssueTemplate template2 = testDataFactory.createIssueTemplate(
+			ScrumTemplate template2 = testDataFactory.createScrumTemplate(
 				project,
-				"기능",
-				"기능 이슈 템플릿",
+				"데일리",
+				"데일리 스크럼 템플릿",
 				"Template 2"
 			);
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/issues/templates", url)
+					get("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -315,16 +316,17 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 리스트 조회 시도")
-		public void getIssueTemplateListForbidden() throws Exception {
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 리스트 조회 시도")
+		public void getScrumTemplateListForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
-			testDataFactory.createProjectAndOwnerProfile(url, testDataFactory.createAuth(defaultImage).getUser());
+			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/issues/templates", url)
+					get("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isForbidden())
@@ -336,30 +338,30 @@ public class IssueTemplateControllerTest {
 	}
 
 	@Nested
-	@DisplayName("get issue template detail")
-	class GetIssueTemplateDetail {
+	@DisplayName("get scrum template detail")
+	class GetScrumTemplateDetail {
 		@BeforeEach
 		void setUp() {
 			defaultImage = testDataFactory.createDefaultImage();
 		}
 
 		@Test
-		@DisplayName("200 - 이슈 생성 템플릿 상세 조회 성공")
-		public void getIssueTemplateDetailSuccess() throws Exception {
+		@DisplayName("200 - 스크럼 생성 템플릿 상세 조회 성공")
+		public void getScrumTemplateDetailSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			IssueTemplate template = testDataFactory.createIssueTemplate(
+			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template Detail"
 			);
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/issues/templates/{templateId}", url, template.getId())
+					get("/api/v1/projects/{projectUrl}/scrums/templates/{templateId}", url, template.getId())
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -372,23 +374,23 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 상세 조회 시도")
-		public void getIssueTemplateDetailForbidden() throws Exception {
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 상세 조회 시도")
+		public void getScrumTemplateDetailForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
-			IssueTemplate template = testDataFactory.createIssueTemplate(
+			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template Detail"
 			);
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/issues/templates/{templateId}", url, template.getId())
+					get("/api/v1/projects/{projectUrl}/scrums/templates/{templateId}", url, template.getId())
 						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isForbidden())
@@ -399,59 +401,59 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("404 - 존재하지 않는 이슈 템플릿 상세 조회 시도")
-		public void getIssueTemplateDetailNotFound() throws Exception {
+		@DisplayName("404 - 존재하지 않는 스크럼 템플릿 상세 조회 시도")
+		public void getScrumTemplateDetailNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			testDataFactory.createIssueTemplate(
+			testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template Detail"
 			);
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/issues/templates/{templateId}", url, 9999L)
+					get("/api/v1/projects/{projectUrl}/scrums/templates/{templateId}", url, 9999L)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			assertThat(response).contains(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND.getMessage());
+			assertThat(response).contains(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND.getMessage());
 		}
 	}
 
 	@Nested
-	@DisplayName("delete issue template")
-	class DeleteIssueTemplate {
+	@DisplayName("delete scrum template")
+	class DeleteScrumTemplate {
 		@BeforeEach
 		void setUp() {
 			defaultImage = testDataFactory.createDefaultImage();
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 생성 템플릿 삭제 성공")
-		public void deleteIssueTemplateSuccess() throws Exception {
+		@DisplayName("204 - 스크럼 생성 템플릿 삭제 성공")
+		public void deleteScrumTemplateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			IssueTemplate template = testDataFactory.createIssueTemplate(
+			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template Detail"
 			);
-			IssueTemplateDeleteReqDto deleteReqDto = new IssueTemplateDeleteReqDto(template.getId());
+			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
 			// when
 			mockMvc.perform(
-					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
+					delete("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(deleteJson))
@@ -459,30 +461,30 @@ public class IssueTemplateControllerTest {
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			assertThatThrownBy(() -> testDataFactory.findIssueTemplateById(template.getId()))
+			assertThatThrownBy(() -> testDataFactory.findScrumTemplateById(template.getId()))
 				.isInstanceOf(Exception.class);
 		}
 
 		@Test
-		@DisplayName("403 - 멤버가 아닌 사용자가 이슈 생성 템플릿 삭제 시도")
-		public void deleteIssueTemplateForbidden() throws Exception {
+		@DisplayName("403 - 멤버가 아닌 사용자가 스크럼 생성 템플릿 삭제 시도")
+		public void deleteScrumTemplateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			IssueTemplate template = testDataFactory.createIssueTemplate(
+			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template Detail"
 			);
-			IssueTemplateDeleteReqDto deleteReqDto = new IssueTemplateDeleteReqDto(template.getId());
+			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
+					delete("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(deleteJson))
@@ -494,24 +496,24 @@ public class IssueTemplateControllerTest {
 		}
 
 		@Test
-		@DisplayName("404 - 존재하지 않는 이슈 템플릿 삭제 시도")
-		public void deleteIssueTemplateNotFound() throws Exception {
+		@DisplayName("404 - 존재하지 않는 스크럼 템플릿 삭제 시도")
+		public void deleteScrumTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test_url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			testDataFactory.createIssueTemplate(
+			testDataFactory.createScrumTemplate(
 				project,
-				"버그",
-				"버그 이슈 템플릿",
+				"스크럼",
+				"스크럼 템플릿",
 				"Template Detail"
 			);
-			IssueTemplateDeleteReqDto deleteReqDto = new IssueTemplateDeleteReqDto(9999L);
+			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(9999L);
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
 			// when
 			String response = mockMvc.perform(
-					delete("/api/v1/projects/{projectUrl}/issues/templates", url)
+					delete("/api/v1/projects/{projectUrl}/scrums/templates", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(deleteJson))
@@ -519,7 +521,7 @@ public class IssueTemplateControllerTest {
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			assertThat(response).contains(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND.getMessage());
+			assertThat(response).contains(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND.getMessage());
 		}
 	}
 }

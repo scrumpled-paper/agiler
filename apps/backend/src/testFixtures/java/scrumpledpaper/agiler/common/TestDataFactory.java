@@ -14,7 +14,9 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 import scrumpledpaper.agiler.template.repository.IssueTemplateRepository;
+import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
@@ -32,6 +34,7 @@ public class TestDataFactory {
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
+	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final EntityManager entityManager;
 
 	public Image createDefaultImage() {
@@ -178,5 +181,23 @@ public class TestDataFactory {
 
 	public IssueTemplate findIssueTemplateById(Long id) {
 		return issueTemplateRepository.findById(id).orElseThrow();
+	}
+
+	public List<ScrumTemplate> findScrumTemplatesByProjectId(Long projectId) {
+		return scrumTemplateRepository.findByProjectId(projectId);
+	}
+
+	public ScrumTemplate createScrumTemplate(Project project, String title, String description, String contents) {
+		ScrumTemplate scrumTemplate = ScrumTemplateFixture.createScrumTemplate(
+			project,
+			title,
+			description,
+			contents
+		);
+		return scrumTemplateRepository.save(scrumTemplate);
+	}
+
+	public ScrumTemplate findScrumTemplateById(Long id) {
+		return scrumTemplateRepository.findById(id).orElseThrow();
 	}
 }

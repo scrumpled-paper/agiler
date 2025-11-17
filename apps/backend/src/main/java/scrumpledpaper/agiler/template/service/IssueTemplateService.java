@@ -63,16 +63,18 @@ public class IssueTemplateService {
 			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_TEMPLATE_NOT_FOUND));
 	}
 
+	@Transactional(readOnly = true)
 	public List<IssueTemplateResDto> getIssueTemplateList(long userId, String projectUrl) {
 		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
 		Project project = context.project();
 
-		List<IssueTemplate> issueTemplates = issueTemplateRepository.findAllByProjectId(project.getId());
+		List<IssueTemplate> issueTemplates = issueTemplateRepository.findByProjectId(project.getId());
 		return issueTemplates.stream()
 			.map(issueTemplateMapper::toDto)
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
 	public IssueTemplateDetailResDto getIssueTemplate(long userId, String projectUrl, Long templateId) {
 		projectValidator.validateAccess(userId, projectUrl);
 
@@ -80,6 +82,7 @@ public class IssueTemplateService {
 		return issueTemplateMapper.toDetailDto(issueTemplate);
 	}
 
+	@Transactional
 	public void deleteIssueTemplate(long userId, String projectUrl, Long templateId) {
 		projectValidator.validateAccess(userId, projectUrl);
 

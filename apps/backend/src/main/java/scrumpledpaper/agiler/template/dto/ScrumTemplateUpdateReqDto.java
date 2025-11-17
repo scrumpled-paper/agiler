@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record IssueTemplateUpdateReqDto(
+public record ScrumTemplateUpdateReqDto(
 	@NotNull(message = "템플릿 ID는 필수입니다.")
 	long templateId,
 
@@ -17,3 +17,4 @@ public record IssueTemplateUpdateReqDto(
 
 	String contents
 ) {}
+
