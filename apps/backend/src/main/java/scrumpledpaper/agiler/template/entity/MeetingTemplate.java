@@ -39,4 +39,10 @@ public class MeetingTemplate extends BaseEntity {
 
 	@Column(name = "contents")
 	private String contents;
+
+	public void update(String title, String description, String contents) {
+		this.title = title;
+		this.description = description;
+		this.contents = contents;
+	}
 }

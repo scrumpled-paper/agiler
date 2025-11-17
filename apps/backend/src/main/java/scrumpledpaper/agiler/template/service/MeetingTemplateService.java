@@ -4,10 +4,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultMeetingTemplate;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 import scrumpledpaper.agiler.template.mapper.MeetingTemplateMapper;
@@ -37,4 +40,18 @@ public class MeetingTemplateService {
 			meetingTemplateMapper.toEntity(project, meetingTemplateCreateReqDto)
 		);
 	}
+
+	@Transactional
+	public void updateMeetingTemplate(long userId, String projectUrl, MeetingTemplateUpdateReqDto meetingTemplateUpdateReqDto) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		MeetingTemplate meetingTemplate = findById(meetingTemplateUpdateReqDto.templateId());
+		meetingTemplate.update(
+			meetingTemplateUpdateReqDto.title(),
+			meetingTemplateUpdateReqDto.description(),
+			meetingTemplateUpdateReqDto.contents()
+		);
+	}
+
+}
 

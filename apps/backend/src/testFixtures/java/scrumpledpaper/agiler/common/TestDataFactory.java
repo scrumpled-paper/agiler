@@ -229,6 +229,15 @@ public class TestDataFactory {
 		return meetingTemplateRepository.findByProjectId(projectId);
 	}
 
+	public MeetingTemplate createMeetingTemplate(Project project, String title, String description, String contents) {
+		MeetingTemplate meetingTemplate = MeetingTemplateFixture.createMeetingTemplate(
+			project,
+			title,
+			description,
+			contents
+		);
+		return meetingTemplateRepository.save(meetingTemplate);
+	}
 
 	public MeetingTemplate findMeetingTemplateById(Long id) {
 		return meetingTemplateRepository.findById(id).orElseThrow();
