@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.MeetingTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 
@@ -425,5 +426,102 @@ public class MeetingTemplateControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("delete meeting template")
+	class DeleteMeetingTemplate {
+		@BeforeEach
+		void setUp() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 회의 생성 템플릿 삭제 성공")
+		public void deleteMeetingTemplateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplate template = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template Detail"
+			);
+			MeetingTemplateDeleteReqDto deleteReqDto = new MeetingTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThatThrownBy(() -> testDataFactory.findMeetingTemplateById(template.getId()))
+				.isInstanceOf(Exception.class);
+		}
+
+		@Test
+		@DisplayName("403 - 멤버가 아닌 사용자가 회의 생성 템플릿 삭제 시도")
+		public void deleteMeetingTemplateForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplate template = testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template Detail"
+			);
+			MeetingTemplateDeleteReqDto deleteReqDto = new MeetingTemplateDeleteReqDto(template.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", ownerAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 회의 템플릿 삭제 시도")
+		public void deleteMeetingTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createMeetingTemplate(
+				project,
+				"회의",
+				"회의 템플릿",
+				"Template Detail"
+			);
+			MeetingTemplateDeleteReqDto deleteReqDto = new MeetingTemplateDeleteReqDto(9999L);
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings/templates", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.MEETING_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
 }
 
