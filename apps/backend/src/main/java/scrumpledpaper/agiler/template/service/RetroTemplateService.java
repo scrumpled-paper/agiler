@@ -15,6 +15,7 @@ import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateResDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateUpdateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultRetroTemplate;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
 import scrumpledpaper.agiler.template.mapper.RetroTemplateMapper;
@@ -81,5 +82,12 @@ public class RetroTemplateService {
 		return retroTemplateMapper.toDetailDto(retroTemplate);
 	}
 
+	@Transactional
+	public void deleteRetroTemplate(long userId, String projectUrl, Long templateId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		RetroTemplate retroTemplate = findById(templateId);
+		retroTemplateRepository.delete(retroTemplate);
+	}
 }
 

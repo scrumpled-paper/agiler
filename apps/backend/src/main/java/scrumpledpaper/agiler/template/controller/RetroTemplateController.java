@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.template.dto.RetroTemplateCreateReqDto;
+import scrumpledpaper.agiler.template.dto.RetroTemplateDeleteReqDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateDetailResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateListResDto;
 import scrumpledpaper.agiler.template.dto.RetroTemplateResDto;
@@ -69,5 +71,14 @@ public class RetroTemplateController {
 		return ResponseEntity.ok(template);
 	}
 
+	@DeleteMapping("/{projectUrl}/retros/templates")
+	public ResponseEntity<Void> deleteRetroTemplate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody RetroTemplateDeleteReqDto retroTemplateDeleteReqDto) {
+		retroTemplateService.deleteRetroTemplate(customUserDetails.getUserId(), projectUrl, retroTemplateDeleteReqDto.templateId());
+		return ResponseEntity.noContent().build();
+	}
 }
 
