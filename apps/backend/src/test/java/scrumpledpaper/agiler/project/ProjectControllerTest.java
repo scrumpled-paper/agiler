@@ -33,8 +33,10 @@ import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
+import scrumpledpaper.agiler.template.entity.DefaultRetroTemplate;
 import scrumpledpaper.agiler.template.entity.DefaultScrumTemplate;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.entity.RetroTemplate;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
 import java.time.LocalDateTime;
@@ -110,6 +112,11 @@ public class ProjectControllerTest {
 			List<ScrumTemplate> scrumTemplates = testDataFactory.findScrumTemplatesByProjectId(createdProject.getId());
 			DefaultScrumTemplate[] defaultScrumTemplates = DefaultScrumTemplate.values();
 			assertThat(scrumTemplates).hasSize(defaultScrumTemplates.length);
+
+			List<RetroTemplate> retroTemplates = testDataFactory.findRetroTemplatesByProjectId(createdProject.getId());
+			DefaultRetroTemplate[] defaultRetroTemplates = DefaultRetroTemplate.values();
+			assertThat(retroTemplates).hasSize(defaultRetroTemplates.length);
+
 		}
 
 		@Test

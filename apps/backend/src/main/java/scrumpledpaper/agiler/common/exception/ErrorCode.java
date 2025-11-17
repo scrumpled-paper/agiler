@@ -29,7 +29,8 @@ public enum ErrorCode {
 	LABEL_NOT_FOUND(404, "L001", "라벨을 찾을 수 없습니다."),
 
 	ISSUE_TEMPLATE_NOT_FOUND(404, "T001", "이슈 템플릿을 찾을 수 없습니다."),
-	SCRUM_TEMPLATE_NOT_FOUND(404, "T002", "스크럼 템플릿을 찾을 수 없습니다.");
+	SCRUM_TEMPLATE_NOT_FOUND(404, "T002", "스크럼 템플릿을 찾을 수 없습니다."),
+	RETRO_TEMPLATE_NOT_FOUND(404, "T003", "회고 템플릿을 찾을 수 없습니다.");
 
 	private final int status;
 	private final String code;
