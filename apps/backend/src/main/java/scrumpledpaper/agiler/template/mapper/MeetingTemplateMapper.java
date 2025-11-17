@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.template.dto.MeetingTemplateCreateReqDto;
 import scrumpledpaper.agiler.template.entity.DefaultMeetingTemplate;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 
@@ -14,6 +15,12 @@ public interface MeetingTemplateMapper {
 	@Mapping(target = "description", source = "defaultMeetingTemplate.description")
 	@Mapping(target = "contents", source = "defaultMeetingTemplate.contents")
 	MeetingTemplate toEntity(Project project, DefaultMeetingTemplate defaultMeetingTemplate);
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "meetingTemplateCreateReqDto.title")
+	@Mapping(target = "description", source = "meetingTemplateCreateReqDto.description")
+	@Mapping(target = "contents", source = "meetingTemplateCreateReqDto.contents")
+	MeetingTemplate toEntity(Project project, MeetingTemplateCreateReqDto meetingTemplateCreateReqDto);
 
 }
 
