@@ -57,7 +57,9 @@ describe('Home Page - 통합 테스트', () => {
 
       // 시작하기 버튼 확인 (로딩 완료 대기)
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /시작하기/i })).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /시작하기/i })
+        ).toBeInTheDocument()
       })
     })
 
@@ -80,7 +82,9 @@ describe('Home Page - 통합 테스트', () => {
 
       // When: 로딩이 완료될 때까지 대기
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /시작하기/i })).not.toBeDisabled()
+        expect(
+          screen.getByRole('button', { name: /시작하기/i })
+        ).not.toBeDisabled()
       })
 
       // When: 시작하기 버튼 클릭
@@ -110,7 +114,9 @@ describe('Home Page - 통합 테스트', () => {
 
       // When: 로딩 완료 대기
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /시작하기/i })).not.toBeDisabled()
+        expect(
+          screen.getByRole('button', { name: /시작하기/i })
+        ).not.toBeDisabled()
       })
 
       // When: 시작하기 버튼 클릭
@@ -142,7 +148,9 @@ describe('Home Page - 통합 테스트', () => {
 
       // When: 로딩 완료 대기
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /시작하기/i })).not.toBeDisabled()
+        expect(
+          screen.getByRole('button', { name: /시작하기/i })
+        ).not.toBeDisabled()
       })
 
       // When: 시작하기 버튼 클릭
@@ -168,7 +176,9 @@ describe('Home Page - 통합 테스트', () => {
 
       // When: 로딩 완료 대기
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /시작하기/i })).not.toBeDisabled()
+        expect(
+          screen.getByRole('button', { name: /시작하기/i })
+        ).not.toBeDisabled()
       })
 
       // When: 시작하기 버튼 클릭
@@ -229,9 +239,7 @@ describe('Home Page - 통합 테스트', () => {
       expect(
         screen.getByText(/스크럼과 칸반 방식을 결합하여/)
       ).toBeInTheDocument()
-      expect(
-        screen.getByText(/애자일 개발의 모든 단계를/)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/애자일 개발의 모든 단계를/)).toBeInTheDocument()
     })
   })
 })

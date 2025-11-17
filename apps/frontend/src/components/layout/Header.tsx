@@ -38,7 +38,6 @@ export function AppHeader() {
   // 경로에 따른 액션 버튼 표시 여부
   const showProjectActions = location.pathname.startsWith('/projects/')
   const isDashboard = location.pathname.startsWith('/dashboard')
-  const isHome = location.pathname === '/'
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -131,8 +130,7 @@ export function AppHeader() {
             <DropdownMenuContent align="end" className="bg-white">
               {showProjectActions && (
                 <>
-                  {/* <DropdownMenuItem>Page settings</DropdownMenuItem>
-                  <DropdownMenuItem>Analytics</DropdownMenuItem> */}
+                  <DropdownMenuItem>Page settings</DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
                     Logout
                   </DropdownMenuItem>
@@ -140,17 +138,6 @@ export function AppHeader() {
               )}
               {isDashboard && (
                 <>
-                  {/* <DropdownMenuItem>Dashboard settings</DropdownMenuItem> */}
-                  {/* <DropdownMenuItem>Export data</DropdownMenuItem> */}
-                  <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
-                    Logout
-                  </DropdownMenuItem>
-                </>
-              )}
-              {isHome && (
-                <>
-                  {/* <DropdownMenuItem>Preferences</DropdownMenuItem> */}
-                  {/* <DropdownMenuItem>Help</DropdownMenuItem> */}
                   <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
                     Logout
                   </DropdownMenuItem>

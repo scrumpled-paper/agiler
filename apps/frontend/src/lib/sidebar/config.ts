@@ -60,6 +60,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           { label: 'Meeting', icon: '📝', route: ':projectUrl/meeting' },
         ],
       },
+      // 프로젝트 참가 링크 ui 개선될 수 있어서 남겨두었습니다.
       // {
       //   type: 'action',
       //   title: 'Members',
