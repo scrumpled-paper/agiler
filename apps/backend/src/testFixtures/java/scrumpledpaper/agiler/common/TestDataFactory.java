@@ -14,8 +14,10 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
+import scrumpledpaper.agiler.template.entity.RetroTemplate;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 import scrumpledpaper.agiler.template.repository.IssueTemplateRepository;
+import scrumpledpaper.agiler.template.repository.RetroTemplateRepository;
 import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
@@ -35,6 +37,7 @@ public class TestDataFactory {
 	private final ProjectRepository projectRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
+	private final RetroTemplateRepository retroTemplateRepository;
 	private final EntityManager entityManager;
 
 	public Image createDefaultImage() {
@@ -200,4 +203,9 @@ public class TestDataFactory {
 	public ScrumTemplate findScrumTemplateById(Long id) {
 		return scrumTemplateRepository.findById(id).orElseThrow();
 	}
+
+	public List<RetroTemplate> findRetroTemplatesByProjectId(Long projectId) {
+		return retroTemplateRepository.findByProjectId(projectId);
+	}
+
 }
