@@ -229,4 +229,8 @@ public class TestDataFactory {
 		return meetingTemplateRepository.findByProjectId(projectId);
 	}
 
+
+	public MeetingTemplate findMeetingTemplateById(Long id) {
+		return meetingTemplateRepository.findById(id).orElseThrow();
+	}
 }
