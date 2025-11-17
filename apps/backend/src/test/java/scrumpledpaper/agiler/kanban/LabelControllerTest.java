@@ -26,6 +26,7 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.LabelDeleteReqDto;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.project.entity.Project;
 
@@ -320,6 +321,112 @@ public class LabelControllerTest {
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updateJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Delete Labels Tests")
+	class DeleteLabelsTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 라벨 삭제 성공")
+		public void labelDeleteSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Label label = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
+			LabelDeleteReqDto deleteReqDto = new LabelDeleteReqDto(label.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNoContent());
+
+			// then
+			List<Label> labels = testDataFactory.findLabelsByProjectId(project.getId());
+			assertThat(labels).doesNotContain(label);
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 라벨 ID의 삭제 요청")
+		public void labelDeleteNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Long nonExistentLabelId = 9999L;
+			LabelDeleteReqDto deleteReqDto = new LabelDeleteReqDto(nonExistentLabelId);
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.LABEL_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 라벨 삭제 요청")
+		public void labelDeleteForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Label label = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
+			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
+			LabelDeleteReqDto deleteReqDto = new LabelDeleteReqDto(label.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", nonMemberAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 라벨 삭제 요청")
+		public void labelDeleteProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non_existent_project";
+			Project project = testDataFactory.createProjectAndOwnerProfile("some_other_url", auth.getUser());
+			Label label = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
+			LabelDeleteReqDto deleteReqDto = new LabelDeleteReqDto(label.getId());
+			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/labels", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 
