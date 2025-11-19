@@ -6,7 +6,13 @@ import org.springframework.stereotype.Component;
 import scrumpledpaper.agiler.fixture.*;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.kanban.entity.Issue;
+import scrumpledpaper.agiler.kanban.entity.IssueLabel;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
+import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
+import scrumpledpaper.agiler.kanban.repository.IssueRepository;
+import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -33,10 +39,13 @@ import java.util.List;
 public class TestDataFactory {
 	private final TokenFixture tokenFixture;
 	private final UserRepository userRepository;
+	private final IssueRepository issueRepository;
 	private final ImageRepository imageRepository;
 	private final LabelRepository labelRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
+	private final IssueLabelRepository issueLabelRepository;
+	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
@@ -241,5 +250,25 @@ public class TestDataFactory {
 
 	public MeetingTemplate findMeetingTemplateById(Long id) {
 		return meetingTemplateRepository.findById(id).orElseThrow();
+	}
+
+	public Issue findIssueByProjectId(Long projectId) {
+		return issueRepository.findByProjectId(projectId).orElseThrow();
+	}
+
+	public List<IssueLabel> findIssueLabelsByIssueId(Long issueId) {
+		return issueLabelRepository.findByIssueId(issueId);
+	}
+
+	public KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
+		KanbanConfig kanbanConfig = KanbanConfigFixture.createKanbanConfig(
+			project,
+			statusName,
+			priority,
+			defaultStatus,
+			backlog,
+			isDone
+		);
+		return kanbanConfigRepository.save(kanbanConfig);
 	}
 }
