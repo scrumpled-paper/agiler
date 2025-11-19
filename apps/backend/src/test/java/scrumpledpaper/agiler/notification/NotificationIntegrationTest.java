@@ -284,11 +284,11 @@ class NotificationIntegrationTest {
 		long invalidChannelId = channel.getId() + 9999;
 
 		// when
-		ResultActions result2 = mockMvc.perform(delete("/api/v1/projects/{projectUrl}/notifications/channels/{channelId}", project.getUrl(), invalidChannelId)
+		ResultActions result = mockMvc.perform(delete("/api/v1/projects/{projectUrl}/notifications/channels/{channelId}", project.getUrl(), invalidChannelId)
 				.cookie(getAuthCookie()));
 
 		// then
-		result2.andExpect(status().isNotFound());
+		result.andExpect(status().isNotFound());
 	}
 
 	@Test
