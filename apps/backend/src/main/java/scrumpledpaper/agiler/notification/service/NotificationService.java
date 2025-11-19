@@ -19,6 +19,8 @@ import scrumpledpaper.agiler.notification.repository.NotificationSubscriptionRep
 import scrumpledpaper.agiler.notification.repository.ProfileNotificationChannelRepository;
 import scrumpledpaper.agiler.notification.sender.NotificationSender;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
+import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
@@ -35,7 +37,7 @@ public class NotificationService {
 	private final ProjectValidator projectValidator;
 	private final NotificationSubscriptionRepository subscriptionRepository;
 	private final ProfileNotificationChannelRepository channelRepository;
-	private final UserRepository userRepository;
+	private final ProfileRepository profileRepository;
 	private final Map<String, NotificationSender> notificationSenders;
 
 	@Value("${spring.security.oauth2.client.registration.slack.client-id}")
@@ -108,8 +110,8 @@ public class NotificationService {
 			return;
 		}
 
-		String updaterName = userRepository.findById(event.getUpdaterId())
-				.map(User::getNickname)
+		String updaterName = profileRepository.findById(event.getProfileId())
+				.map(Profile::getNickname)
 				.orElse("Unknown User");
 
 		// 2. 각 구독자에게 알림 발송
