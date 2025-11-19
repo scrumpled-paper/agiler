@@ -10,13 +10,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "issue")
 public class Issue extends BaseEntity {
@@ -24,6 +29,10 @@ public class Issue extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "project_id")
+	private Project project;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "kanban_config_id")

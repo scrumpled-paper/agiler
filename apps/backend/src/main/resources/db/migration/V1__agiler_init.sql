@@ -53,6 +53,7 @@ CREATE TABLE `kanban_config` (
 
 CREATE TABLE `issue` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `project_id` BIGINT NOT NULL,
     `kanban_config_id` BIGINT NOT NULL,
     `profile_id` BIGINT,
     `title` VARCHAR(20) NOT NULL,
