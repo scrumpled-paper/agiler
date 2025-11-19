@@ -11,9 +11,9 @@ public interface NotificationSubscriptionRepository extends JpaRepository<Notifi
 
 	@Query("SELECT ns FROM NotificationSubscription ns WHERE " +
 			"ns.profileId = :profileId AND " +
-			"(ns.issueId IS NULL OR ns.issueId = :issueId) AND " +
-			"(ns.fromKanbanConfigId IS NULL OR ns.fromKanbanConfigId = :fromKanbanConfigId) AND " +
-			"(ns.toKanbanConfigId IS NULL OR ns.toKanbanConfigId = :toKanbanConfigId)")
+			"(ns.issueId = :issueId) AND " +
+			"(ns.fromKanbanConfigId = :fromKanbanConfigId) AND " +
+			"(ns.toKanbanConfigId = :toKanbanConfigId)")
 	List<NotificationSubscription> findSubscriptionsForIssueStatusChange(
 			@Param("profileId") Long profileId,
 			@Param("issueId") Long issueId,
