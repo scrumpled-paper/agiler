@@ -44,6 +44,7 @@ public enum ErrorCode {
 	NOTIFICATION_SUBSCRIPTION_NOT_FOUND(404, "N006", "알림 구독을 찾을 수 없습니다."),
 	INVALID_SCHEDULE_REQUEST(400, "N007", "잘못된 알림 예약 요청입니다. delayInMinutes 또는 notificationTime 중 하나만 지정해야 합니다."),
 	JSON_PROCESSING_ERROR(500, "C003", "JSON 처리 중 오류가 발생했습니다."),
+	DUPLICATE_NOTIFICATION_CHANNEL(409, "N008", "이미 등록된 알림 채널입니다."),
 	REDIS_NOT_FOUND_STATE(404, "C004", "Redis에서 상태를 찾을 수 없습니다.");
 
 	private final int status;

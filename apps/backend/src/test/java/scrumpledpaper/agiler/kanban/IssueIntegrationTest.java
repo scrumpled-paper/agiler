@@ -58,7 +58,7 @@ class IssueIntegrationTest {
 		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "https://hooks.slack.test/webhook", "test-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "https://hooks.slack.test/webhook");
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
 		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
 

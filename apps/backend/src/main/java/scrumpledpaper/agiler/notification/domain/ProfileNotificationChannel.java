@@ -28,9 +28,6 @@ public class ProfileNotificationChannel extends BaseEntity {
 	@Column(nullable = false)
 	private String webhookUrl;
 
-	@Column(nullable = false)
-	private String name;
-
 	public void updateWebhookUrl(String webhookUrl) {
 		this.webhookUrl = webhookUrl;
 	}

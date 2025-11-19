@@ -145,7 +145,6 @@ class NotificationIntegrationTest {
 		List<ProfileNotificationChannel> channels = testDataFactory.getALlProfileNotificationChannels(profile.getId());
 		assertThat(channels).hasSize(1);
 		assertThat(channels.getFirst().getChannelType()).isEqualTo(ChannelType.SLACK);
-		assertThat(channels.getFirst().getName()).isEqualTo("Slack - test-channel");
 	}
 
 	@Test
@@ -167,7 +166,7 @@ class NotificationIntegrationTest {
 
 		Mockito.when(slackAuthClient.getAccessToken(Mockito.anyMap())).thenReturn(responseDto);
 
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "https://hooks.slack.com/old-webhook", "Slack - test-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "https://hooks.slack.com/old-webhook");
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/v1/notifications/slack/callback")
@@ -180,7 +179,6 @@ class NotificationIntegrationTest {
 		List<ProfileNotificationChannel> channels = testDataFactory.getALlProfileNotificationChannels(profile.getId());
 		assertThat(channels).hasSize(1);
 		assertThat(channels.getFirst().getChannelType()).isEqualTo(ChannelType.SLACK);
-		assertThat(channels.getFirst().getName()).isEqualTo("Slack - test-channel");
 		assertThat(channels.getFirst().getWebhookUrl()).isEqualTo("https://hooks.slack.com/test-webhook");
 	}
 
@@ -228,7 +226,6 @@ class NotificationIntegrationTest {
 		List<ProfileNotificationChannel> channels = testDataFactory.getALlProfileNotificationChannels(profile.getId());
 		assertThat(channels).hasSize(1);
 		assertThat(channels.getFirst().getChannelType()).isEqualTo(ChannelType.DISCORD);
-		assertThat(channels.getFirst().getName()).isEqualTo("Discord - test-discord-channel");
 	}
 
 	@Test
@@ -239,8 +236,8 @@ class NotificationIntegrationTest {
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "slack-channel", "Slack - test-channel");
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", "discord-channel", "Discord - test-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "slack-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", "discord-channel");
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/v1/projects/{projectUrl}/notifications/channels", project.getUrl())
@@ -261,8 +258,8 @@ class NotificationIntegrationTest {
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 
-		ProfileNotificationChannel channel1 = testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "slack-channel", "Slack - test-channel");
-		ProfileNotificationChannel channel2 = testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", "discord-channel", "Discord - test-channel");
+		ProfileNotificationChannel channel1 = testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "slack-channel");
+		ProfileNotificationChannel channel2 = testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", "discord-channel");
 
 		// when
 		ResultActions result1 = mockMvc.perform(delete("/api/v1/projects/{projectUrl}/notifications/channels/{channelId}", project.getUrl(), channel1.getId())
@@ -284,7 +281,7 @@ class NotificationIntegrationTest {
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 
-		ProfileNotificationChannel channel = testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "slack-channel", "Slack - test-channel");
+		ProfileNotificationChannel channel = testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", "slack-channel");
 		long invalidChannelId = channel.getId() + 9999;
 
 		// when
@@ -434,7 +431,7 @@ class NotificationIntegrationTest {
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 		String testWebhookUrl = "https://hooks.slack.test/webhook";
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl, "test-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl);
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
 		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
@@ -464,7 +461,7 @@ class NotificationIntegrationTest {
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 		String testWebhookUrl = "https://hooks.discord.test/webhook";
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", testWebhookUrl, "test-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", testWebhookUrl);
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
 		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
@@ -493,7 +490,7 @@ class NotificationIntegrationTest {
 		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 		String testWebhookUrl = "https://hooks.discord.test/webhook";
-		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl, "test-channel");
+		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl);
 		LocalDateTime pastTime = LocalDateTime.now().minusMinutes(10);
 		testDataFactory.createScheduledNotification(auth.getUser(), profile, issue, pastTime, "Test scheduled message");
 

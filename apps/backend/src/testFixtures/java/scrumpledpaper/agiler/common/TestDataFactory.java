@@ -263,8 +263,8 @@ public class TestDataFactory {
 		return profileNotificationChannelRepository.findByProfileId(profileId);
 	}
 
-	public ProfileNotificationChannel createProfileNotificationChannel(User user, Profile profile, String channelType, String webhookUrl, String name) {
-		ProfileNotificationChannel channel = ProfileNotificationChannelFixture.create(user.getId(), profile.getId(), ChannelType.valueOf(channelType), webhookUrl, name);
+	public ProfileNotificationChannel createProfileNotificationChannel(User user, Profile profile, String channelType, String webhookUrl) {
+		ProfileNotificationChannel channel = ProfileNotificationChannelFixture.create(user.getId(), profile.getId(), ChannelType.valueOf(channelType), webhookUrl);
 		return profileNotificationChannelRepository.save(channel);
 	}
 

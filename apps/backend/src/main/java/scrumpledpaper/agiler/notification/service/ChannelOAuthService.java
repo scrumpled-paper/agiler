@@ -79,8 +79,7 @@ public class ChannelOAuthService {
 
 		ProfileNotificationChannelReqDto request = new ProfileNotificationChannelReqDto(
 				ChannelType.SLACK,
-				webhook.getUrl(),
-				SLACK_PREFIX + webhook.getChannel()
+				webhook.getUrl()
 		);
 
 		notificationManagementService.registerChannel(payload, request);
@@ -112,8 +111,7 @@ public class ChannelOAuthService {
 
 		ProfileNotificationChannelReqDto request = new ProfileNotificationChannelReqDto(
 				ChannelType.DISCORD,
-				webhook.getUrl(),
-				DISCORD_PREFIX + webhook.getName()
+				webhook.getUrl()
 		);
 
 		notificationManagementService.registerChannel(payload, request);

@@ -24,23 +24,20 @@ public class NotificationManagementService {
 	private final ProjectValidator projectValidator;
 
 	@Transactional
-	public ProfileNotificationChannel registerChannel(OAuthStatePayload payload, ProfileNotificationChannelReqDto request) {
-		ProfileNotificationChannel channel = profileNotificationChannelRepository
-				.findByUserIdAndName(payload.userId(), request.name())
-				.map(existing -> {
-					existing.updateWebhookUrl(request.webhookUrl());
-					return existing;
-				})
-				.orElseGet(() -> ProfileNotificationChannel.builder()
-						.userId(payload.userId())
-						.profileId(payload.profileId())
-						.channelType(request.channelType())
-						.webhookUrl(request.webhookUrl())
-						.name(request.name())
-						.build()
-				);
-
-		return profileNotificationChannelRepository.save(channel);
+	public void registerChannel(OAuthStatePayload payload, ProfileNotificationChannelReqDto request) {
+		profileNotificationChannelRepository.findByProfileIdAndChannelType(payload.profileId(), request.channelType())
+				.ifPresentOrElse(channel -> {
+					channel.updateWebhookUrl(request.webhookUrl());
+					profileNotificationChannelRepository.save(channel);
+				}, () -> {
+					ProfileNotificationChannel channel = ProfileNotificationChannel.builder()
+							.userId(payload.userId())
+							.profileId(payload.profileId())
+							.channelType(request.channelType())
+							.webhookUrl(request.webhookUrl())
+							.build();
+					profileNotificationChannelRepository.save(channel);
+				});
 	}
 
 	@Transactional(readOnly = true)
