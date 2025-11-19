@@ -8,13 +8,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.common.BaseEntity;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "issue_status_history")
 public class IssueStatusHistory extends BaseEntity {
@@ -38,4 +39,12 @@ public class IssueStatusHistory extends BaseEntity {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "to_kanban_config")
 	private KanbanConfig toKanbanConfig;
+
+	public IssueStatusHistory(Issue issue, Profile profile, KanbanConfig fromKanbanConfig, KanbanConfig toKanbanConfig) {
+		this.issue = issue;
+		this.profile = profile;
+		this.fromKanbanConfig = fromKanbanConfig;
+		this.toKanbanConfig = toKanbanConfig;
+	}
+
 }
