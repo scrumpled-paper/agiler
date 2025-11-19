@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class DiscordOAuthResponseDto {
+public class DiscordOAuthResDto {
 
     @JsonProperty("access_token")
     private String accessToken;

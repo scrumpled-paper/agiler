@@ -11,11 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
-import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
-import scrumpledpaper.agiler.notification.domain.ScheduledNotification;
 import scrumpledpaper.agiler.notification.dto.NotificationChannelsResDto;
-import scrumpledpaper.agiler.notification.dto.NotificationSubscriptionRequestDto;
-import scrumpledpaper.agiler.notification.dto.ScheduleNotificationRequestDto;
+import scrumpledpaper.agiler.notification.dto.NotificationSubscriptionReqDto;
+import scrumpledpaper.agiler.notification.dto.ScheduleNotificationReqDto;
 import scrumpledpaper.agiler.notification.dto.SubscriptionsListResDto;
 import scrumpledpaper.agiler.notification.service.ChannelOAuthService;
 import scrumpledpaper.agiler.notification.service.NotificationManagementService;
@@ -23,7 +21,6 @@ import scrumpledpaper.agiler.notification.service.NotificationService;
 import scrumpledpaper.agiler.notification.service.ScheduledNotificationService;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -106,7 +103,7 @@ public class NotificationController {
 	public ResponseEntity<NotificationSubscription> subscribeToNotifications(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable String projectUrl,
-			@RequestBody @Valid NotificationSubscriptionRequestDto request
+			@RequestBody @Valid NotificationSubscriptionReqDto request
 	) {
 		notificationManagementService.subscribe(userDetails.getUserId(), projectUrl, request);
 		return ResponseEntity.ok().build();
@@ -137,7 +134,7 @@ public class NotificationController {
 	public ResponseEntity<Void> scheduleNotification(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable String projectUrl,
-			@RequestBody @Valid ScheduleNotificationRequestDto request
+			@RequestBody @Valid ScheduleNotificationReqDto request
 	) {
 		scheduledNotificationService.scheduleNotification(userDetails.getUserId(), projectUrl, request);
 		return ResponseEntity.ok().build();

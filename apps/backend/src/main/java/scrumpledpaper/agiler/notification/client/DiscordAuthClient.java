@@ -3,7 +3,7 @@ package scrumpledpaper.agiler.notification.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
-import scrumpledpaper.agiler.notification.dto.DiscordOAuthResponseDto;
+import scrumpledpaper.agiler.notification.dto.DiscordOAuthResDto;
 
 import java.util.Map;
 
@@ -11,5 +11,5 @@ import java.util.Map;
 public interface DiscordAuthClient {
 
     @PostMapping(value = "/oauth2/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	DiscordOAuthResponseDto getAccessToken(Map<String, ?> form);
+	DiscordOAuthResDto getAccessToken(Map<String, ?> form);
 }

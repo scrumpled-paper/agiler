@@ -11,7 +11,7 @@ import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
 import scrumpledpaper.agiler.notification.domain.ScheduledNotification;
-import scrumpledpaper.agiler.notification.dto.ScheduleNotificationRequestDto;
+import scrumpledpaper.agiler.notification.dto.ScheduleNotificationReqDto;
 import scrumpledpaper.agiler.notification.repository.ProfileNotificationChannelRepository;
 import scrumpledpaper.agiler.notification.repository.ScheduledNotificationRepository;
 import scrumpledpaper.agiler.notification.sender.NotificationSender;
@@ -70,7 +70,7 @@ public class ScheduledNotificationService {
     }
 
     @Transactional
-    public ScheduledNotification scheduleNotification(Long userId, String projectUrl,  ScheduleNotificationRequestDto request) {
+    public ScheduledNotification scheduleNotification(Long userId, String projectUrl,  ScheduleNotificationReqDto request) {
 		ProjectAccessContext accessContext = projectValidator.validateAccess(userId, projectUrl);
 
 		LocalDateTime notificationTime = LocalDateTime.now().plusMinutes(request.delayInMinutes());

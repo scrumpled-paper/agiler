@@ -125,10 +125,10 @@ class NotificationIntegrationTest {
 		String state = oAuthStateService.createState(auth.getUser().getId(), profile.getId());
 
 		String code = "test-slack-code";
-		SlackOAuthResponseDto.IncomingWebhook webhook = new SlackOAuthResponseDto.IncomingWebhook();
+		SlackOAuthResDto.IncomingWebhook webhook = new SlackOAuthResDto.IncomingWebhook();
 		webhook.setChannel("test-channel");
 		webhook.setUrl("https://hooks.slack.com/test-webhook");
-		SlackOAuthResponseDto responseDto = new SlackOAuthResponseDto();
+		SlackOAuthResDto responseDto = new SlackOAuthResDto();
 		responseDto.setOk(true);
 		responseDto.setIncomingWebhook(webhook);
 
@@ -158,10 +158,10 @@ class NotificationIntegrationTest {
 		String state = oAuthStateService.createState(auth.getUser().getId(), profile.getId());
 
 		String code = "test-slack-code";
-		SlackOAuthResponseDto.IncomingWebhook webhook = new SlackOAuthResponseDto.IncomingWebhook();
+		SlackOAuthResDto.IncomingWebhook webhook = new SlackOAuthResDto.IncomingWebhook();
 		webhook.setChannel("test-channel");
 		webhook.setUrl("https://hooks.slack.com/test-webhook");
-		SlackOAuthResponseDto responseDto = new SlackOAuthResponseDto();
+		SlackOAuthResDto responseDto = new SlackOAuthResDto();
 		responseDto.setOk(true);
 		responseDto.setIncomingWebhook(webhook);
 
@@ -209,10 +209,10 @@ class NotificationIntegrationTest {
 		String state = oAuthStateService.createState(auth.getUser().getId(), profile.getId());
 
 		String code = "test-discord-code";
-		DiscordOAuthResponseDto.Webhook webhook = new DiscordOAuthResponseDto.Webhook();
+		DiscordOAuthResDto.Webhook webhook = new DiscordOAuthResDto.Webhook();
 		webhook.setName("test-discord-channel");
 		webhook.setUrl("https://discord.com/api/webhooks/test");
-		DiscordOAuthResponseDto responseDto = new DiscordOAuthResponseDto();
+		DiscordOAuthResDto responseDto = new DiscordOAuthResDto();
 		responseDto.setWebhook(webhook);
 
 		Mockito.when(discordAuthClient.getAccessToken(Mockito.anyMap())).thenReturn(responseDto);
@@ -306,7 +306,7 @@ class NotificationIntegrationTest {
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 
-		NotificationSubscriptionRequestDto request = new NotificationSubscriptionRequestDto(issue.getId(), todoKanbanConfig.getId(), doneKanbanConfig.getId());
+		NotificationSubscriptionReqDto request = new NotificationSubscriptionReqDto(issue.getId(), todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(post("/api/v1/projects/{projectUrl}/notifications/subscriptions", project.getUrl())
@@ -383,7 +383,7 @@ class NotificationIntegrationTest {
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		ScheduleNotificationRequestDto request = new ScheduleNotificationRequestDto(issue.getId(), 60L, "Test schedule delay");
+		ScheduleNotificationReqDto request = new ScheduleNotificationReqDto(issue.getId(), 60L, "Test schedule delay");
 
 		// when
 		ResultActions result = mockMvc.perform(post("/api/v1/projects/{projectUrl}/notifications/schedule", project.getUrl())
@@ -411,7 +411,7 @@ class NotificationIntegrationTest {
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		ScheduleNotificationRequestDto request = new ScheduleNotificationRequestDto(issue.getId(), delayMin, "Test schedule delay");
+		ScheduleNotificationReqDto request = new ScheduleNotificationReqDto(issue.getId(), delayMin, "Test schedule delay");
 
 		// when
 		ResultActions result = mockMvc.perform(post("/api/v1/projects/{projectUrl}/notifications/schedule", project.getUrl())

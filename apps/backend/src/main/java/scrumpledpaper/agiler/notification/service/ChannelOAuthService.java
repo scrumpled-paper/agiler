@@ -10,10 +10,10 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.notification.client.DiscordAuthClient;
 import scrumpledpaper.agiler.notification.client.SlackAuthClient;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
-import scrumpledpaper.agiler.notification.dto.DiscordOAuthResponseDto;
+import scrumpledpaper.agiler.notification.dto.DiscordOAuthResDto;
 import scrumpledpaper.agiler.notification.dto.OAuthStatePayload;
-import scrumpledpaper.agiler.notification.dto.ProfileNotificationChannelRequestDto;
-import scrumpledpaper.agiler.notification.dto.SlackOAuthResponseDto;
+import scrumpledpaper.agiler.notification.dto.ProfileNotificationChannelReqDto;
+import scrumpledpaper.agiler.notification.dto.SlackOAuthResDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class ChannelOAuthService {
 		formData.put("code", code);
 		formData.put("redirect_uri", slackRedirectUri);
 
-		SlackOAuthResponseDto response = slackAuthClient.getAccessToken(formData);
+		SlackOAuthResDto response = slackAuthClient.getAccessToken(formData);
 
 		if (!response.isOk()) {
 			log.error("Slack OAuth error: {}", response.getError());
@@ -71,13 +71,13 @@ public class ChannelOAuthService {
 		}
 		log.info("Slack OAuth response: {}", response);
 
-		SlackOAuthResponseDto.IncomingWebhook webhook = response.getIncomingWebhook();
+		SlackOAuthResDto.IncomingWebhook webhook = response.getIncomingWebhook();
 		if (webhook == null) {
 			log.error("Incoming webhook information is missing in Slack response.");
 			throw new CustomException(ErrorCode.CHANNEL_WEBHOOK_ERROR);
 		}
 
-		ProfileNotificationChannelRequestDto request = new ProfileNotificationChannelRequestDto(
+		ProfileNotificationChannelReqDto request = new ProfileNotificationChannelReqDto(
 				ChannelType.SLACK,
 				webhook.getUrl(),
 				SLACK_PREFIX + webhook.getChannel()
@@ -101,16 +101,16 @@ public class ChannelOAuthService {
 		formData.put("code", code);
 		formData.put("redirect_uri", discordRedirectUri);
 
-		DiscordOAuthResponseDto response = discordAuthClient.getAccessToken(formData);
+		DiscordOAuthResDto response = discordAuthClient.getAccessToken(formData);
 		log.info("Discord OAuth response received.");
 
-		DiscordOAuthResponseDto.Webhook webhook = response.getWebhook();
+		DiscordOAuthResDto.Webhook webhook = response.getWebhook();
 		if (webhook == null) {
 			log.error("Incoming webhook information is missing in Discord response.");
 			throw new CustomException(ErrorCode.CHANNEL_WEBHOOK_ERROR);
 		}
 
-		ProfileNotificationChannelRequestDto request = new ProfileNotificationChannelRequestDto(
+		ProfileNotificationChannelReqDto request = new ProfileNotificationChannelReqDto(
 				ChannelType.DISCORD,
 				webhook.getUrl(),
 				DISCORD_PREFIX + webhook.getName()

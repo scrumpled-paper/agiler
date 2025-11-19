@@ -13,7 +13,6 @@ import scrumpledpaper.agiler.notification.repository.ProfileNotificationChannelR
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -25,7 +24,7 @@ public class NotificationManagementService {
 	private final ProjectValidator projectValidator;
 
 	@Transactional
-	public ProfileNotificationChannel registerChannel(OAuthStatePayload payload, ProfileNotificationChannelRequestDto request) {
+	public ProfileNotificationChannel registerChannel(OAuthStatePayload payload, ProfileNotificationChannelReqDto request) {
 		ProfileNotificationChannel channel = profileNotificationChannelRepository
 				.findByUserIdAndName(payload.userId(), request.name())
 				.map(existing -> {
@@ -65,7 +64,7 @@ public class NotificationManagementService {
 	}
 
 	@Transactional
-	public NotificationSubscription subscribe(long userId, String projectUrl, NotificationSubscriptionRequestDto request) {
+	public NotificationSubscription subscribe(long userId, String projectUrl, NotificationSubscriptionReqDto request) {
 		ProjectAccessContext accessContext = projectValidator.validateAccess(userId, projectUrl);
 
 		NotificationSubscription subscription = NotificationSubscription.builder()

@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class SlackOAuthResponseDto {
+public class SlackOAuthResDto {
 
     private boolean ok;
     private String error;
