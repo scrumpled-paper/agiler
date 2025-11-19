@@ -282,8 +282,8 @@ public class TestDataFactory {
 		return notificationSubscriptionRepository.findByProfileId(profileId);
 	}
 
-	public NotificationSubscription createNotificationSubscription(User user, Profile profile, Issue issue, String fromStatus, String toStatus) {
-		NotificationSubscription subscription = NotificationSubscriptionFixture.create(user.getId(), profile.getId(), issue.getId(), fromStatus, toStatus);
+	public NotificationSubscription createNotificationSubscription(User user, Profile profile, Issue issue, long fromKanbanConfigId, long toKanbanConfigId) {
+		NotificationSubscription subscription = NotificationSubscriptionFixture.create(user.getId(), profile.getId(), issue.getId(), fromKanbanConfigId, toKanbanConfigId);
 		return notificationSubscriptionRepository.save(subscription);
 	}
 

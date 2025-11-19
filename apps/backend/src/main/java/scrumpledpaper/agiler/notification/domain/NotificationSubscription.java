@@ -24,10 +24,10 @@ public class NotificationSubscription extends BaseEntity {
 	@Column(name = "issue_id")
 	private long issueId;
 
-	@Column(name = "from_status")
-	private String fromStatus;
+	@Column(name = "from_kanban_config")
+	private long fromKanbanConfigId;
 
-	@Column(name = "to_status")
-	private String toStatus;
+	@Column(name = "to_kanban_config")
+	private long toKanbanConfigId;
 
 }

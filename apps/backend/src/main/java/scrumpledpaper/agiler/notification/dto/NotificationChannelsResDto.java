@@ -1,29 +1,31 @@
 package scrumpledpaper.agiler.notification.dto;
 
+import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
+
 import java.util.List;
 
 public record NotificationChannelsResDto(
-		List<ProfileNotificationChannel> channels
+		List<ProfileNotificationChannelDto> channels
 ) {
 
 	public static NotificationChannelsResDto from(
-			List<scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel> entities
+			List<ProfileNotificationChannel> entities
 	) {
 		var channelDtos = entities.stream()
-				.map(ProfileNotificationChannel::from)
+				.map(ProfileNotificationChannelDto::from)
 				.toList();
 
 		return new NotificationChannelsResDto(channelDtos);
 	}
 
-	public record ProfileNotificationChannel(
+	public record ProfileNotificationChannelDto(
 			long id,
 			String channelType
 	) {
-		public static ProfileNotificationChannel from(
-				scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel entity
+		public static ProfileNotificationChannelDto from(
+				ProfileNotificationChannel entity
 		) {
-			return new ProfileNotificationChannel(
+			return new ProfileNotificationChannelDto(
 					entity.getId(),
 					entity.getChannelType().name()
 			);

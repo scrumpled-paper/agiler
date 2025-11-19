@@ -4,13 +4,13 @@ import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 
 public class NotificationSubscriptionFixture {
 
-	public static NotificationSubscription create(long userId, long profileId, long issueId, String fromStatus, String toStatus) {
+	public static NotificationSubscription create(long userId, long profileId, long issueId, long fromKanbanConfigId, long toKanbanConfigId) {
 		return NotificationSubscription.builder()
 				.userId(userId)
 				.profileId(profileId)
 				.issueId(issueId)
-				.fromStatus(fromStatus)
-				.toStatus(toStatus)
+				.fromKanbanConfigId(fromKanbanConfigId)
+				.toKanbanConfigId(toKanbanConfigId)
 				.build();
 	}
 

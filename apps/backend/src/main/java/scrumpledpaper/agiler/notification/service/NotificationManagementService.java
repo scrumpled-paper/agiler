@@ -72,8 +72,8 @@ public class NotificationManagementService {
 				.userId(userId)
 				.profileId(accessContext.profile().getId())
 				.issueId(request.issueId())
-				.fromStatus(request.fromStatus())
-				.toStatus(request.toStatus())
+				.fromKanbanConfigId(request.fromKanbanConfigId())
+				.toKanbanConfigId(request.toKanbanConfigId())
 				.build();
 
 		return notificationSubscriptionRepository.save(subscription);

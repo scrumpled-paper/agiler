@@ -1,8 +1,13 @@
 package scrumpledpaper.agiler.notification.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 public record NotificationSubscriptionRequestDto(
+		@NotNull
 		Long issueId,
-		String fromStatus,
-		String toStatus
+		@NotNull
+		Long fromKanbanConfigId,
+		@NotNull
+		Long toKanbanConfigId
 ) {
 }

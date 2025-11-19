@@ -52,8 +52,4 @@ public class KanbanConfig extends BaseEntity {
 		this.isDone = oldKanbanConfig.getIsDone();
 	}
 
-	public void updateStatusName(String statusName) {
-		this.statusName = statusName;
-	}
-
 }

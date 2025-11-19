@@ -99,8 +99,8 @@ public class NotificationService {
 				.findSubscriptionsForIssueStatusChange(
 						event.getProjectId(),
 						event.getIssueId(),
-						event.getOldStatus(),
-						event.getNewStatus()
+						event.getFromKanbanConfigId(),
+						event.getToKanbanConfigId()
 				);
 
 		if (subscriptions.isEmpty()) {
@@ -126,8 +126,8 @@ public class NotificationService {
 					"[Project #%d] Issue #%d status changed from '%s' to '%s' by %s.",
 					event.getProjectId(),
 					event.getIssueId(),
-					event.getOldStatus(),
-					event.getNewStatus(),
+					event.getFromKanbanConfigId(),
+					event.getToKanbanConfigId(),
 					updaterName
 			);
 

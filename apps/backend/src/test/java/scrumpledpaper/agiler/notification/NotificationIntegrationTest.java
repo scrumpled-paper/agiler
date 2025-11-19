@@ -31,7 +31,6 @@ import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
 import scrumpledpaper.agiler.notification.domain.ScheduledNotification;
 import scrumpledpaper.agiler.notification.dto.*;
-import scrumpledpaper.agiler.notification.sender.DiscordNotificationSender;
 import scrumpledpaper.agiler.notification.service.OAuthStateService;
 import scrumpledpaper.agiler.notification.service.ScheduledNotificationService;
 import scrumpledpaper.agiler.project.entity.Profile;
@@ -46,7 +45,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @Transactional
@@ -302,10 +302,11 @@ class NotificationIntegrationTest {
 		String anyProjectUrl = "test-project";
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
-		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
+		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
+		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 
-		NotificationSubscriptionRequestDto request = new NotificationSubscriptionRequestDto(issue.getId(), "TODO", "DONE");
+		NotificationSubscriptionRequestDto request = new NotificationSubscriptionRequestDto(issue.getId(), todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(post("/api/v1/projects/{projectUrl}/notifications/subscriptions", project.getUrl())
@@ -318,8 +319,8 @@ class NotificationIntegrationTest {
 		List<NotificationSubscription> subscriptions = testDataFactory.findNotificationSubscriptionsByProfileId(profile.getId());
 		assertThat(subscriptions).hasSize(1);
 		assertThat(subscriptions.getFirst().getIssueId()).isEqualTo(issue.getId());
-		assertThat(subscriptions.getFirst().getFromStatus()).isEqualTo("TODO");
-		assertThat(subscriptions.getFirst().getToStatus()).isEqualTo("DONE");
+		assertThat(subscriptions.getFirst().getFromKanbanConfigId()).isEqualTo(todoKanbanConfig.getId());
+		assertThat(subscriptions.getFirst().getToKanbanConfigId()).isEqualTo(doneKanbanConfig.getId());
 	}
 
 	@Test
@@ -329,14 +330,16 @@ class NotificationIntegrationTest {
 		String anyProjectUrl = "test-project";
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
-		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue1 = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		Issue issue2 = testDataFactory.createIssue(kanbanConfig, profile, "Another Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		Issue issue3 = testDataFactory.createIssue(kanbanConfig, profile, "Unsubscribed Issue", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
+		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
+		KanbanConfig inProgressKanbanConfig = testDataFactory.createKanbanConfig(project, "IN_PROGRESS", 2, false, false, false);
+		Issue issue1 = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue2 = testDataFactory.createIssue(doneKanbanConfig, profile, "Another Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue3 = testDataFactory.createIssue(todoKanbanConfig, profile, "Unsubscribed Issue", false, "test", LocalDateTime.now(), LocalDateTime.now());
 
-		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue1, "TODO", "DONE");
-		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue2, "IN_PROGRESS", "DONE");
-		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue3, "TODO", "IN_PROGRESS");
+		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue1, todoKanbanConfig.getId(), doneKanbanConfig.getId());
+		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue2, inProgressKanbanConfig.getId(), doneKanbanConfig.getId());
+		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue3, todoKanbanConfig.getId(), inProgressKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(get("/api/v1/projects/{projectUrl}/notifications/subscriptions", project.getUrl())
@@ -355,10 +358,11 @@ class NotificationIntegrationTest {
 		String anyProjectUrl = "test-project";
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
-		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
+		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
+		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 
-		NotificationSubscription subscription = testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, "TODO", "DONE");
+		NotificationSubscription subscription = testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(delete("/api/v1/projects/{projectUrl}/notifications/subscriptions/{subscriptionId}", project.getUrl(), subscription.getId())
@@ -397,7 +401,7 @@ class NotificationIntegrationTest {
 
 	@ParameterizedTest
 	@ValueSource(
-		longs = {0L, -10L}
+			longs = {0L, -10L}
 	)
 	@DisplayName("400 - 잘못된 예약 요청 시 에러를 반환한다")
 	void scheduleNotification_withInvalidRequest_shouldReturnError(long delayMin) throws Exception {
@@ -426,12 +430,13 @@ class NotificationIntegrationTest {
 		String anyProjectUrl = "test-project";
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
-		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
+		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
+		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 		String testWebhookUrl = "https://hooks.slack.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl, "test-channel");
-		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, "TODO", "DONE");
-		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto("TODO", "DONE");
+		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
+		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/status", anyProjectUrl, issue.getId())
@@ -455,12 +460,13 @@ class NotificationIntegrationTest {
 		String anyProjectUrl = "test-project";
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
-		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
+		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
+		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
 		String testWebhookUrl = "https://hooks.discord.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", testWebhookUrl, "test-channel");
-		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, "TODO", "DONE");
-		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto("TODO", "DONE");
+		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
+		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/status", anyProjectUrl, issue.getId())

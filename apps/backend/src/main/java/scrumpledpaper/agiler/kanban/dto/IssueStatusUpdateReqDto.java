@@ -1,11 +1,11 @@
 package scrumpledpaper.agiler.kanban.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record IssueStatusUpdateReqDto(
-		@NotBlank
-		String oldStatus,
-		@NotBlank
-		String newStatus
+		@NotNull
+		Long fromKanbanConfigId,
+		@NotNull
+		Long toKanbanConfigId
 ) {
 }

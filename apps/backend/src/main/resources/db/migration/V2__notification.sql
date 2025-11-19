@@ -4,14 +4,16 @@ CREATE TABLE `notification_subscription`
     `user_id`     BIGINT   NOT NULL,
     `profile_id`  BIGINT   NOT NULL,
     `issue_id`    BIGINT,
-    `from_status` VARCHAR(50),
-    `to_status`   VARCHAR(50),
+    `from_kanban_config` BIGINT NOT NULL ,
+    `to_kanban_config`   BIGINT NOT NULL,
     `created_at`  DATETIME NOT NULL,
     `updated_at`  DATETIME NOT NULL,
     `deleted_at`  DATETIME,
     FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
     FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    FOREIGN KEY (`issue_id`) REFERENCES `issue` (`id`)
+    FOREIGN KEY (`issue_id`) REFERENCES `issue` (`id`),
+    FOREIGN KEY (`from_kanban_config`) REFERENCES `kanban_config` (`id`),
+    FOREIGN KEY (`to_kanban_config`) REFERENCES `kanban_config` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `scheduled_notification`
