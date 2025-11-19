@@ -35,4 +35,9 @@ public class ProjectValidator {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_REQUIRED);
 		}
 	}
+
+	public Profile validateAccessByProfileId(long profileId) {
+		return profileRepository.findById(profileId)
+			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
+	}
 }

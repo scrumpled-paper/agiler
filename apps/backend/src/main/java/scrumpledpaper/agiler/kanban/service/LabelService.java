@@ -73,4 +73,8 @@ public class LabelService {
 		Label label = findLabelById(id);
 		labelRepository.delete(label);
 	}
+
+	public List<Label> getLabelsByIds(List<Long> labels) {
+		return labelRepository.findAllById(labels);
+	}
 }
