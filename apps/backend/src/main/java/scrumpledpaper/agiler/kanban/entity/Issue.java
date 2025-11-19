@@ -10,15 +10,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.common.BaseEntity;
 
 @Getter
-@NoArgsConstructor
 @Entity
 @Table(name = "issue")
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Issue extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,4 +48,9 @@ public class Issue extends BaseEntity {
 
 	@Column(name = "due_at")
 	private LocalDateTime dueAt;
+
+	public void updateStatus(KanbanConfig kanbanConfig) {
+		this.kanbanConfig = kanbanConfig;
+	}
+
 }

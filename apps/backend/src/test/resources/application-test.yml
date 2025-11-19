@@ -15,6 +15,37 @@ spring:
             scope:
               - user:email
               - read:user
+          slack:
+            client-id: "<>"
+            client-secret: "<>"
+            scope: identity.basic
+            redirect-uri:
+              "{baseUrl}/api/v1/notifications/slack/callback"
+            provider: slack
+            authorization-grant-type: authorization_code
+          discord:
+            client-id: "<>>"
+            client-secret: "<>"
+            scope: identify
+            redirect-uri:
+              "{baseUrl}/api/login/oauth2/code/{registrationId}"
+            provider: discord
+            authorization-grant-type: authorization_code
+        provider:
+          discord:
+            authorization-uri: https://discord.com/api/oauth2/authorize
+            token-uri: https://discord.com/api/oauth2/token
+            user-info-uri: https://discord.com/api/users/@me
+            user-name-attribute: id
+          slack:
+            authorization-uri: https://slack.com/oauth/v2/authorize
+            token-uri: https://slack.com/api/oauth.v2.access
+            user-info-uri: https://slack.com/api/users.identity
+            user-name-attribute: user.id
+  data:
+    redis:
+      host: localhost
+      port: 6379
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:

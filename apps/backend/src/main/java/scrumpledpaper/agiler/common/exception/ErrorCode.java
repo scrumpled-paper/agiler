@@ -31,7 +31,21 @@ public enum ErrorCode {
 	ISSUE_TEMPLATE_NOT_FOUND(404, "T001", "이슈 템플릿을 찾을 수 없습니다."),
 	SCRUM_TEMPLATE_NOT_FOUND(404, "T002", "스크럼 템플릿을 찾을 수 없습니다."),
 	RETRO_TEMPLATE_NOT_FOUND(404, "T003", "회고 템플릿을 찾을 수 없습니다."),
-	MEETING_TEMPLATE_NOT_FOUND(404, "T004", "회의 템플릿을 찾을 수 없습니다.");
+	MEETING_TEMPLATE_NOT_FOUND(404, "T004", "회의 템플릿을 찾을 수 없습니다."),
+
+	ISSUE_NOT_FOUND(404, "K001", "이슈를 찾을 수 없습니다."),
+	KANBAN_CONFIG_NOT_FOUND(404, "K002", "칸반 설정을 찾을 수 없습니다."),
+
+	NOTIFICATION_CHANNEL_NOT_FOUND(404, "N001", "알림 채널을 찾을 수 없습니다."),
+	SLACK_OAUTH_FAILED(400, "N002", "Slack OAuth 인증에 실패했습니다."),
+	DISCORD_OAUTH_FAILED(400, "N003", "Discord OAuth 인증에 실패했습니다."),
+	CHANNEL_WEBHOOK_ERROR(500, "N004", "채널 웹훅 처리 중 오류가 발생했습니다."),
+	NOTIFICATION_UNAUTHORIZED(403, "N005", "알림 채널에 대한 권한이 없습니다."),
+	NOTIFICATION_SUBSCRIPTION_NOT_FOUND(404, "N006", "알림 구독을 찾을 수 없습니다."),
+	INVALID_SCHEDULE_REQUEST(400, "N007", "잘못된 알림 예약 요청입니다. delayInMinutes 또는 notificationTime 중 하나만 지정해야 합니다."),
+	JSON_PROCESSING_ERROR(500, "C003", "JSON 처리 중 오류가 발생했습니다."),
+	DUPLICATE_NOTIFICATION_CHANNEL(409, "N008", "이미 등록된 알림 채널입니다."),
+	REDIS_NOT_FOUND_STATE(404, "C004", "Redis에서 상태를 찾을 수 없습니다.");
 
 	private final int status;
 	private final String code;
