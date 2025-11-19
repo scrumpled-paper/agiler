@@ -54,7 +54,7 @@ public class ChannelOAuthService {
 		OAuthStatePayload payload = oAuthStateService.consumeState(state);
 
 		if (payload.userId() != userId) {
-			throw new IllegalStateException("OAuth state user mismatch");
+			throw new CustomException(ErrorCode.SLACK_OAUTH_FAILED);
 		}
 
 		Map<String, String> formData = new HashMap<>();
@@ -91,7 +91,7 @@ public class ChannelOAuthService {
 		OAuthStatePayload payload = oAuthStateService.consumeState(state);
 
 		if (payload.userId() != userId) {
-			throw new IllegalStateException("OAuth state user mismatch");
+			throw new CustomException(ErrorCode.DISCORD_OAUTH_FAILED);
 		}
 
 		Map<String, String> formData = new HashMap<>();
