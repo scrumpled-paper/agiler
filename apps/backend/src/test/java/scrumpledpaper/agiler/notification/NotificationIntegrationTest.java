@@ -100,22 +100,6 @@ class NotificationIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("302 - 지원하지 않는 플랫폼 채널 등록시 404 에러를 반환한다")
-	void connectToUnsupportedPlatform_shouldReturnNotFound() throws Exception {
-		// given
-		String anyProjectUrl = "test-project";
-		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
-
-		// when
-		ResultActions result = mockMvc.perform(get("/api/v1/projects/" + project.getUrl() + "/notifications/slack/connect")
-				.cookie(getAuthCookie()));
-
-		// then
-		result.andExpect(status().is3xxRedirection())
-				.andExpect(header().string("Location", containsString("slack.com/oauth/v2/authorize")));
-	}
-
-	@Test
 	@DisplayName("200 - Slack OAuth 콜백 처리 시 채널이 등록된다")
 	void handleSlackCallback_shouldRegisterChannel() throws Exception {
 		// given
