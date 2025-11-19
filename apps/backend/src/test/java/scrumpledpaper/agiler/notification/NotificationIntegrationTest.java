@@ -142,7 +142,7 @@ class NotificationIntegrationTest {
 
 		// then
 		result.andExpect(status().isOk());
-		List<ProfileNotificationChannel> channels = testDataFactory.getALlProfileNotificationChannels(profile.getId());
+		List<ProfileNotificationChannel> channels = testDataFactory.getAllProfileNotificationChannels(profile.getId());
 		assertThat(channels).hasSize(1);
 		assertThat(channels.getFirst().getChannelType()).isEqualTo(ChannelType.SLACK);
 	}
@@ -176,7 +176,7 @@ class NotificationIntegrationTest {
 
 		// then
 		result.andExpect(status().isOk());
-		List<ProfileNotificationChannel> channels = testDataFactory.getALlProfileNotificationChannels(profile.getId());
+		List<ProfileNotificationChannel> channels = testDataFactory.getAllProfileNotificationChannels(profile.getId());
 		assertThat(channels).hasSize(1);
 		assertThat(channels.getFirst().getChannelType()).isEqualTo(ChannelType.SLACK);
 		assertThat(channels.getFirst().getWebhookUrl()).isEqualTo("https://hooks.slack.com/test-webhook");
@@ -223,7 +223,7 @@ class NotificationIntegrationTest {
 
 		// then
 		result.andExpect(status().isOk());
-		List<ProfileNotificationChannel> channels = testDataFactory.getALlProfileNotificationChannels(profile.getId());
+		List<ProfileNotificationChannel> channels = testDataFactory.getAllProfileNotificationChannels(profile.getId());
 		assertThat(channels).hasSize(1);
 		assertThat(channels.getFirst().getChannelType()).isEqualTo(ChannelType.DISCORD);
 	}
@@ -245,7 +245,6 @@ class NotificationIntegrationTest {
 
 		// then
 		result.andExpect(status().isOk());
-		result.andReturn().getResponse().getContentAsString();
 		NotificationChannelsResDto response = objectMapper.readValue(result.andReturn().getResponse().getContentAsString(), NotificationChannelsResDto.class);
 		assertThat(response.channels()).hasSize(2);
 	}
@@ -270,11 +269,11 @@ class NotificationIntegrationTest {
 		// then
 		result1.andExpect(status().isNoContent());
 		result2.andExpect(status().isNoContent());
-		assertThat(testDataFactory.getALlProfileNotificationChannels(profile.getId())).hasSize(0);
+		assertThat(testDataFactory.getAllProfileNotificationChannels(profile.getId())).hasSize(0);
 	}
 
 	@Test
-	@DisplayName("400 - 존재하지 않는 채널 삭제시 404 에러를 반환한다")
+	@DisplayName("404 - 존재하지 않는 채널 삭제시 404 에러를 반환한다")
 	void deleteNotificationChannel_withInvalidId_shouldReturnNotFound() throws Exception {
 		// given
 		String anyProjectUrl = "test-project";

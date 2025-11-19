@@ -259,7 +259,7 @@ public class TestDataFactory {
 		return meetingTemplateRepository.findById(id).orElseThrow();
 	}
 
-	public List<ProfileNotificationChannel> getALlProfileNotificationChannels(long profileId) {
+	public List<ProfileNotificationChannel> getAllProfileNotificationChannels(long profileId) {
 		return profileNotificationChannelRepository.findByProfileId(profileId);
 	}
 
