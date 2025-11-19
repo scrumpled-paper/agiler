@@ -11,7 +11,7 @@ public record NotificationChannelsResDto(
 	public static NotificationChannelsResDto from(
 			List<ProfileNotificationChannel> entities
 	) {
-		var channelDtos = entities.stream()
+		List<ProfileNotificationChannelDto> channelDtos = entities.stream()
 				.map(ProfileNotificationChannelDto::from)
 				.toList();
 
