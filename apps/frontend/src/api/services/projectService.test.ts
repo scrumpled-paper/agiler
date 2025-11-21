@@ -1,12 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
-import {
-  getProjectList,
-  getProjectSidebar,
-  getProjectMember,
-  getProjectUrlCheck,
-  createProject,
-} from './projectService'
+import { projectService } from './projectService'
 import { apiClient } from '../client'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 
@@ -42,7 +35,7 @@ describe('projectService', () => {
 
       vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
 
-      const result = await getProjectList({ size: 6, page: 0 })
+      const result = await projectService.getProjectList({ size: 6, page: 0 })
 
       expect(apiClient.get).toHaveBeenCalledWith('/api/v1/projects/info', {
         params: { size: 6, page: 0 },
@@ -50,50 +43,14 @@ describe('projectService', () => {
       expect(result).toEqual(mockResponse)
     })
 
-    it('should handle axios error with server message', async () => {
-      const errorMessage = 'Server error message'
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: errorMessage,
-          },
-        },
-      }
+    it('should handle axios error', async () => {
+      const axiosError = new Error('Server error message')
 
       vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
 
-      await expect(getProjectList({ size: 6, page: 0 })).rejects.toThrow(
-        errorMessage
-      )
-    })
-
-    it('should handle axios error without server message', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {},
-        },
-      }
-
-      vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
-
-      await expect(getProjectList({ size: 6, page: 0 })).rejects.toThrow(
-        'Failed to fetch project list'
-      )
-    })
-
-    it('should handle unknown error', async () => {
-      const unknownError = new Error('Some error')
-
-      vi.mocked(apiClient.get).mockRejectedValue(unknownError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false)
-
-      await expect(getProjectList({ size: 6, page: 0 })).rejects.toThrow(
-        'Unknown error occurred'
-      )
+      await expect(
+        projectService.getProjectList({ size: 6, page: 0 })
+      ).rejects.toThrow('Server error message')
     })
   })
 
@@ -116,7 +73,10 @@ describe('projectService', () => {
 
       vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
 
-      const result = await getProjectSidebar({ size: 6, page: 0 })
+      const result = await projectService.getProjectSidebar({
+        size: 6,
+        page: 0,
+      })
 
       expect(apiClient.get).toHaveBeenCalledWith('/api/v1/projects', {
         params: { size: 6, page: 0 },
@@ -124,50 +84,14 @@ describe('projectService', () => {
       expect(result).toEqual(mockResponse)
     })
 
-    it('should handle axios error with server message', async () => {
-      const errorMessage = 'Server error message'
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: errorMessage,
-          },
-        },
-      }
+    it('should handle axios error', async () => {
+      const axiosError = new Error('Server error message')
 
       vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
 
-      await expect(getProjectSidebar({ size: 6, page: 0 })).rejects.toThrow(
-        errorMessage
-      )
-    })
-
-    it('should handle axios error without server message', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {},
-        },
-      }
-
-      vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
-
-      await expect(getProjectSidebar({ size: 6, page: 0 })).rejects.toThrow(
-        'Failed to fetch project sidebar'
-      )
-    })
-
-    it('should handle unknown error', async () => {
-      const unknownError = new Error('Some error')
-
-      vi.mocked(apiClient.get).mockRejectedValue(unknownError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false)
-
-      await expect(getProjectSidebar({ size: 6, page: 0 })).rejects.toThrow(
-        'Unknown error occurred'
-      )
+      await expect(
+        projectService.getProjectSidebar({ size: 6, page: 0 })
+      ).rejects.toThrow('Server error message')
     })
   })
 
@@ -191,7 +115,7 @@ describe('projectService', () => {
 
       vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
 
-      const result = await getProjectMember({
+      const result = await projectService.getProjectMember({
         projectUrl: 'test-project',
         size: 5,
         page: 0,
@@ -206,69 +130,18 @@ describe('projectService', () => {
       expect(result).toEqual(mockResponse)
     })
 
-    it('should handle axios error with server message', async () => {
-      const errorMessage = 'Server error message'
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: errorMessage,
-          },
-        },
-      }
+    it('should handle axios error', async () => {
+      const axiosError = new Error('Server error message')
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
       vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
 
       await expect(
-        getProjectMember({ projectUrl: 'test-project', size: 5, page: 0 })
-      ).rejects.toThrow(errorMessage)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to fetch project members:',
-        axiosError
-      )
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('should handle axios error without server message', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {},
-        },
-      }
-
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
-
-      await expect(
-        getProjectMember({ projectUrl: 'test-project', size: 5, page: 0 })
-      ).rejects.toThrow('API 요청 중 오류가 발생했습니다.')
-
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('should handle unknown error', async () => {
-      const unknownError = new Error('Some error')
-
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      vi.mocked(apiClient.get).mockRejectedValue(unknownError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false)
-
-      await expect(
-        getProjectMember({ projectUrl: 'test-project', size: 5, page: 0 })
-      ).rejects.toThrow('알 수 없는 오류가 발생했습니다.')
-
-      consoleErrorSpy.mockRestore()
+        projectService.getProjectMember({
+          projectUrl: 'test-project',
+          size: 5,
+          page: 0,
+        })
+      ).rejects.toThrow('Server error message')
     })
   })
 
@@ -276,7 +149,7 @@ describe('projectService', () => {
     it('should validate project URL successfully', async () => {
       vi.mocked(apiClient.get).mockResolvedValue({ data: true })
 
-      const result = await getProjectUrlCheck('test-project')
+      const result = await projectService.getProjectUrlCheck('test-project')
 
       expect(apiClient.get).toHaveBeenCalledWith(
         '/api/v1/projects/check/test-project'
@@ -287,74 +160,19 @@ describe('projectService', () => {
     it('should return false for invalid URL', async () => {
       vi.mocked(apiClient.get).mockResolvedValue({ data: false })
 
-      const result = await getProjectUrlCheck('invalid-url')
+      const result = await projectService.getProjectUrlCheck('invalid-url')
 
       expect(result).toBe(false)
     })
 
-    it('should handle axios error with server message', async () => {
-      const errorMessage = 'URL already exists'
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: errorMessage,
-          },
-        },
-      }
+    it('should handle axios error', async () => {
+      const axiosError = new Error('URL already exists')
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
       vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
 
-      await expect(getProjectUrlCheck('test-project')).rejects.toThrow(
-        errorMessage
-      )
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '프로젝트 url 검증 오류 :',
-        axiosError
-      )
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('should handle axios error without server message', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {},
-        },
-      }
-
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      vi.mocked(apiClient.get).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
-
-      await expect(getProjectUrlCheck('test-project')).rejects.toThrow(
-        '프로젝트 url 검증  API 요청 중 오류가 발생했습니다.'
-      )
-
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('should handle unknown error', async () => {
-      const unknownError = new Error('Some error')
-
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      vi.mocked(apiClient.get).mockRejectedValue(unknownError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false)
-
-      await expect(getProjectUrlCheck('test-project')).rejects.toThrow(
-        '알 수 없는 오류가 발생했습니다.'
-      )
-
-      consoleErrorSpy.mockRestore()
+      await expect(
+        projectService.getProjectUrlCheck('test-project')
+      ).rejects.toThrow('URL already exists')
     })
   })
 
@@ -363,7 +181,7 @@ describe('projectService', () => {
       const projectId = 123
       vi.mocked(apiClient.post).mockResolvedValue({ data: projectId })
 
-      const result = await createProject({
+      const result = await projectService.createProject({
         title: 'New Project',
         url: 'new-project',
         summary: 'A new project',
@@ -377,81 +195,18 @@ describe('projectService', () => {
       expect(result).toBe(projectId)
     })
 
-    it('should handle axios error with server message', async () => {
-      const errorMessage = 'Project creation failed'
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {
-            message: errorMessage,
-          },
-        },
-      }
+    it('should handle axios error', async () => {
+      const axiosError = new Error('Project creation failed')
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
       vi.mocked(apiClient.post).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
 
       await expect(
-        createProject({
+        projectService.createProject({
           title: 'New Project',
           url: 'new-project',
           summary: 'A new project',
         })
-      ).rejects.toThrow(errorMessage)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '프로젝트 생성 오류 :',
-        axiosError
-      )
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('should handle axios error without server message', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          data: {},
-        },
-      }
-
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      vi.mocked(apiClient.post).mockRejectedValue(axiosError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
-
-      await expect(
-        createProject({
-          title: 'New Project',
-          url: 'new-project',
-          summary: 'A new project',
-        })
-      ).rejects.toThrow('프로젝트 생성 API 요청 중 오류가 발생했습니다.')
-
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('should handle unknown error', async () => {
-      const unknownError = new Error('Some error')
-
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-      vi.mocked(apiClient.post).mockRejectedValue(unknownError)
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(false)
-
-      await expect(
-        createProject({
-          title: 'New Project',
-          url: 'new-project',
-          summary: 'A new project',
-        })
-      ).rejects.toThrow('알 수 없는 오류가 발생했습니다.')
-
-      consoleErrorSpy.mockRestore()
+      ).rejects.toThrow('Project creation failed')
     })
   })
 })
