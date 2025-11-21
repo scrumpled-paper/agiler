@@ -52,4 +52,9 @@ public class Issue extends BaseEntity {
 
 	@Column(name = "due_at")
 	private LocalDateTime dueAt;
+
+	public void update(String title, String contents) {
+		this.title = title;
+		this.contents = contents;
+	}
 }

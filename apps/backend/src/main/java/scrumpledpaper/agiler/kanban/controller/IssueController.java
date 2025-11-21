@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.kanban.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
+import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.service.IssueService;
 
 @RestController
@@ -30,5 +32,15 @@ public class IssueController {
 		@RequestBody @Valid IssueCreateReqDto issueCreateReqDto) {
 		long issueId = issueService.createIssue(customUserDetails.getUserId(), projectUrl, issueCreateReqDto);
 		return ResponseEntity.created(null).body(new IssueIdResDto(issueId));
+	}
+
+	@PatchMapping("/{projectUrl}/issues")
+	public ResponseEntity<IssueIdResDto> updateIssue(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid IssueUpdateReqDto issueUpdateReqDto) {
+		long issueId = issueService.updateIssue(customUserDetails.getUserId(), projectUrl, issueUpdateReqDto);
+		return ResponseEntity.ok(new IssueIdResDto(issueId));
 	}
 }

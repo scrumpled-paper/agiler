@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
@@ -48,5 +51,24 @@ public class IssueService {
 		List<IssueProfile> issueProfiles = issueMapper.toIssueProfile(newIssue, assignees);
 		issueProfileRepository.saveAll(issueProfiles);
 
+		return newIssue.getId();
+	}
+
+	@Transactional
+	public long updateIssue(long userId, String projectUrl, IssueUpdateReqDto issueUpdateReqDto) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Issue issue = findIssueById(issueUpdateReqDto.issueId());
+
+		issue.update(
+			issueUpdateReqDto.title(),
+			issueUpdateReqDto.contents()
+		);
+		return issue.getId();
+	}
+
+	private Issue findIssueById(Long issueId) {
+		return issueRepository.findById(issueId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
 	}
 }
