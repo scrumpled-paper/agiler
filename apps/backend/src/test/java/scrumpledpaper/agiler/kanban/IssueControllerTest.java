@@ -60,7 +60,7 @@ public class IssueControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext assigneeAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile assigneeProfile = testDataFactory.createProfile(assigneeAuth.getUser(), project, Role.MEMBER);
 			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(project, 1, true, false, false);
@@ -123,7 +123,7 @@ public class IssueControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext assigneeAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext anotherMemberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile assigneeProfile = testDataFactory.createProfile(assigneeAuth.getUser(), project, Role.MEMBER);
 			Profile anotherMemberProfile = testDataFactory.createProfile(anotherMemberAuth.getUser(), project, Role.MEMBER);
@@ -212,7 +212,7 @@ public class IssueControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			testDataFactory.createKanbanConfig(
 				project,
@@ -248,10 +248,11 @@ public class IssueControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext assigneeAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile assigneeProfile = testDataFactory.createProfile(assigneeAuth.getUser(), project, Role.MEMBER);
 			IssueCreateReqDto createReqDto = IssueFixture.createIssueCreateReqDto(
+				List.of(assigneeProfile.getId()),
 				Collections.emptyList(),
 				null,
 				null

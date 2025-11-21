@@ -53,7 +53,7 @@ public class IssueTemplateControllerTest {
 		public void issueTemplateCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			IssueTemplateCreateReqDto createReqDto = new IssueTemplateCreateReqDto(
 				"버그",
@@ -86,7 +86,7 @@ public class IssueTemplateControllerTest {
 		public void issueTemplateCreateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, testDataFactory.createAuth(defaultImage).getUser());
 			IssueTemplateCreateReqDto createReqDto = new IssueTemplateCreateReqDto(
 				"버그",
@@ -150,7 +150,7 @@ public class IssueTemplateControllerTest {
 		public void issueTemplateUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createIssueTemplate(
 				project,
@@ -187,7 +187,7 @@ public class IssueTemplateControllerTest {
 		public void issueTemplateUpdateTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			IssueTemplateUpdateReqDto updateReqDto = new IssueTemplateUpdateReqDto(
 				9999L,
@@ -216,7 +216,7 @@ public class IssueTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createIssueTemplate(
 				project,
@@ -286,7 +286,7 @@ public class IssueTemplateControllerTest {
 		public void getIssueTemplateListSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			IssueTemplate template1 = testDataFactory.createIssueTemplate(
 				project,
@@ -319,7 +319,7 @@ public class IssueTemplateControllerTest {
 		public void getIssueTemplateListForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, testDataFactory.createAuth(defaultImage).getUser());
 
 			// when
@@ -348,7 +348,7 @@ public class IssueTemplateControllerTest {
 		public void getIssueTemplateDetailSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			IssueTemplate template = testDataFactory.createIssueTemplate(
 				project,
@@ -377,7 +377,7 @@ public class IssueTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
 			IssueTemplate template = testDataFactory.createIssueTemplate(
 				project,
@@ -403,7 +403,7 @@ public class IssueTemplateControllerTest {
 		public void getIssueTemplateDetailNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createIssueTemplate(
 				project,
@@ -438,7 +438,7 @@ public class IssueTemplateControllerTest {
 		public void deleteIssueTemplateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			IssueTemplate template = testDataFactory.createIssueTemplate(
 				project,
@@ -469,7 +469,7 @@ public class IssueTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			IssueTemplate template = testDataFactory.createIssueTemplate(
 				project,
@@ -498,7 +498,7 @@ public class IssueTemplateControllerTest {
 		public void deleteIssueTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createIssueTemplate(
 				project,
