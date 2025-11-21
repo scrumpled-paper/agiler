@@ -43,7 +43,7 @@ const createPatchHandlers = (
 
 export const handlers = [
   // 현재 사용자 정보 조회
-  ...createHandlers('/api/v1/users/', () => {
+  ...createHandlers('/api/v1/users', () => {
     return HttpResponse.json(MOCK_USER)
   }),
 
@@ -109,7 +109,7 @@ export const handlers = [
   }),
 
   // 프로젝트 멤버 조회
-  ...createHandlers('/api/v1/projects/:projectUrl/people', ({ params }) => {
+  ...createHandlers('/api/v1/projects/:projectUrl/profiles', ({ params }) => {
     console.log('[MSW] 프로젝트 멤버 조회 호출됨:', params.projectUrl)
     const response: GetProjectMembersResponse = {
       contents: [

@@ -41,7 +41,7 @@ export const authService = {
     }
 
     // 4. Mock User가 없거나 개발 환경이 아닌 경우 실제 API 요청
-    const response = await apiClient.get<User>('/api/v1/users/')
+    const response = await apiClient.get<User>('/api/v1/users')
     return response.data
   },
 }
