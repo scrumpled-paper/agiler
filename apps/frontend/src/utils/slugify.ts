@@ -167,9 +167,9 @@ function decomposeKorean(char: string): string {
  * @returns URL-safe한 slug 문자열
  *
  * @example
- * slugify('프로젝트 관리') // 'peulojegteu-gwanri'
- * slugify('My Project 123') // 'my-project-123'
- * slugify('애자일 개발') // 'aejail-gaebal'
+ * slugify('프로젝트 관리') // 'peulojegteu_gwanri'
+ * slugify('My Project 123') // 'my_project-123'
+ * slugify('애자일 개발') // 'aejail_gaebal'
  */
 export function slugify(
   text: string,
@@ -179,7 +179,12 @@ export function slugify(
     maxLength?: number
   } = {}
 ): string {
-  const { lowercase = true, separator = '-', maxLength = 100 } = options
+  const {
+    lowercase = true,
+    separator = '-',
+    maxLength = 40,
+    // addUnderscore // 이 옵션은 무시되거나 삭제되어야 합니다.
+  } = options
 
   let slug = ''
 
@@ -209,6 +214,7 @@ export function slugify(
 
   // 소문자 변환
   if (lowercase) {
+    // 백엔드가 소문자만 허용하므로, 항상 소문자 변환을 추천합니다.
     slug = slug.toLowerCase()
   }
 
@@ -216,18 +222,25 @@ export function slugify(
   if (maxLength && slug.length > maxLength) {
     slug = slug.substring(0, maxLength)
     // 마지막 separator로 끝나지 않도록
-    slug = slug.replace(new RegExp(`${separator}$`), '')
+    slug = slug.replace(new RegExp(`[${separator}_]$`), '')
   }
 
   return slug
 }
 
 /**
- * Slug가 유효한지 검증
- * - 영어 소문자, 숫자, 하이픈만 허용
- * - 최소 1자 이상
- * - 하이픈으로 시작하거나 끝나지 않음
+ * Slug가 유효한지 검증 (백엔드 DTO 패턴에 맞춤)
+ * - 소문자 알파벳, 숫자, 하이픈만 허용
+ * - 0-40자 길이 제한
+ * - 패턴: ^[a-z0-9-]+$
  */
 export function isValidSlug(slug: string): boolean {
-  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)
+  // 1. 길이 체크 (0보다 크고 40자 이하)
+  if (slug.length === 0 || slug.length > 40) {
+    return false
+  }
+
+  // 2. 백엔드 DTO 패턴: 소문자, 숫자, 하이픈만 허용
+  // 언더바 로직 제거
+  return /^[a-z0-9-]+$/.test(slug)
 }

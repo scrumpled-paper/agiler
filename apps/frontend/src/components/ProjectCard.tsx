@@ -5,7 +5,7 @@ export default function ProjectCard({ props }: { props: ProjectInfo }) {
   const { title, url, imageUrl, summary } = props
 
   return (
-    <Link to={url} className="group block">
+    <Link to={`/projects/${url}`} className="group block">
       <div className="w-full max-w-[340px] h-[420px] border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         {/* 이미지 영역 */}
         <div className="h-[240px] w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex justify-center items-center">

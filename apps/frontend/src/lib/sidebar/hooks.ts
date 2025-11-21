@@ -3,7 +3,8 @@ import { useLocation, useParams } from 'react-router-dom'
 import type { SidebarContext, SidebarData } from './types'
 import { getSidebarContext } from './config'
 import { projectService } from '@/api/services/projectService'
-import type { ProjectInfo } from '@/types'
+import type { ProjectInfo, UserInfo } from '@/types'
+import { userService } from '@/api/services/userService'
 
 /**
  * 현재 경로를 기반으로 사이드바 컨텍스트를 반환하는 훅
@@ -73,6 +74,21 @@ export const useSidebarData = (
     projects: projectsData,
     members: membersData?.contents,
   }
+}
+
+// 유저 정보를 불러오는 훅
+export const useUserInfo = () => {
+  return useQuery<UserInfo>({
+    // 이 키는 앱 전역에서 사용자 정보를 참조하고 업데이트할 수 있게 합니다.
+    queryKey: ['userInfo'],
+    queryFn: async () => {
+      console.log('[useUserInfo] Fetching current user info')
+      const response = await userService.getUserInfo()
+      return response // API 응답 데이터 (User 객체)
+    },
+    // 앱이 처음 로드될 때 항상 유저 정보가 필요하므로 enabled는 별도 설정이 필요하지 않습니다.
+    staleTime: 5 * 60 * 1000, // 예: 5분 동안은 데이터를 신선하게 유지
+  })
 }
 
 /**

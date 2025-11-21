@@ -65,7 +65,7 @@ export default function JoinProjectModal({
         newErrors.url = 'Please enter a project URL'
       } else if (!validateUrl(projectUrl)) {
         newErrors.url =
-          'Please enter a valid URL (lowercase letters, numbers, hyphens only)'
+          'Please enter a valid URL (format: team-name_project-name, 0-40 characters)'
       }
 
       if (!projectSummary.trim()) {
@@ -182,7 +182,7 @@ export default function JoinProjectModal({
                 </span>
               </label>
               <Input
-                placeholder="my-project-url"
+                placeholder="team-name_project-name"
                 value={projectUrl}
                 onChange={e => {
                   setProjectUrl(e.target.value)

@@ -1,26 +1,23 @@
 // components/layout/sidebar/sections/UserInfoSection.tsx
 
+import { useUserInfo } from '@/lib/sidebar/hooks'
 import { User } from 'lucide-react'
 
-interface UserInfoSectionProps {
-  userName?: string
-  userRole?: string
-  userDescription?: string
-  avatarUrl?: string
-}
+export function UserInfoSection() {
+  const { data: user, isLoading, error } = useUserInfo()
+  if (isLoading) {
+    return <div>Loading user info...</div>
+  }
 
-export function UserInfoSection({
-  userName = 'John Doe',
-  userRole = 'Project Manager',
-  userDescription = 'Managing Projects with ease!',
-  avatarUrl,
-}: UserInfoSectionProps) {
+  if (error || !user) {
+    return <div>Failed to load user info.</div>
+  }
   return (
     <div className="flex items-center gap-4 border-b bg-background p-6">
-      {avatarUrl ? (
+      {user.image ? (
         <img
-          src={avatarUrl}
-          alt={userName}
+          src={user.image}
+          alt={user.nickname}
           className="h-12 w-12 rounded-full object-cover"
         />
       ) : (
@@ -29,14 +26,13 @@ export function UserInfoSection({
         </div>
       )}
       <div className="flex flex-1 flex-col gap-1">
-        <p className="text-sm font-bold">{userName}</p>
-        {userRole && (
-          <div className="inline-flex items-center rounded-sm border bg-muted px-1.5 py-0.5">
-            <span className="text-xs text-muted-foreground">{userRole}</span>
-          </div>
-        )}
-        {userDescription && (
-          <p className="text-xs text-muted-foreground">{userDescription}</p>
+        <p className="text-sm font-bold">{user.nickname}</p>
+        {user.email ? (
+          <p className="text-xs text-muted-foreground">{user.email}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            등록된 이메일이 없습니다.
+          </p>
         )}
       </div>
     </div>

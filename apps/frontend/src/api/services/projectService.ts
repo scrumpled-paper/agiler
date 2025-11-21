@@ -41,7 +41,7 @@ export const projectService = {
     size,
     page,
   }: GetProjectMembersParams): Promise<GetProjectMembersResponse> {
-    const memberUrl = `${this.apiUrl}/${projectUrl}/people`
+    const memberUrl = `${this.apiUrl}/${projectUrl}/profiles`
     const response = await apiClient.get<GetProjectMembersResponse>(memberUrl, {
       params: {
         size,
@@ -52,12 +52,19 @@ export const projectService = {
   },
 
   // 프로젝트 생성 URL 검증
+
   async getProjectUrlCheck(projectUrl: string): Promise<boolean> {
-    const checkUrl = `${this.apiUrl}/check/${projectUrl}`
-    const response = await apiClient.get(checkUrl)
+    const checkUrl = `${this.apiUrl}/check` // 경로에는 projectUrl이 없음
+
+    // Axios 기준으로 { params: { url: projectUrl } } 객체를 전달하여 쿼리 파라미터를 만듦
+    const response = await apiClient.get(checkUrl, {
+      params: {
+        url: projectUrl,
+      },
+    })
+
     return response.data
   },
-
   //  프로젝트 생성
   async createProject({ title, url, summary }: ProjectInfo): Promise<number> {
     const createUrl = this.apiUrl

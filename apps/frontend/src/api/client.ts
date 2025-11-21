@@ -26,7 +26,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       console.error('인증 실패: 401 Unauthorized')
       // 사용자에게 알림 표시 및 로그인 페이지로 리다이렉트 로직 추가
-      window.location.href = '/login'
+      // window.location.href = '/login'
       // return Promise.reject(error); // 여기서 처리하고 reject하거나, 다음 로직으로 진행
     }
 
