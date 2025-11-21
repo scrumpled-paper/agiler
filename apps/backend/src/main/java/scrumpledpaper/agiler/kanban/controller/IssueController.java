@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.kanban.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.service.IssueService;
@@ -42,5 +44,15 @@ public class IssueController {
 		@RequestBody @Valid IssueUpdateReqDto issueUpdateReqDto) {
 		long issueId = issueService.updateIssue(customUserDetails.getUserId(), projectUrl, issueUpdateReqDto);
 		return ResponseEntity.ok(new IssueIdResDto(issueId));
+	}
+
+	@DeleteMapping("/{projectUrl}/issues")
+	public ResponseEntity<Void> deleteIssue(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid IssueDeleteReqDto issueIdResDto) {
+		issueService.deleteIssue(customUserDetails.getUserId(), projectUrl, issueIdResDto.issueId());
+		return ResponseEntity.noContent().build();
 	}
 }

@@ -71,4 +71,18 @@ public class IssueService {
 		return issueRepository.findById(issueId)
 			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
 	}
+
+	@Transactional
+	public void deleteIssue(long userId, String projectUrl, Long issueId) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		List<IssueLabel> issueLabels = issueLabelRepository.findByIssueId(issueId);
+		issueLabelRepository.deleteAll(issueLabels);
+
+		List<IssueProfile> issueProfiles = issueProfileRepository.findByIssueId(issueId);
+		issueProfileRepository.deleteAll(issueProfiles);
+
+		Issue issue = findIssueById(issueId);
+		issueRepository.delete(issue);
+	}
 }
