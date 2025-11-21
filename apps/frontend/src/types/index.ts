@@ -1,6 +1,7 @@
 export interface UserInfo {
   nickname: string
   email?: string
+  image?: string
 }
 
 export interface ProjectInfo {
@@ -46,4 +47,29 @@ export interface GetProjectMembersParams {
   projectUrl: string
   size: number
   page: number
+}
+
+// Task 관련 타입
+
+export interface IssueColumn extends Record<string, unknown> {
+  id: string
+  name: string
+  color?: string
+}
+
+export interface Issue extends Record<string, unknown> {
+  id: string
+  name: string
+  startAt: Date
+  endAt: Date
+  column: string // TaskColumn의 id
+  owner: UserInfo
+  subscribers?: UserInfo[] // 알림 구독자 목록
+  labels?: Label[]
+}
+
+export interface Label extends Record<string, unknown> {
+  name: string
+  description: string
+  color: string // #FFFFFF 형태
 }
