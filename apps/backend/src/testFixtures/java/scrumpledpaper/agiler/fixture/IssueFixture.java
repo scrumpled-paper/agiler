@@ -8,7 +8,6 @@ import java.util.List;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
-import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 
 public class IssueFixture {
@@ -17,6 +16,7 @@ public class IssueFixture {
 		return Issue.builder()
 			.project(project)
 			.kanbanConfig(kanbanConfig)
+			.title(randomString(10))
 			.isDone(isDone)
 			.startedAt(startedAt)
 			.dueAt(dueAt)

@@ -3,6 +3,7 @@ package scrumpledpaper.agiler.kanban;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
@@ -178,6 +180,8 @@ public class IssueControllerTest {
 					tuple(createdIssue.getId(), assigneeProfile.getId()),
 					tuple(createdIssue.getId(), anotherMemberProfile.getId())
 				);
+
+			assertThat(response).contains(createdIssue.getId().toString());
 		}
 
 		@Test
@@ -270,6 +274,130 @@ public class IssueControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.DEFAULT_KANBAN_CONFIG_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Update Issue Test")
+	class UpdateIssueTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 이슈 수정 성공")
+		public void issueUpdateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				false,
+				null,
+				null
+			);
+			IssueUpdateReqDto updateReqDto = new IssueUpdateReqDto(
+				issue.getId(),
+				randomString(20),
+				randomString(50),
+				null,
+				null
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Issue updatedIssue = testDataFactory.findIssueById(issue.getId());
+			assertThat(updatedIssue.getTitle()).isEqualTo(updateReqDto.title());
+			assertThat(updatedIssue.getContents()).isEqualTo(updateReqDto.contents());
+
+			assertThat(response).contains(issue.getId().toString());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 수정 요청")
+		public void issueUpdateNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			IssueUpdateReqDto updateReqDto = new IssueUpdateReqDto(
+				9999L,
+				randomString(20),
+				randomString(50),
+				null,
+				null
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues", "not_exist_url")
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 수정 요청")
+		public void issueUpdateForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				false,
+				null,
+				null
+			);
+			IssueUpdateReqDto updateReqDto = new IssueUpdateReqDto(
+				issue.getId(),
+				randomString(20),
+				randomString(50),
+				null,
+				null
+				);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
 		}
 	}
 }
