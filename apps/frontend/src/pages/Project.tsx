@@ -85,22 +85,8 @@ export default function Project() {
 
   const tasks: Issue[] = (data?.contents as Issue[]) || []
 
-  // const tasks = data.contents || []
-  // if (isError || !data) {
-  //   return (
-  //     <div className="container p-4">
-  //       <div className="flex justify-center items-center h-96">
-  //         에러가 발생했습니다.
-  //       </div>
-  //     </div>
-  //   )
-  // }
-
-  // data.contents는 Issue[] 타입
-
   return (
     <div className="container p-4">
-      {/* <h1 className="text-3xl font-bold mb-4">Project</h1> */}
       <ProjectSummaryCard></ProjectSummaryCard>
 
       {isError && (

@@ -49,6 +49,12 @@ export interface GetProjectMembersParams {
   page: number
 }
 
+export interface GetProjectSummaryResponse {
+  title: string
+  summary: string
+  imageUrl: string
+}
+
 // Task 관련 타입
 
 export interface IssueColumn extends Record<string, unknown> {

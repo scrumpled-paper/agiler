@@ -4,6 +4,7 @@ import type {
   GetProjectMembersResponse,
   GetProjectMembersParams,
   ProjectInfo,
+  GetProjectSummaryResponse,
 } from '@/types'
 import { apiClient } from '../client'
 
@@ -48,6 +49,15 @@ export const projectService = {
         page,
       },
     })
+    return response.data
+  },
+
+  // 프로젝트 상세내용 조회
+  async getProjectSummery(
+    projectUrl: string
+  ): Promise<GetProjectSummaryResponse> {
+    const infoUrl = `${this.apiUrl}/${projectUrl}`
+    const response = await apiClient.get<GetProjectSummaryResponse>(infoUrl)
     return response.data
   },
 
