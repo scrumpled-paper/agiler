@@ -32,7 +32,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		ProviderType providerType = ProviderType.from(registrationId);
 		OAuth2UserInfo oAuth2UserInfo = providerType.getOAuth2UserInfo(oAuth2User.getAttributes());
 
-		User user = userRepository.findByEmail(oAuth2UserInfo.getEmail())
+		User user = userRepository.findByVendorAndVendorId(
+						registrationId,
+						oAuth2UserInfo.getId()
+				)
 				.orElseGet(() -> createUser(oAuth2UserInfo, registrationId));
 
 		String nameAttributeKey = userRequest.getClientRegistration()
@@ -49,7 +52,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 	private User createUser(OAuth2UserInfo userInfo, String registrationId) {
 		User newUser = User.builder()
 				.email(userInfo.getEmail())
-				.nickname(userInfo.getName()) // Consider potential nickname duplication
+				.nickname(userInfo.getName())
 				.vendor(registrationId)
 				.vendorId(userInfo.getId())
 				.imageId(DEFAULT_IMAGE_ID)
