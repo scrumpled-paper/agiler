@@ -1,9 +1,27 @@
 package scrumpledpaper.agiler.common;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import scrumpledpaper.agiler.fixture.*;
+import scrumpledpaper.agiler.fixture.ImageFixture;
+import scrumpledpaper.agiler.fixture.IssueFixture;
+import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
+import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
+import scrumpledpaper.agiler.fixture.LabelFixture;
+import scrumpledpaper.agiler.fixture.MeetingTemplateFixture;
+import scrumpledpaper.agiler.fixture.ProfileFixture;
+import scrumpledpaper.agiler.fixture.ProjectFixture;
+import scrumpledpaper.agiler.fixture.RetroTemplateFixture;
+import scrumpledpaper.agiler.fixture.ScrumTemplateFixture;
+import scrumpledpaper.agiler.fixture.TokenFixture;
+import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.kanban.entity.Issue;
@@ -31,11 +49,6 @@ import scrumpledpaper.agiler.template.repository.RetroTemplateRepository;
 import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -269,9 +282,14 @@ public class TestDataFactory {
 		return issueLabelRepository.findByIssueId(issueId);
 	}
 
-	public Issue createIssue(Project project, KanbanConfig kanbanConfig, Boolean isDone, LocalDateTime startedAt, LocalDateTime dueAt) {
+	public Issue createIssue(Project project, KanbanConfig kanbanConfig, List<Profile> assignees, List<Label> labels, Boolean isDone, LocalDateTime startedAt, LocalDateTime dueAt) {
 		Issue issue = IssueFixture.createIssue(project, kanbanConfig, isDone, startedAt, dueAt);
-		return issueRepository.save(issue);
+		issue = issueRepository.saveAndFlush(issue);
+		List<IssueProfile> issueProfiles = IssueFixture.createIssueProfiles(issue, assignees);
+		issueProfileRepository.saveAll(issueProfiles);
+		List<IssueLabel> issueLabels = IssueFixture.createIssueLabels(issue, labels);
+		issueLabelRepository.saveAll(issueLabels);
+		return issue;
 	}
 
 	public KanbanConfig createKanbanConfig(Project project, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
@@ -279,8 +297,8 @@ public class TestDataFactory {
 		return kanbanConfigRepository.save(kanbanConfig);
 	}
 
-	public Issue findIssueById(Long id) {
-		return issueRepository.findById(id).orElseThrow();
+	public Optional<Issue> findIssueById(Long id) {
+		return issueRepository.findById(id);
 	}
 
 	public KanbanConfig findKanbanConfigById(Long id) {

@@ -7,6 +7,7 @@ import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +28,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
@@ -302,6 +304,8 @@ public class IssueControllerTest {
 			Issue issue = testDataFactory.createIssue(
 				project,
 				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
 				false,
 				null,
 				null
@@ -324,7 +328,7 @@ public class IssueControllerTest {
 				.andReturn().getResponse().getContentAsString();
 
 			// then
-			Issue updatedIssue = testDataFactory.findIssueById(issue.getId());
+			Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
 			assertThat(updatedIssue.getTitle()).isEqualTo(updateReqDto.title());
 			assertThat(updatedIssue.getContents()).isEqualTo(updateReqDto.contents());
 
@@ -375,6 +379,8 @@ public class IssueControllerTest {
 			Issue issue = testDataFactory.createIssue(
 				project,
 				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
 				false,
 				null,
 				null
@@ -398,6 +404,144 @@ public class IssueControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Delete Issue Test")
+	class DeleteIssueTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 이슈 삭제 성공")
+		public void issueDeleteSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Label label = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				List.of(profile),
+				List.of(label),
+				false,
+				null,
+				null
+			);
+			IssueDeleteReqDto deleteReqDto = new IssueDeleteReqDto(issue.getId());
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(deleteReqDto)))
+				.andExpect(status().isNoContent());
+
+			// then
+			assertThat(testDataFactory.findIssueById(issue.getId())).isEmpty();
+			assertThat(testDataFactory.findIssueLabelsByIssueId(issue.getId())).isEmpty();
+			assertThat(testDataFactory.findIssueProfilesByIssueId(issue.getId())).isEmpty();
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 삭제 요청")
+		public void issueDeleteNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			IssueDeleteReqDto deleteReqDto = new IssueDeleteReqDto(9999L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues", "not_exist_url")
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(deleteReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 삭제 요청")
+		public void issueDeleteForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueDeleteReqDto deleteReqDto = new IssueDeleteReqDto(issue.getId());
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(deleteReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈 삭제 요청")
+		public void issueDeleteNotFoundIssue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			IssueDeleteReqDto deleteReqDto = new IssueDeleteReqDto(9999L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(deleteReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
 		}
 	}
 }
