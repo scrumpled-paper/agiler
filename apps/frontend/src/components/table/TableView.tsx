@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/shadcn-io/table'
 import type { Issue, IssueColumn } from '@/types'
 import { useMemo } from 'react'
+import type { Column, Row } from '@tanstack/react-table'
 
 interface TableViewProps {
   columns: IssueColumn[]
@@ -22,19 +23,19 @@ export default function TableView({ columns, tasks }: TableViewProps) {
     () => [
       {
         accessorKey: 'name',
-        header: ({ column }) => (
+        header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="Task Name" />
         ),
-        cell: ({ row }) => (
+        cell: ({ row }: { row: Row<Issue> }) => (
           <div className="font-medium">{row.getValue('name')}</div>
         ),
       },
       {
         accessorKey: 'column',
-        header: ({ column }) => (
+        header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="Status" />
         ),
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<Issue> }) => {
           // row.getValue('column')은 Issue['column'] (string) 타입입니다.
           const columnId = row.getValue('column') as string
           const statusColumn = columns.find(col => col.id === columnId)
@@ -51,20 +52,20 @@ export default function TableView({ columns, tasks }: TableViewProps) {
       },
       {
         accessorKey: 'owner',
-        header: ({ column }) => (
+        header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="Owner" />
         ),
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<Issue> }) => {
           const owner = row.getValue('owner') as Issue['owner']
           return <div>{owner.nickname}</div>
         },
       },
       {
         accessorKey: 'startAt',
-        header: ({ column }) => (
+        header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="Start Date" />
         ),
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<Issue> }) => {
           // Issue 타입에서 startAt이 Date 타입이므로, 타입 캐스팅 후 날짜 포맷팅
           const date = row.getValue('startAt') as Date
           return (
@@ -81,10 +82,10 @@ export default function TableView({ columns, tasks }: TableViewProps) {
       },
       {
         accessorKey: 'endAt',
-        header: ({ column }) => (
+        header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="End Date" />
         ),
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<Issue> }) => {
           // Issue 타입에서 endAt이 Date 타입이므로, 타입 캐스팅 후 날짜 포맷팅
           const date = row.getValue('endAt') as Date
           return (
