@@ -10,7 +10,7 @@ export default function ProjectCard({ props }: { props: ProjectInfo }) {
         {/* 이미지 영역 */}
         <div className="h-[240px] w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex justify-center items-center">
           <img
-            src={imageUrl || 'https://placehold.co/600x400?text=No+Image'}
+            src={imageUrl}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -23,7 +23,7 @@ export default function ProjectCard({ props }: { props: ProjectInfo }) {
               {title}
             </h2>
             <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-              {summary || 'No description available'}
+              {summary}
             </p>
           </div>
         </div>

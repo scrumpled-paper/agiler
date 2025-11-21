@@ -10,10 +10,7 @@ import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { slugify, isValidSlug } from '@/utils/slugify'
-import {
-  createProject,
-  getProjectUrlCheck,
-} from '@/api/services/projectService'
+import { projectService } from '@/api/services/projectService'
 import { useNavigate } from 'react-router-dom'
 
 interface JoinProjectModalProps {
@@ -84,7 +81,7 @@ export default function JoinProjectModal({
 
       // Check URL availability
       try {
-        const isAvailable = await getProjectUrlCheck(projectUrl)
+        const isAvailable = await projectService.getProjectUrlCheck(projectUrl)
         if (!isAvailable) {
           setErrors(prev => ({
             ...prev,
@@ -103,7 +100,7 @@ export default function JoinProjectModal({
       // Create project
       try {
         // TODO : id 어디에쓰지
-        const projectId = await createProject({
+        const projectId = await projectService.createProject({
           title: projectTitle,
           url: projectUrl,
           summary: projectSummary,
