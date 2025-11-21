@@ -12,7 +12,8 @@ public record IssueCreateReqDto(
 	@Size(max = 20, message = "이슈 이름은 20자 이하여야 합니다.")
 	String title,
 	String contents,
-	Long assigneeId,
+	@NotNull(message = "담당자 목록은 필수입니다.")
+	List<Long> assignees,
 	@NotNull(message = "라벨 목록은 필수입니다.")
 	List<Long> labels,
 	LocalDateTime startedAt,

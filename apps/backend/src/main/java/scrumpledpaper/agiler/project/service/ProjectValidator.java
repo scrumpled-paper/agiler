@@ -1,5 +1,7 @@
 package scrumpledpaper.agiler.project.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +38,8 @@ public class ProjectValidator {
 		}
 	}
 
-	public Profile validateAccessByProfileId(long profileId) {
-		return profileRepository.findById(profileId)
-			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_MEMBER));
+	public List<Profile> projectMembersByIds(Project project, List<Long> profileIds) {
+		List<Profile> profiles = profileRepository.findByProjectIdAndIdIn(project.getId(), profileIds);
+		return profiles;
 	}
 }

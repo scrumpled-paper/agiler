@@ -67,6 +67,17 @@ CREATE TABLE `issue` (
     FOREIGN KEY (`kanban_config_id`) REFERENCES `kanban_config`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE `issue_profile` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `issue_id` BIGINT NOT NULL,
+    `profile_id` BIGINT NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    FOREIGN KEY (`issue_id`) REFERENCES `issue`(`id`),
+    FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE `image` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
     `url` TEXT NOT NULL,
