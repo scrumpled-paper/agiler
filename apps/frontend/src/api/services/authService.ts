@@ -23,6 +23,7 @@ export const authService = {
    * 현재 로그인한 사용자 정보 조회
    */
   getCurrentUser: async (): Promise<User> => {
+    //[ ] 개발용 mock user 삽입 로직
     // 1. 개발 환경 확인
     if (import.meta.env.DEV) {
       const mockUserString = localStorage.getItem('mockUser')

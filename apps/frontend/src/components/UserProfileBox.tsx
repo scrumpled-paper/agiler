@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Button } from './ui/button'
 import { PencilIcon, Upload, UserIcon, CheckIcon } from 'lucide-react'
+import { s3Service } from '@/api/services/s3Service'
 
 export default function UserProfileBox() {
   const [preview, setPreview] = useState<string | null>(null)
@@ -33,26 +34,19 @@ export default function UserProfileBox() {
     formData.append('profileImage', file)
 
     try {
-      // 'YOUR_API_ENDPOINT'를 실제 API 주소로 변경하세요.
-      const response = await fetch('YOUR_API_ENDPOINT', {
-        method: 'POST',
-        body: formData,
-        // headers: { 'Authorization': 'Bearer YOUR_TOKEN' }, // 인증 토큰이 필요한 경우
-      })
+      // [ ] 백엔드 이미지 업로드 로직 추가 후 수정
+      // **2. 통합된 S3 업로드 서비스 호출**
+      const newImageUrl = await s3Service.uploadProfileImage(file)
 
-      if (!response.ok) {
-        throw new Error('Image upload failed')
-      }
-
-      const result = await response.json()
-      console.log('Upload successful:', result)
-      // 예: 업로드 성공 후 받은 이미지 URL을 preview 상태에 저장할 수도 있습니다.
-      // setPreview(result.imageUrl);
+      // 4. 새로운 이미지 URL로 상태 업데이트 (만약 setPreview를 서버 응답으로 설정하려면)
+      setPreview(newImageUrl)
+      console.log('Upload successful:', newImageUrl)
     } catch (error) {
       console.error('Error uploading image:', error)
-      // 사용자에게 오류 알림 (예: 토스트 메시지)
+      // 사용자에게 오류 알림
+      // setPreview(null); // 실패 시 미리보기 초기화
     } finally {
-      setIsUploading(false) // 업로드 완료 (성공/실패)
+      setIsUploading(false) // 업로드 완료
     }
   }
 

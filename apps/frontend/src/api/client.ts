@@ -25,6 +25,7 @@ apiClient.interceptors.response.use(
     //  HTTP 상태 코드에 따른 전역 처리
     if (error.response?.status === 401) {
       console.error('인증 실패: 401 Unauthorized')
+      // [ ] 개발서버 검증을 위해 로그인 리다이렉트 주석처리
       // 사용자에게 알림 표시 및 로그인 페이지로 리다이렉트 로직 추가
       // window.location.href = '/login'
       // return Promise.reject(error); // 여기서 처리하고 reject하거나, 다음 로직으로 진행
