@@ -43,7 +43,7 @@ const createPatchHandlers = (
 
 export const handlers = [
   // 현재 사용자 정보 조회
-  ...createHandlers('/api/v1/users/', () => {
+  ...createHandlers('/api/v1/users', () => {
     return HttpResponse.json(MOCK_USER)
   }),
 
