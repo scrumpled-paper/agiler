@@ -1,10 +1,8 @@
-// lib/sidebar/hooks.ts
-
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useParams } from 'react-router-dom'
 import type { SidebarContext, SidebarData } from './types'
 import { getSidebarContext } from './config'
-import { getProjectList, getProjectMember } from '@/api/services/projectService'
+import { projectService } from '@/api/services/projectService'
 import type { ProjectInfo } from '@/types'
 
 /**
@@ -23,7 +21,10 @@ export const useProjectList = () => {
     queryKey: ['projects', 'sidebar'],
     queryFn: async () => {
       // 사이드바용: 페이지네이션 없이 모든 프로젝트 조회
-      const response = await getProjectList({ page: 0, size: 100 })
+      const response = await projectService.getProjectSidebar({
+        page: 0,
+        size: 100,
+      })
       return response.contents
     },
   })
@@ -42,7 +43,7 @@ export const useProjectMembers = (projectUrl?: string, enabled = true) => {
         '[useProjectMembers] Fetching members for projectUrl:',
         projectUrl
       )
-      return getProjectMember({
+      return projectService.getProjectMember({
         projectUrl,
         size: 10,
         page: 0,

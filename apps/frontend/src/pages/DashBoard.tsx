@@ -2,14 +2,16 @@ import { useQuery } from '@tanstack/react-query'
 import UserProfileBox from '@/components/UserProfileBox'
 import ProjectList from '@/components/ProjectList'
 import { useState } from 'react'
-import { getProjectList } from '@/api/services/projectService'
+
+import { projectService } from '@/api/services/projectService'
 
 export default function DashBoard() {
   const [currentPage, setCurrentPage] = useState(1) // UI는 1-based pagination
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['projects', 'dashboard', currentPage],
-    queryFn: () => getProjectList({ page: currentPage - 1, size: 6 }), // API는 0-based
+    queryFn: () =>
+      projectService.getProjectList({ page: currentPage - 1, size: 6 }), // API는 0-based
   })
 
   const handlePageChange = (page: number) => {

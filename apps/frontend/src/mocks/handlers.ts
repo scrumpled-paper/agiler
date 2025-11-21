@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 import type { User } from '@/api/services/authService'
+import { mockIssues } from '@/mocks/mockTasks'
 
 // MSW 핸들러: 상대 경로와 절대 URL 모두 매칭
 // - 개발: /api/v1/... (Vite 프록시)
@@ -30,6 +31,14 @@ const createPostHandlers = (
 ) => [
   http.post(path, handler), // 상대 경로
   http.post(`${API_BASE_URL}${path}`, handler), // 절대 URL
+]
+
+const createPatchHandlers = (
+  path: string,
+  handler: Parameters<typeof http.patch>[1]
+) => [
+  http.patch(path, handler), // 상대 경로
+  http.patch(`${API_BASE_URL}${path}`, handler), // 절대 URL
 ]
 
 export const handlers = [
@@ -83,9 +92,15 @@ export const handlers = [
           imageUrl: 'https://placehold.co/600x400',
           summary: 'An agile project management tool',
         },
+        {
+          title: 'Design System',
+          url: '/projects/design-system',
+          imageUrl: 'https://placehold.co/600x400',
+          summary: 'Company-wide design system',
+        },
       ],
       totalPages: 1,
-      totalElements: 1,
+      totalElements: 2,
       currentPage: 0,
       pageSize: 10,
     }
@@ -142,4 +157,29 @@ export const handlers = [
     // 생성된 프로젝트 ID 반환
     return HttpResponse.json(123)
   }),
+
+  // 칸반 정보 조회
+  ...createHandlers('/api/v1/projects/:projectUrl/kanban', ({ params }) => {
+    console.log('[MSW] 프로젝트 칸반 조회 호출됨:', params.projectUrl)
+    const response = {
+      contents: mockIssues,
+      size: mockIssues.length,
+    }
+    return HttpResponse.json(response)
+  }),
+
+  // 칸반 이슈 업데이트 (드래그 앤 드롭)
+  ...createPatchHandlers(
+    '/api/v1/projects/:projectUrl/kanban/:issueId',
+    async ({ params, request }) => {
+      console.log(
+        '[MSW] 칸반 이슈 업데이트 호출됨:',
+        params.projectUrl,
+        params.issueId
+      )
+      const body = await request.json()
+      console.log('[MSW] 업데이트 데이터:', body)
+      return HttpResponse.json({ success: true })
+    }
+  ),
 ]
