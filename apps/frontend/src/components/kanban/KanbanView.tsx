@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/shadcn-io/kanban'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Info } from 'lucide-react'
 import type { Issue, IssueColumn, Label, UserInfo } from '@/types'
 import {
   KanbanFilterBar,
@@ -19,12 +21,14 @@ interface KanbanViewProps {
   columns: IssueColumn[]
   tasks: Issue[]
   onTasksChange: (tasks: Issue[]) => void
+  isReadOnly?: boolean
 }
 
 export default function KanbanView({
   columns,
   tasks,
   onTasksChange,
+  isReadOnly = false,
 }: KanbanViewProps) {
   const [filters, setFilters] = useState<KanbanFilters>({
     search: '',
@@ -145,6 +149,15 @@ export default function KanbanView({
 
   return (
     <div className="flex flex-col gap-4">
+      {isReadOnly && (
+        <Alert className="flex flex-row gap-2 items-center">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            과거 날짜의 칸반은 수정할 수 없습니다.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <KanbanFilterBar
         filters={filters}
         onFiltersChange={setFilters}
@@ -158,6 +171,7 @@ export default function KanbanView({
         data={filteredAndSortedTasks}
         onDragEnd={handleDragEnd}
         onDataChange={onTasksChange}
+        isReadOnly={isReadOnly}
       >
         {column => (
           <KanbanBoard id={column.id} key={column.id}>

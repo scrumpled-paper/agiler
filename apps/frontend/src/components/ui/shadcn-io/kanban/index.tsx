@@ -55,12 +55,14 @@ type KanbanContextProps<
   columns: C[]
   data: T[]
   activeCardId: string | null
+  isReadOnly: boolean
 }
 
 const KanbanContext = createContext<KanbanContextProps>({
   columns: [],
   data: [],
   activeCardId: null,
+  isReadOnly: false,
 })
 
 export type KanbanBoardProps = {
@@ -109,7 +111,9 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
   } = useSortable({
     id,
   })
-  const { activeCardId } = useContext(KanbanContext) as KanbanContextProps
+  const { activeCardId, isReadOnly } = useContext(
+    KanbanContext
+  ) as KanbanContextProps
 
   const style = {
     transition,
@@ -118,11 +122,18 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
 
   return (
     <>
-      <div style={style} {...listeners} {...attributes} ref={setNodeRef}>
+      <div
+        style={style}
+        {...(isReadOnly ? {} : listeners)}
+        {...(isReadOnly ? {} : attributes)}
+        ref={setNodeRef}
+      >
         <Card
           className={cn(
-            'cursor-grab gap-4 rounded-md p-3 shadow-sm',
+            'gap-4 rounded-md p-3 shadow-sm',
+            !isReadOnly && 'cursor-grab',
             isDragging && 'pointer-events-none cursor-grabbing opacity-30',
+            isReadOnly && 'cursor-default opacity-70',
             className
           )}
         >
@@ -194,6 +205,7 @@ export type KanbanProviderProps<
   onDragStart?: (event: DragStartEvent) => void
   onDragEnd?: (event: DragEndEvent) => void
   onDragOver?: (event: DragOverEvent) => void
+  isReadOnly?: boolean
 }
 
 export const KanbanProvider = <
@@ -208,6 +220,7 @@ export const KanbanProvider = <
   columns,
   data,
   onDataChange,
+  isReadOnly = false,
   ...props
 }: KanbanProviderProps<T, C>) => {
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
@@ -307,14 +320,14 @@ export const KanbanProvider = <
   }
 
   return (
-    <KanbanContext.Provider value={{ columns, data, activeCardId }}>
+    <KanbanContext.Provider value={{ columns, data, activeCardId, isReadOnly }}>
       <DndContext
         accessibility={{ announcements }}
         collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragStart={handleDragStart}
-        sensors={sensors}
+        onDragEnd={isReadOnly ? undefined : handleDragEnd}
+        onDragOver={isReadOnly ? undefined : handleDragOver}
+        onDragStart={isReadOnly ? undefined : handleDragStart}
+        sensors={isReadOnly ? [] : sensors}
         {...props}
       >
         <div

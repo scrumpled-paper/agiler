@@ -4,23 +4,33 @@ import ProjectSummaryCard from '@/components/ProjectSummaryCard'
 import { Button } from '@/components/ui/button'
 import { issueColumns } from '@/mocks/mockTasks'
 import { LayoutGrid, Table } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { Issue } from '@/types'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { kanbanService } from '@/api/services/kanbanService'
+import { KanbanDateSelector } from '@/components/kanban/KanbanDateSelector'
 
 type ViewMode = 'kanban' | 'table'
 
 export default function Project() {
   const { projectUrl } = useParams<{ projectUrl: string }>()
   const [viewMode, setViewMode] = useState<ViewMode>('kanban')
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  )
   const queryClient = useQueryClient()
+
+  // Check if selected date is today
+  const isToday = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0]
+    return selectedDate === today
+  }, [selectedDate])
 
   // MSW를 통해 칸반 데이터 조회
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['kanban', projectUrl],
-    queryFn: () => kanbanService.getIssues(projectUrl!),
+    queryKey: ['kanban', projectUrl, selectedDate],
+    queryFn: () => kanbanService.getIssues(projectUrl!, selectedDate),
     enabled: !!projectUrl, // projectUrl이 있을 때만 쿼리 실행
   })
 
@@ -93,26 +103,33 @@ export default function Project() {
       {/* <h1 className="text-3xl font-bold mb-4">Project</h1> */}
       <ProjectSummaryCard></ProjectSummaryCard>
 
-      {/* 뷰 전환 버튼 */}
-      <div className="flex items-center gap-2 my-4">
-        <Button
-          variant={viewMode === 'kanban' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('kanban')}
-          className="gap-2"
-        >
-          <LayoutGrid className="h-4 w-4" />
-          Kanban
-        </Button>
-        <Button
-          variant={viewMode === 'table' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('table')}
-          className="gap-2"
-        >
-          <Table className="h-4 w-4" />
-          Table
-        </Button>
+      {/* 뷰 전환 버튼 및 날짜 선택기 */}
+      <div className="flex items-center justify-between my-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'kanban' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+            className="gap-2"
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Kanban
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+            className="gap-2"
+          >
+            <Table className="h-4 w-4" />
+            Table
+          </Button>
+        </div>
+
+        <KanbanDateSelector
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+        />
       </div>
 
       {/* 조건부 렌더링: viewMode에 따라 다른 뷰 표시 */}
@@ -121,6 +138,7 @@ export default function Project() {
           columns={issueColumns}
           tasks={tasks}
           onTasksChange={handleTasksChange}
+          isReadOnly={!isToday}
         />
       ) : (
         <TableView columns={issueColumns} tasks={tasks} />

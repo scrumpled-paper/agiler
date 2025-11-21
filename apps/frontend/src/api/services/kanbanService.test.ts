@@ -17,7 +17,7 @@ describe('kanbanService', () => {
   })
 
   describe('getIssues', () => {
-    it('should fetch issues successfully', async () => {
+    it('should fetch issues successfully without date', async () => {
       const mockIssues: Issue[] = [
         {
           id: '1',
@@ -54,7 +54,41 @@ describe('kanbanService', () => {
       const result = await kanbanService.getIssues('test-project')
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/api/v1/projects/test-project/kanban'
+        '/api/v1/projects/test-project/kanban',
+        {
+          params: undefined,
+        }
+      )
+      expect(result).toEqual(mockIssues)
+    })
+
+    it('should fetch issues successfully with date', async () => {
+      const mockIssues: Issue[] = [
+        {
+          id: '1',
+          name: 'Issue 1',
+          column: 'todo',
+          owner: {
+            nickname: 'user1',
+            email: 'user1@example.com',
+            image: 'https://placehold.co/100x100',
+          },
+          startAt: new Date('2025-01-01'),
+          endAt: new Date('2025-01-10'),
+          labels: [],
+          subscribers: [],
+        },
+      ]
+
+      vi.mocked(apiClient.get).mockResolvedValue({ data: mockIssues })
+
+      const result = await kanbanService.getIssues('test-project', '2025-01-01')
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/api/v1/projects/test-project/kanban',
+        {
+          params: { date: '2025-01-01' },
+        }
       )
       expect(result).toEqual(mockIssues)
     })
