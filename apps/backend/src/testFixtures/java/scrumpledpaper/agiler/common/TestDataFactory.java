@@ -8,9 +8,11 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
+import scrumpledpaper.agiler.kanban.entity.IssueProfile;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
+import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
@@ -33,6 +35,7 @@ import scrumpledpaper.agiler.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -45,6 +48,7 @@ public class TestDataFactory {
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
 	private final IssueLabelRepository issueLabelRepository;
+	private final IssueProfileRepository issueProfileRepository;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
@@ -52,13 +56,18 @@ public class TestDataFactory {
 	private final MeetingTemplateRepository meetingTemplateRepository;
 	private final EntityManager entityManager;
 
+	public static String randomString(int length) {
+		StringBuilder sb = new StringBuilder();
+		while (sb.length() < length) {
+			sb.append(UUID.randomUUID().toString().replace("-", ""));
+		}
+		return sb.substring(0, length);
+	}
+
+
 	public Image createDefaultImage() {
 		Image image = ImageFixture.createImage();
 		return imageRepository.save(image);
-	}
-
-	public String createNotAllowedAccessToken() {
-		return tokenFixture.createNotAllowedAccessToken();
 	}
 
 	public String createAccessToken(User user) {
@@ -260,15 +269,25 @@ public class TestDataFactory {
 		return issueLabelRepository.findByIssueId(issueId);
 	}
 
-	public KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
-		KanbanConfig kanbanConfig = KanbanConfigFixture.createKanbanConfig(
-			project,
-			statusName,
-			priority,
-			defaultStatus,
-			backlog,
-			isDone
-		);
+	public Issue createIssue(Project project, KanbanConfig kanbanConfig, Boolean isDone, LocalDateTime startedAt, LocalDateTime dueAt) {
+		Issue issue = IssueFixture.createIssue(project, kanbanConfig, isDone, startedAt, dueAt);
+		return issueRepository.save(issue);
+	}
+
+	public KanbanConfig createKanbanConfig(Project project, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
+		KanbanConfig kanbanConfig = KanbanConfigFixture.create(project, randomString(20), priority, defaultStatus, backlog, isDone);
 		return kanbanConfigRepository.save(kanbanConfig);
+	}
+
+	public Issue findIssueById(Long id) {
+		return issueRepository.findById(id).orElseThrow();
+	}
+
+	public KanbanConfig findKanbanConfigById(Long id) {
+		return kanbanConfigRepository.findById(id).orElseThrow();
+	}
+
+	public List<IssueProfile> findIssueProfilesByIssueId(Long id) {
+		return issueProfileRepository.findByIssueId(id);
 	}
 }

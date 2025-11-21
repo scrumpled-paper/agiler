@@ -4,7 +4,7 @@ import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.project.entity.Project;
 
 public class KanbanConfigFixture {
-	public static KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
+	public static KanbanConfig create(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
 		return KanbanConfig.builder()
 			.project(project)
 			.statusName(statusName)
