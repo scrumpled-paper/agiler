@@ -30,6 +30,7 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
@@ -854,4 +855,193 @@ public class IssueControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("Update Issue Kanban Config Test")
+	class UpdateIssueKanbanConfigTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 이슈 칸반 설정 수정 성공")
+		public void issueUpdateKanbanConfigSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			KanbanConfig newKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				2,
+				false,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+				newKanbanConfig.getId()
+			);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateKanbanConfigReqDto)))
+				.andExpect(status().isNoContent());
+
+			// then
+			Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
+			assertThat(updatedIssue.getKanbanConfig().getId()).isEqualTo(newKanbanConfig.getId());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈에 칸반 설정 수정 요청")
+		public void issueUpdateKanbanConfigNotFoundIssue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+				kanbanConfig.getId()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", url, 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateKanbanConfigReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 칸반 설정 수정 요청")
+		public void issueUpdateKanbanConfigForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+				defaultKanbanConfig.getId()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateKanbanConfigReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 칸반 설정 수정 요청")
+		public void issueUpdateKanbanConfigNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+				9999L
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", "not_exist_url", 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateKanbanConfigReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 칸반 설정으로 수정 요청")
+		public void issueUpdateKanbanConfigNotFoundKanbanConfig() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+				9999L
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateKanbanConfigReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.KANBAN_CONFIG_NOT_FOUND.getMessage());
+		}
+	}
 }
