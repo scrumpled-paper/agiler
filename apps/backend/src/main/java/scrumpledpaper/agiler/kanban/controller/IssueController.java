@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
+import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
@@ -53,6 +54,17 @@ public class IssueController {
 		@PathVariable String projectUrl,
 		@RequestBody @Valid IssueDeleteReqDto issueIdResDto) {
 		issueService.deleteIssue(customUserDetails.getUserId(), projectUrl, issueIdResDto.issueId());
+		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{projectUrl}/issues/{issueId}/assignees")
+	public ResponseEntity<Void> updateIssueAssignees(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long issueId,
+		@RequestBody @Valid IssueAssigneesReqDto issueAssigneesReqDto) {
+		issueService.updateIssueAssignees(customUserDetails.getUserId(), projectUrl, issueId, issueAssigneesReqDto);
 		return ResponseEntity.noContent().build();
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
@@ -84,5 +85,19 @@ public class IssueService {
 
 		Issue issue = findIssueById(issueId);
 		issueRepository.delete(issue);
+	}
+
+	@Transactional
+	public void updateIssueAssignees(long userId, String projectUrl, Long issueId, IssueAssigneesReqDto issueAssigneesReqDto) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Issue issue = findIssueById(issueId);
+
+		List<IssueProfile> existingIssueProfiles = issueProfileRepository.findByIssueId(issueId);
+		issueProfileRepository.deleteAll(existingIssueProfiles);
+
+		List<Profile> assignees = projectValidator.projectMembersByIds(issue.getProject(), issueAssigneesReqDto.assignees());
+		List<IssueProfile> newIssueProfiles = issueMapper.toIssueProfile(issue, assignees);
+		issueProfileRepository.saveAll(newIssueProfiles);
 	}
 }
