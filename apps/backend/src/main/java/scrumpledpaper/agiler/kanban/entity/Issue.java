@@ -14,8 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
@@ -56,5 +56,9 @@ public class Issue extends BaseEntity {
 	public void update(String title, String contents) {
 		this.title = title;
 		this.contents = contents;
+	}
+
+	public void updateKanbanConfig(KanbanConfig kanbanConfig) {
+		this.kanbanConfig = kanbanConfig;
 	}
 }

@@ -17,4 +17,9 @@ public class KanbanConfigService {
 		return kanbanConfigRepository.findByProjectIdAndDefaultStatusTrue(projectId)
 			.orElseThrow(() -> new CustomException(ErrorCode.DEFAULT_KANBAN_CONFIG_NOT_FOUND));
 	}
+
+	public KanbanConfig getKanbanConfigById(Long kanbanConfigId) {
+		return kanbanConfigRepository.findById(kanbanConfigId)
+			.orElseThrow(() -> new CustomException(ErrorCode.KANBAN_CONFIG_NOT_FOUND));
+	}
 }
