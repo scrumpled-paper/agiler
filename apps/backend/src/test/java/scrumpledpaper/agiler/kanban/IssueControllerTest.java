@@ -27,6 +27,7 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
@@ -542,6 +543,160 @@ public class IssueControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Update Issue Assignees Test")
+	class UpdateIssueAssigneesTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 이슈 담당자 수정 성공")
+		public void issueUpdateAssigneesSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext assigneeAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext deleteAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Profile deleteProfile = testDataFactory.createProfile(deleteAuth.getUser(), project, Role.MEMBER);
+			Profile assigneeProfile = testDataFactory.createProfile(assigneeAuth.getUser(), project, Role.MEMBER);
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				List.of(deleteProfile),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueAssigneesReqDto updateAssigneesReqDto = new IssueAssigneesReqDto(
+				List.of(authProfile.getId(), assigneeProfile.getId())
+			);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/assignees", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateAssigneesReqDto)))
+				.andExpect(status().isNoContent());
+
+			// then
+			List<IssueProfile> updatedIssueProfiles = testDataFactory.findIssueProfilesByIssueId(issue.getId());
+			assertThat(updatedIssueProfiles).hasSize(2);
+			assertThat(updatedIssueProfiles)
+				.extracting(
+					issueProfile -> issueProfile.getIssue().getId(),
+					issueProfile -> issueProfile.getProfile().getId()
+				)
+				.containsExactlyInAnyOrder(
+					tuple(issue.getId(), authProfile.getId()),
+					tuple(issue.getId(), assigneeProfile.getId())
+				);
+
+			assertThat(updatedIssueProfiles)
+				.extracting(issueProfile -> issueProfile.getProfile().getId())
+				.doesNotContain(deleteProfile.getId());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈에 담당자 수정 요청")
+		public void issueUpdateAssigneesNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			IssueAssigneesReqDto updateAssigneesReqDto = new IssueAssigneesReqDto(
+				Collections.emptyList()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/assignees", url, 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateAssigneesReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 담당자 수정 요청")
+		public void issueUpdateAssigneesForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueAssigneesReqDto updateAssigneesReqDto = new IssueAssigneesReqDto(
+				Collections.emptyList()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/assignees", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateAssigneesReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 담당자 수정 요청")
+		public void issueUpdateAssigneesNotFoundIssue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			IssueAssigneesReqDto updateAssigneesReqDto = new IssueAssigneesReqDto(
+				Collections.emptyList()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/assignees", "not_exist_url", 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateAssigneesReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
 		}
 	}
 }
