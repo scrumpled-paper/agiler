@@ -10,6 +10,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
@@ -100,4 +101,19 @@ public class IssueService {
 		List<IssueProfile> newIssueProfiles = issueMapper.toIssueProfile(issue, assignees);
 		issueProfileRepository.saveAll(newIssueProfiles);
 	}
+		issueLabelRepository.deleteAll(existingIssueLabels);
+
+		List<Label> labels = labelService.getLabelsByIds(issueLabelsReqDto.labels());
+		List<IssueLabel> newIssueLabels = issueMapper.toIssueLabel(issue, labels);
+		issueLabelRepository.saveAll(newIssueLabels);
+	}
+
+	@Transactional
+	public void updateIssueKanbanConfig(long userId, String projectUrl, Long issueId, IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Issue issue = findIssueById(issueId);
+
+		KanbanConfig kanbanConfig = kanbanConfigRepository.findById(issueKanbanConfigReqDto.kanbanConfigId())
+			.orElseThrow(() -> new CustomException(ErrorCode.KANBAN_CONFIG_NOT_FOUND));
 }
