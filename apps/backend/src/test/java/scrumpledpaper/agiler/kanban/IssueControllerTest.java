@@ -30,6 +30,7 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
@@ -699,4 +700,158 @@ public class IssueControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Update Issue Labels Test")
+	class UpdateIssueLabelsTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 이슈 라벨 수정 성공")
+		public void issueUpdateLabelsSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Label label1 = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
+			Label label2 = testDataFactory.createLabel(project, "label2", "label2 description", "#00FF00");
+			Label label3 = testDataFactory.createLabel(project, "label3", "label3 description", "#0000FF");
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				List.of(label1),
+				false,
+				null,
+				null
+			);
+			IssueLabelsReqDto updateLabelsReqDto = new IssueLabelsReqDto(
+				List.of(label2.getId(), label3.getId())
+			);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/labels", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateLabelsReqDto)))
+				.andExpect(status().isNoContent());
+
+			// then
+			List<IssueLabel> updatedIssueLabels = testDataFactory.findIssueLabelsByIssueId(issue.getId());
+			assertThat(updatedIssueLabels).hasSize(2);
+			assertThat(updatedIssueLabels)
+				.extracting(
+					issueLabel -> issueLabel.getLabel().getId(),
+					issueLabel -> issueLabel.getLabel().getName(),
+					issueLabel -> issueLabel.getIssue().getId()
+				)
+				.containsExactlyInAnyOrder(
+					tuple(label2.getId(), label2.getName(), issue.getId()),
+					tuple(label3.getId(), label3.getName(), issue.getId())
+				);
+
+			assertThat(updatedIssueLabels)
+				.extracting(issueLabel -> issueLabel.getLabel().getId())
+				.doesNotContain(label1.getId());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈에 라벨 수정 요청")
+		public void issueUpdateLabelsNotFoundIssue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			IssueLabelsReqDto updateLabelsReqDto = new IssueLabelsReqDto(
+				Collections.emptyList()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/labels", url, 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateLabelsReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 라벨 수정 요청")
+		public void issueUpdateLabelsForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			IssueLabelsReqDto updateLabelsReqDto = new IssueLabelsReqDto(
+				Collections.emptyList()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/labels", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateLabelsReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 라벨 수정 요청")
+		public void issueUpdateLabelsNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			IssueLabelsReqDto updateLabelsReqDto = new IssueLabelsReqDto(
+				Collections.emptyList()
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/labels", "not_exist_url", 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateLabelsReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
 }
