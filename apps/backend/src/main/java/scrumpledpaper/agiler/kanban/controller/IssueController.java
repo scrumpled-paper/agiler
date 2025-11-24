@@ -54,8 +54,8 @@ public class IssueController {
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
-		@RequestBody @Valid IssueDeleteReqDto issueIdResDto) {
-		issueService.deleteIssue(customUserDetails.getUserId(), projectUrl, issueIdResDto.issueId());
+		@RequestBody @Valid IssueDeleteReqDto issueDeleteReqDto) {
+		issueService.deleteIssue(customUserDetails.getUserId(), projectUrl, issueDeleteReqDto.issueId());
 		return ResponseEntity.noContent().build();
 	}
 
