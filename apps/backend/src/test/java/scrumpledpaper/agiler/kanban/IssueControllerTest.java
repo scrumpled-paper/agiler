@@ -124,6 +124,48 @@ public class IssueControllerTest {
 		}
 
 		@Test
+		@DisplayName("201 - 라벨과 어사인 없는 이슈 생성 성공")
+		public void issueCreateWithoutLabelsAndAssigneesSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url-no-label-assignee";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(project, 1, true, false, false);
+
+			IssueCreateReqDto createReqDto = IssueFixture.createIssueCreateReqDto(
+				List.of(),
+				List.of(),
+				null,
+				null
+			);
+			String updateJson = objectMapper.writeValueAsString(createReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isCreated())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Issue createdIssue = testDataFactory.findIssueByProjectId(project.getId());
+			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
+			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
+
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
+
+			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
+			assertThat(createdIssueLabels).isEmpty();
+
+			List<IssueProfile> createdIssueProfiles = testDataFactory.findIssueProfilesByIssueId(createdIssue.getId());
+			assertThat(createdIssueProfiles).isEmpty();
+		}
+
+
+		@Test
 		@DisplayName("201 - 이슈 생성 성공 - Assignees가 여러명이며, 이 중 프로젝트 멤버가 아닌 사용자가 포함된 경우")
 		public void IssueCreateWithNonMemberAssigneesTest() throws Exception {
 			// given

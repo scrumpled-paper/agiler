@@ -27,7 +27,7 @@ public interface IssueMapper {
 	Issue toEntity(Project project, KanbanConfig kanbanConfig, IssueCreateReqDto issueCreateReqDto);
 
 	default List<IssueLabel> toIssueLabel(Issue issue, List<Label> labels) {
-		if (labels == null || labels.isEmpty()) {
+		if (labels.isEmpty()) {
 			return new ArrayList<>();
 		}
 
@@ -40,7 +40,7 @@ public interface IssueMapper {
 	}
 
 	default List<IssueProfile> toIssueProfile(Issue issue, List<Profile> assignees) {
-		if (assignees == null || assignees.isEmpty()) {
+		if (assignees.isEmpty()) {
 			return new ArrayList<>();
 		}
 
