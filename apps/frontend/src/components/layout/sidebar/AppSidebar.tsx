@@ -12,7 +12,7 @@ import {
   useSidebarContext,
   useSidebarData,
   useSidebarParams,
-} from '@/lib/sidebar/hooks'
+} from '@/hooks/hooks'
 import { UserInfoSection } from './sections/UserInfoSection'
 import { NavigationSection } from './sections/NavigationSection'
 import { ProjectListSection } from './sections/ProjectListSection'

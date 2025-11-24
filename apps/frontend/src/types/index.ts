@@ -82,3 +82,12 @@ export interface Label extends Record<string, unknown> {
   description: string
   color: string // #FFFFFF 형태
 }
+
+//유저 정보 수정
+export interface UserUpdateParams {
+  nickname?: string
+  email?: string
+  description?: string
+  profileId?: number
+  role?: string
+}

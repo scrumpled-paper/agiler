@@ -6,6 +6,7 @@ import type {
   ProjectInfo,
   GetProjectSummaryResponse,
   UserInfo,
+  UserUpdateParams,
 } from '@/types'
 import { apiClient } from '../client'
 
@@ -33,22 +34,6 @@ export const projectService = {
     const listUrl = this.apiUrl
     const response = await apiClient.get<GetProjectListResponse>(listUrl, {
       params: { size, page },
-    })
-    return response.data
-  },
-
-  // 프로젝트 멤버 조회
-  async getProjectMember({
-    projectUrl,
-    size,
-    page,
-  }: GetProjectMembersParams): Promise<GetProjectMembersResponse> {
-    const memberUrl = `${this.apiUrl}/${projectUrl}/profiles`
-    const response = await apiClient.get<GetProjectMembersResponse>(memberUrl, {
-      params: {
-        size,
-        page,
-      },
     })
     return response.data
   },
@@ -86,6 +71,22 @@ export const projectService = {
     })
     return response.data
   },
+
+  // 프로젝트 멤버 조회
+  async getProjectMember({
+    projectUrl,
+    size,
+    page,
+  }: GetProjectMembersParams): Promise<GetProjectMembersResponse> {
+    const memberUrl = `${this.apiUrl}/${projectUrl}/profiles`
+    const response = await apiClient.get<GetProjectMembersResponse>(memberUrl, {
+      params: {
+        size,
+        page,
+      },
+    })
+    return response.data
+  },
   async getUserInfo(projectUrl: string): Promise<UserInfo> {
     const userUrl = `${this.apiUrl}/${projectUrl}/profiles/me`
     const response = await apiClient.get(userUrl)
@@ -100,5 +101,22 @@ export const projectService = {
     const response = await apiClient.get<UserInfo>(memberUrl)
 
     return response.data
+  },
+
+  async updateMyProfile(
+    projectUrl: string,
+    payload: UserUpdateParams
+  ): Promise<void> {
+    const updateUrl = `${this.apiUrl}/${projectUrl}/profiles`
+    // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
+    await apiClient.put(updateUrl, payload)
+  },
+  async updateMemberRole(
+    projectUrl: string,
+    payload: UserUpdateParams
+  ): Promise<void> {
+    const roleUrl = `${this.apiUrl}/${projectUrl}/profiles/role`
+    // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
+    await apiClient.patch(roleUrl, payload)
   },
 }

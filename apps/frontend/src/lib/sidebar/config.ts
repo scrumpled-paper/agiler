@@ -97,7 +97,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         displayTitle: true,
         icon: '👤',
         items: [
-          { label: 'User Profile', route: ':projectUrl/settings/profile' },
+          { label: 'User Profile', route: ':projectUrl/settings/users' },
           {
             label: 'Project Management',
             route: ':projectUrl/settings/project',

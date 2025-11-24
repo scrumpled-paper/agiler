@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import DashBoard from './pages/DashBoard'
 import Project from './pages/Project'
 import ProjectSetting from './pages/ProjectSetting'
+import ProjectUserSetting from './pages/ProjectUserSetting'
 import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
 
@@ -58,11 +59,24 @@ export const routers = createBrowserRouter([
           },
           {
             path: 'settings',
-            element: (
-              <ProtectedRoute>
-                <ProjectSetting />
-              </ProtectedRoute>
-            ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <ProtectedRoute>
+                    <ProjectSetting />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'users',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectUserSetting />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
           },
           {
             path: 'daily-scrum',
