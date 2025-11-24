@@ -22,6 +22,14 @@ import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.service.IssueService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import scrumpledpaper.agiler.auth.service.CustomUserDetails;
+import scrumpledpaper.agiler.kanban.dto.IssueStatusUpdateReqDto;
+import scrumpledpaper.agiler.kanban.service.KanbanService;
 
 @RestController
 @RequestMapping("/api/v1/projects")
@@ -90,5 +98,17 @@ public class IssueController {
 		@RequestBody @Valid IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
 		issueService.updateIssueKanbanConfig(customUserDetails.getUserId(), projectUrl, issueId, issueKanbanConfigReqDto);
 		return ResponseEntity.noContent().build();
+
+	private final KanbanService kanbanService;
+
+	@PatchMapping("/{projectUrl}/issues/{issueId}/status")
+	public ResponseEntity<Void> updateIssueStatus(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			@PathVariable Long issueId,
+			@PathVariable String projectUrl,
+			@RequestBody @Valid IssueStatusUpdateReqDto request
+	) {
+		kanbanService.changeIssueStatus(userDetails.getUserId(), issueId, projectUrl, request);
+		return ResponseEntity.ok().build();
 	}
 }

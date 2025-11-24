@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.auth.oauth2;
 
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import scrumpledpaper.agiler.auth.oauth2.userinfo.GitHubOAuth2UserInfo;
 import scrumpledpaper.agiler.auth.oauth2.userinfo.GoogleOAuth2UserInfo;
 import scrumpledpaper.agiler.auth.oauth2.userinfo.OAuth2UserInfo;
@@ -25,7 +26,7 @@ public enum ProviderType {
 				return type;
 			}
 		}
-		throw new IllegalArgumentException("Unsupported provider: " + registrationId);
+		throw new OAuth2AuthenticationException("Unsupported provider: " + registrationId);
 	}
 
 	public OAuth2UserInfo getOAuth2UserInfo(Map<String, Object> attributes) {

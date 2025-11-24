@@ -31,9 +31,18 @@ import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
+import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
+import scrumpledpaper.agiler.notification.domain.ChannelType;
+import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
+import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
+import scrumpledpaper.agiler.notification.domain.ScheduledNotification;
+import scrumpledpaper.agiler.notification.repository.NotificationSubscriptionRepository;
+import scrumpledpaper.agiler.notification.repository.ProfileNotificationChannelRepository;
+import scrumpledpaper.agiler.notification.repository.ScheduledNotificationRepository;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
@@ -67,6 +76,11 @@ public class TestDataFactory {
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
 	private final MeetingTemplateRepository meetingTemplateRepository;
+	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
+	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
+	private final ScheduledNotificationRepository scheduledNotificationRepository;
+	private final IssueRepository issueRepository;
+	private final KanbanConfigRepository kanbanConfigRepository;
 	private final EntityManager entityManager;
 
 	public static String randomString(int length) {
@@ -128,8 +142,8 @@ public class TestDataFactory {
 		List<Project> projects = new ArrayList<>();
 		for (int i = 1; i <= count; i++) {
 			Project project = createProjectAndOwnerProfile(
-				urlPrefix + "_" + i,
-				user
+					urlPrefix + "_" + i,
+					user
 			);
 			projects.add(project);
 		}
@@ -166,10 +180,10 @@ public class TestDataFactory {
 
 	private void updateTimestamps(String tableName, Long id, LocalDateTime createdAt) {
 		entityManager.createNativeQuery(
-				String.format("UPDATE %s SET created_at = :createdAt, updated_at = :createdAt WHERE id = :id", tableName))
-			.setParameter("createdAt", createdAt)
-			.setParameter("id", id)
-			.executeUpdate();
+						String.format("UPDATE %s SET created_at = :createdAt, updated_at = :createdAt WHERE id = :id", tableName))
+				.setParameter("createdAt", createdAt)
+				.setParameter("id", id)
+				.executeUpdate();
 	}
 
 	public Project findProjectById(Long id) {
@@ -208,10 +222,10 @@ public class TestDataFactory {
 
 	public IssueTemplate createIssueTemplate(Project project, String title, String description, String contents) {
 		IssueTemplate issueTemplate = IssueTemplateFixture.createIssueTemplate(
-			project,
-			title,
-			description,
-			contents
+				project,
+				title,
+				description,
+				contents
 		);
 		return issueTemplateRepository.save(issueTemplate);
 	}
@@ -226,10 +240,10 @@ public class TestDataFactory {
 
 	public ScrumTemplate createScrumTemplate(Project project, String title, String description, String contents) {
 		ScrumTemplate scrumTemplate = ScrumTemplateFixture.createScrumTemplate(
-			project,
-			title,
-			description,
-			contents
+				project,
+				title,
+				description,
+				contents
 		);
 		return scrumTemplateRepository.save(scrumTemplate);
 	}
@@ -244,10 +258,10 @@ public class TestDataFactory {
 
 	public RetroTemplate createRetroTemplate(Project project, String title, String description, String contents) {
 		RetroTemplate retroTemplate = RetroTemplateFixture.createRetroTemplate(
-			project,
-			title,
-			description,
-			contents
+				project,
+				title,
+				description,
+				contents
 		);
 		return retroTemplateRepository.save(retroTemplate);
 	}
@@ -262,10 +276,10 @@ public class TestDataFactory {
 
 	public MeetingTemplate createMeetingTemplate(Project project, String title, String description, String contents) {
 		MeetingTemplate meetingTemplate = MeetingTemplateFixture.createMeetingTemplate(
-			project,
-			title,
-			description,
-			contents
+				project,
+				title,
+				description,
+				contents
 		);
 		return meetingTemplateRepository.save(meetingTemplate);
 	}
@@ -308,4 +322,45 @@ public class TestDataFactory {
 	public List<IssueProfile> findIssueProfilesByIssueId(Long id) {
 		return issueProfileRepository.findByIssueId(id);
 	}
+	public List<ProfileNotificationChannel> getAllProfileNotificationChannels(long profileId) {
+		return profileNotificationChannelRepository.findByProfileId(profileId);
+	}
+
+	public ProfileNotificationChannel createProfileNotificationChannel(User user, Profile profile, String channelType, String webhookUrl) {
+		ProfileNotificationChannel channel = ProfileNotificationChannelFixture.create(user.getId(), profile.getId(), ChannelType.valueOf(channelType), webhookUrl);
+		return profileNotificationChannelRepository.save(channel);
+	}
+
+	public Issue createIssue(KanbanConfig kanbanConfig, Profile profile, String title, Boolean isDone, String contents, LocalDateTime startedAt, LocalDateTime dueAt) {
+		Issue issue = IssueFixture.createIssue(kanbanConfig, profile, title, isDone, contents, startedAt, dueAt);
+		return issueRepository.save(issue);
+	}
+
+	public KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
+		KanbanConfig kanbanConfig = KanbanConfigFixture.create(project, statusName, priority, defaultStatus, backlog, isDone);
+		return kanbanConfigRepository.save(kanbanConfig);
+	}
+
+	public List<NotificationSubscription> findNotificationSubscriptionsByProfileId(long profileId) {
+		return notificationSubscriptionRepository.findByProfileId(profileId);
+	}
+
+	public NotificationSubscription createNotificationSubscription(User user, Profile profile, Issue issue, long fromKanbanConfigId, long toKanbanConfigId) {
+		NotificationSubscription subscription = NotificationSubscriptionFixture.create(user.getId(), profile.getId(), issue.getId(), fromKanbanConfigId, toKanbanConfigId);
+		return notificationSubscriptionRepository.save(subscription);
+	}
+
+	public List<ScheduledNotification> findScheduledNotificationByProfileId(long profileId) {
+		return scheduledNotificationRepository.findByProfileId(profileId);
+	}
+
+	public ScheduledNotification createScheduledNotification(User user, Profile profile, Issue issue, LocalDateTime notificationTime, String message) {
+		ScheduledNotification scheduledNotification = ScheduleNotificationFixture.create(user.getId(), profile.getId(), issue.getId(), message, notificationTime);
+		return scheduledNotificationRepository.save(scheduledNotification);
+	}
+
+	public Issue findIssueById(Long id) {
+		return issueRepository.findById(id).orElseThrow();
+	}
+
 }

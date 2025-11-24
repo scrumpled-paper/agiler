@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getUserInfo, updateUserNickname } from './userService'
+import { userService } from './userService'
 import { apiClient } from '../client'
 
 vi.mock('../client', () => ({
@@ -25,9 +25,9 @@ describe('userService', () => {
 
       vi.mocked(apiClient.get).mockResolvedValue({ data: mockUserData })
 
-      const result = await getUserInfo()
+      const result = await userService.getUserInfo()
 
-      expect(apiClient.get).toHaveBeenCalledWith('api/v1/users')
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users')
       expect(result).toEqual(mockUserData)
     })
 
@@ -35,8 +35,8 @@ describe('userService', () => {
       const error = new Error('Network error')
       vi.mocked(apiClient.get).mockRejectedValue(error)
 
-      await expect(getUserInfo()).rejects.toThrow('Network error')
-      expect(apiClient.get).toHaveBeenCalledWith('api/v1/users')
+      await expect(userService.getUserInfo()).rejects.toThrow('Network error')
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users')
     })
 
     it('should handle 401 Unauthorized error', async () => {
@@ -48,7 +48,7 @@ describe('userService', () => {
       }
       vi.mocked(apiClient.get).mockRejectedValue(error)
 
-      await expect(getUserInfo()).rejects.toEqual(error)
+      await expect(userService.getUserInfo()).rejects.toEqual(error)
     })
 
     it('should handle 404 Not Found error', async () => {
@@ -60,7 +60,7 @@ describe('userService', () => {
       }
       vi.mocked(apiClient.get).mockRejectedValue(error)
 
-      await expect(getUserInfo()).rejects.toEqual(error)
+      await expect(userService.getUserInfo()).rejects.toEqual(error)
     })
   })
 
@@ -71,7 +71,7 @@ describe('userService', () => {
 
       vi.mocked(apiClient.patch).mockResolvedValue({ data: mockResponse })
 
-      const result = await updateUserNickname(newNickname)
+      const result = await userService.updateUserNickname(newNickname)
 
       expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
         nickname: newNickname,
@@ -83,7 +83,7 @@ describe('userService', () => {
       const koreanNickname = '테스트유저'
       vi.mocked(apiClient.patch).mockResolvedValue({ data: koreanNickname })
 
-      const result = await updateUserNickname(koreanNickname)
+      const result = await userService.updateUserNickname(koreanNickname)
 
       expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
         nickname: koreanNickname,
@@ -95,7 +95,7 @@ describe('userService', () => {
       const specialNickname = 'User_123!@#'
       vi.mocked(apiClient.patch).mockResolvedValue({ data: specialNickname })
 
-      const result = await updateUserNickname(specialNickname)
+      const result = await userService.updateUserNickname(specialNickname)
 
       expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
         nickname: specialNickname,
@@ -107,9 +107,9 @@ describe('userService', () => {
       const error = new Error('Update failed')
       vi.mocked(apiClient.patch).mockRejectedValue(error)
 
-      await expect(updateUserNickname('NewNickname')).rejects.toThrow(
-        'Update failed'
-      )
+      await expect(
+        userService.updateUserNickname('NewNickname')
+      ).rejects.toThrow('Update failed')
       expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
         nickname: 'NewNickname',
       })
@@ -124,7 +124,9 @@ describe('userService', () => {
       }
       vi.mocked(apiClient.patch).mockRejectedValue(error)
 
-      await expect(updateUserNickname('Invalid@@@')).rejects.toEqual(error)
+      await expect(
+        userService.updateUserNickname('Invalid@@@')
+      ).rejects.toEqual(error)
     })
 
     it('should handle 409 Conflict error (duplicate nickname)', async () => {
@@ -136,14 +138,16 @@ describe('userService', () => {
       }
       vi.mocked(apiClient.patch).mockRejectedValue(error)
 
-      await expect(updateUserNickname('DuplicateNick')).rejects.toEqual(error)
+      await expect(
+        userService.updateUserNickname('DuplicateNick')
+      ).rejects.toEqual(error)
     })
 
     it('should handle empty string nickname', async () => {
       const emptyNickname = ''
       vi.mocked(apiClient.patch).mockResolvedValue({ data: emptyNickname })
 
-      const result = await updateUserNickname(emptyNickname)
+      const result = await userService.updateUserNickname(emptyNickname)
 
       expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
         nickname: emptyNickname,

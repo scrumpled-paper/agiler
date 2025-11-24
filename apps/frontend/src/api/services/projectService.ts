@@ -6,119 +6,66 @@ import type {
   ProjectInfo,
 } from '@/types'
 import { apiClient } from '../client'
-import axios from 'axios'
 
-// 프로젝트 카드 목록 조회 (메인 페이지용)
-export const getProjectList = async ({
-  size,
-  page,
-}: GetProjectListParams): Promise<GetProjectListResponse> => {
-  const url = '/api/v1/projects/info'
+export const projectService = {
+  // 공통 기본 URL을 속성으로 정의하여 중앙 관리
+  apiUrl: `/api/v1/projects`,
 
-  try {
-    const response = await apiClient.get<GetProjectListResponse>(url, {
+  // 프로젝트 카드 목록 조회 (메인 페이지용)
+  async getProjectList({
+    size,
+    page,
+  }: GetProjectListParams): Promise<GetProjectListResponse> {
+    const listInfoUrl = `${this.apiUrl}/info`
+    const response = await apiClient.get<GetProjectListResponse>(listInfoUrl, {
       params: { size, page },
     })
     return response.data
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const serverErrorMessage = error.response?.data?.message
-      throw new Error(serverErrorMessage || 'Failed to fetch project list')
-    }
-    throw new Error('Unknown error occurred')
-  }
-}
+  },
 
-// 사이드바용 프로젝트 목록 조회
-export const getProjectSidebar = async ({
-  size,
-  page,
-}: GetProjectListParams): Promise<GetProjectListResponse> => {
-  const url = '/api/v1/projects'
-
-  try {
-    const response = await apiClient.get<GetProjectListResponse>(url, {
+  // 사이드바용 프로젝트 목록 조회
+  async getProjectSidebar({
+    size,
+    page,
+  }: GetProjectListParams): Promise<GetProjectListResponse> {
+    const listUrl = this.apiUrl
+    const response = await apiClient.get<GetProjectListResponse>(listUrl, {
       params: { size, page },
     })
     return response.data
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const serverErrorMessage = error.response?.data?.message
-      throw new Error(serverErrorMessage || 'Failed to fetch project sidebar')
-    }
-    throw new Error('Unknown error occurred')
-  }
-}
+  },
 
-//프로젝트 멤버 조회
-export const getProjectMember = async ({
-  projectUrl,
-  size,
-  page,
-}: GetProjectMembersParams): Promise<GetProjectMembersResponse> => {
-  const url = `/api/v1/projects/${projectUrl}/people`
-  try {
-    const response = await apiClient.get<GetProjectMembersResponse>(url, {
+  // 프로젝트 멤버 조회
+  async getProjectMember({
+    projectUrl,
+    size,
+    page,
+  }: GetProjectMembersParams): Promise<GetProjectMembersResponse> {
+    const memberUrl = `${this.apiUrl}/${projectUrl}/people`
+    const response = await apiClient.get<GetProjectMembersResponse>(memberUrl, {
       params: {
         size,
         page,
       },
     })
     return response.data
-  } catch (error) {
-    console.error('Failed to fetch project members:', error)
+  },
 
-    if (axios.isAxiosError(error)) {
-      const serverErrorMessage = error.response?.data?.message
-      throw new Error(serverErrorMessage || 'API 요청 중 오류가 발생했습니다.')
-    } else {
-      throw new Error('알 수 없는 오류가 발생했습니다.')
-    }
-  }
-}
-
-//프로젝트 생성 url 검증
-export const getProjectUrlCheck = async (
-  projectUrl: string
-): Promise<boolean> => {
-  const url = `/api/v1/projects/check/${projectUrl}`
-  try {
-    const response = await apiClient.get(url)
+  // 프로젝트 생성 URL 검증
+  async getProjectUrlCheck(projectUrl: string): Promise<boolean> {
+    const checkUrl = `${this.apiUrl}/check/${projectUrl}`
+    const response = await apiClient.get(checkUrl)
     return response.data
-  } catch (error) {
-    console.error('프로젝트 url 검증 오류 :', error)
-    if (axios.isAxiosError(error)) {
-      const serverErrorMessage = error.response?.data?.message
-      throw new Error(
-        serverErrorMessage ||
-          '프로젝트 url 검증  API 요청 중 오류가 발생했습니다.'
-      )
-    } else {
-      throw new Error('알 수 없는 오류가 발생했습니다.')
-    }
-  }
-}
+  },
 
-export const createProject = async ({
-  title,
-  url,
-  summary,
-}: ProjectInfo): Promise<number> => {
-  const apiUrl = `/api/v1/projects` // 변수명 충돌 방지를 위해 apiUrl로 변경
-  try {
-    const response = await apiClient.post(apiUrl, { title, url, summary })
+  //  프로젝트 생성
+  async createProject({ title, url, summary }: ProjectInfo): Promise<number> {
+    const createUrl = this.apiUrl
+    const response = await apiClient.post(createUrl, {
+      title,
+      url,
+      summary,
+    })
     return response.data
-  } catch (error) {
-    console.error('프로젝트 생성 오류 :', error)
-
-    // ➡️ Axios 에러 처리 (URL 검증 함수와 동일한 로직 적용)
-    if (axios.isAxiosError(error)) {
-      const serverErrorMessage = error.response?.data?.message
-      throw new Error(
-        serverErrorMessage || '프로젝트 생성 API 요청 중 오류가 발생했습니다.'
-      )
-    } else {
-      throw new Error('알 수 없는 오류가 발생했습니다.')
-    }
-  }
+  },
 }

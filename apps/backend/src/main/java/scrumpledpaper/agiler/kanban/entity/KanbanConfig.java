@@ -8,19 +8,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.common.BaseEntity;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "kanban_config")
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class KanbanConfig extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,4 +42,14 @@ public class KanbanConfig extends BaseEntity {
 
 	@Column(name = "is_done", nullable = false)
 	private Boolean isDone;
+
+	public KanbanConfig(KanbanConfig oldKanbanConfig) {
+		this.project = oldKanbanConfig.getProject();
+		this.statusName = oldKanbanConfig.getStatusName();
+		this.priority = oldKanbanConfig.getPriority();
+		this.defaultStatus = oldKanbanConfig.isDefaultStatus();
+		this.backlog = oldKanbanConfig.isBacklog();
+		this.isDone = oldKanbanConfig.getIsDone();
+	}
+
 }
