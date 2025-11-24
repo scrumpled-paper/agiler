@@ -557,7 +557,7 @@ public class IssueControllerTest {
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 담당자 수정 성공")
+		@DisplayName("200 - 이슈 담당자 수정 성공")
 		public void issueUpdateAssigneesSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -589,12 +589,13 @@ public class IssueControllerTest {
 			);
 
 			// when
-			mockMvc.perform(
+			String response = mockMvc.perform(
 					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/assignees", url, issue.getId())
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(updateAssigneesReqDto)))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
 
 			// then
 			List<IssueProfile> updatedIssueProfiles = testDataFactory.findIssueProfilesByIssueId(issue.getId());
@@ -612,6 +613,8 @@ public class IssueControllerTest {
 			assertThat(updatedIssueProfiles)
 				.extracting(issueProfile -> issueProfile.getProfile().getId())
 				.doesNotContain(deleteProfile.getId());
+
+			assertThat(response).contains(issue.getId().toString());
 		}
 
 		@Test
@@ -711,7 +714,7 @@ public class IssueControllerTest {
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 라벨 수정 성공")
+		@DisplayName("200 - 이슈 라벨 수정 성공")
 		public void issueUpdateLabelsSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -741,12 +744,13 @@ public class IssueControllerTest {
 			);
 
 			// when
-			mockMvc.perform(
+			String response = mockMvc.perform(
 					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/labels", url, issue.getId())
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(updateLabelsReqDto)))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
 
 			// then
 			List<IssueLabel> updatedIssueLabels = testDataFactory.findIssueLabelsByIssueId(issue.getId());
@@ -765,6 +769,8 @@ public class IssueControllerTest {
 			assertThat(updatedIssueLabels)
 				.extracting(issueLabel -> issueLabel.getLabel().getId())
 				.doesNotContain(label1.getId());
+
+			assertThat(response).contains(issue.getId().toString());
 		}
 
 		@Test
@@ -864,7 +870,7 @@ public class IssueControllerTest {
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 칸반 설정 수정 성공")
+		@DisplayName("200 - 이슈 칸반 설정 수정 성공")
 		public void issueUpdateKanbanConfigSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -898,16 +904,18 @@ public class IssueControllerTest {
 			);
 
 			// when
-			mockMvc.perform(
+			String response = mockMvc.perform(
 					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", url, issue.getId())
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(updateKanbanConfigReqDto)))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
 
 			// then
 			Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
 			assertThat(updatedIssue.getKanbanConfig().getId()).isEqualTo(newKanbanConfig.getId());
+			assertThat(response).contains(issue.getId().toString());
 		}
 
 		@Test

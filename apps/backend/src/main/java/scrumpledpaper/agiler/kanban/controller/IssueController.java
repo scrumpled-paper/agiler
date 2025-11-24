@@ -60,36 +60,36 @@ public class IssueController {
 	}
 
 	@PatchMapping("/{projectUrl}/issues/{issueId}/assignees")
-	public ResponseEntity<Void> updateIssueAssignees(
+	public ResponseEntity<IssueIdResDto> updateIssueAssignees(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@PathVariable Long issueId,
 		@RequestBody @Valid IssueAssigneesReqDto issueAssigneesReqDto) {
-		issueService.updateIssueAssignees(customUserDetails.getUserId(), projectUrl, issueId, issueAssigneesReqDto);
-		return ResponseEntity.noContent().build();
+		long updatedIssueId = issueService.updateIssueAssignees(customUserDetails.getUserId(), projectUrl, issueId, issueAssigneesReqDto);
+		return ResponseEntity.ok(new IssueIdResDto(updatedIssueId));
 	}
 
 	@PatchMapping("/{projectUrl}/issues/{issueId}/labels")
-	public ResponseEntity<Void> updateIssueLabels(
+	public ResponseEntity<IssueIdResDto> updateIssueLabels(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@PathVariable Long issueId,
 		@RequestBody @Valid IssueLabelsReqDto issueLabelsReqDto) {
-		issueService.updateIssueLabels(customUserDetails.getUserId(), projectUrl, issueId, issueLabelsReqDto);
-		return ResponseEntity.noContent().build();
+		long updatedIssueId = issueService.updateIssueLabels(customUserDetails.getUserId(), projectUrl, issueId, issueLabelsReqDto);
+		return ResponseEntity.ok(new IssueIdResDto(updatedIssueId));
 	}
 
 	@PatchMapping("/{projectUrl}/issues/{issueId}/kanban-config")
-	public ResponseEntity<Void> updateIssueKanbanConfig(
+	public ResponseEntity<IssueIdResDto> updateIssueKanbanConfig(
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@PathVariable Long issueId,
 		@RequestBody @Valid IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
-		issueService.updateIssueKanbanConfig(customUserDetails.getUserId(), projectUrl, issueId,
+		long updatedIssueId = issueService.updateIssueKanbanConfig(customUserDetails.getUserId(), projectUrl, issueId,
 			issueKanbanConfigReqDto);
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(new IssueIdResDto(updatedIssueId));
 	}
 }

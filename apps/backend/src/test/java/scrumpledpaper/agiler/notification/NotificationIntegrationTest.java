@@ -465,7 +465,7 @@ class NotificationIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("204 - 이슈 상태 변경으로 인한 SLACK 알림 성공")
+	@DisplayName("200 - 이슈 상태 변경으로 인한 SLACK 알림 성공")
 	void changeIssueStatus_for_slack_Success() throws Exception {
 		// given
 		String anyProjectUrl = "test-project";
@@ -494,7 +494,7 @@ class NotificationIntegrationTest {
 				.contentType("application/json"));
 
 		// then
-		result.andExpect(status().isNoContent());
+		result.andExpect(status().isOk());
 		Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
 		assertThat(updatedIssue.getId()).isEqualTo(issue.getId());
 		assertThat(updatedIssue.getKanbanConfig().getStatusName()).isEqualTo(doneKanbanConfig.getStatusName());
@@ -503,7 +503,7 @@ class NotificationIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("204 - 이슈 상태 변경으로 인한 DISCORD 알림 성공")
+	@DisplayName("200 - 이슈 상태 변경으로 인한 DISCORD 알림 성공")
 	void changeIssueStatus_for_discord_Success() throws Exception {
 		// given
 		String anyProjectUrl = "test-project";
@@ -532,7 +532,7 @@ class NotificationIntegrationTest {
 				.contentType("application/json"));
 
 		// then
-		result.andExpect(status().isNoContent());
+		result.andExpect(status().isOk());
 		Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
 		assertThat(updatedIssue.getId()).isEqualTo(issue.getId());
 		assertThat(updatedIssue.getKanbanConfig().getStatusName()).isEqualTo("DONE");

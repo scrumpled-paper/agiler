@@ -93,7 +93,7 @@ public class IssueService {
 	}
 
 	@Transactional
-	public void updateIssueAssignees(long userId, String projectUrl, Long issueId, IssueAssigneesReqDto issueAssigneesReqDto) {
+	public long updateIssueAssignees(long userId, String projectUrl, Long issueId, IssueAssigneesReqDto issueAssigneesReqDto) {
 		projectValidator.validateAccess(userId, projectUrl);
 
 		Issue issue = findIssueById(issueId);
@@ -104,10 +104,12 @@ public class IssueService {
 		List<Profile> assignees = projectValidator.projectMembersByIds(issue.getProject(), issueAssigneesReqDto.assignees());
 		List<IssueProfile> newIssueProfiles = issueMapper.toIssueProfile(issue, assignees);
 		issueProfileRepository.saveAll(newIssueProfiles);
+
+		return issue.getId();
 	}
 
 	@Transactional
-	public void updateIssueLabels(long userId, String projectUrl, Long issueId, IssueLabelsReqDto issueLabelsReqDto) {
+	public long updateIssueLabels(long userId, String projectUrl, Long issueId, IssueLabelsReqDto issueLabelsReqDto) {
 		projectValidator.validateAccess(userId, projectUrl);
 
 		Issue issue = findIssueById(issueId);
@@ -118,10 +120,12 @@ public class IssueService {
 		List<Label> labels = labelService.getLabelsByIds(issueLabelsReqDto.labels());
 		List<IssueLabel> newIssueLabels = issueMapper.toIssueLabel(issue, labels);
 		issueLabelRepository.saveAll(newIssueLabels);
+
+		return issue.getId();
 	}
 
 	@Transactional
-	public void updateIssueKanbanConfig(long userId, String projectUrl, Long issueId, IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
+	public long updateIssueKanbanConfig(long userId, String projectUrl, Long issueId, IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
 		ProjectAccessContext accessContext = projectValidator.validateAccess(userId, projectUrl);
 
 		Issue issue = findIssueById(issueId);
@@ -137,5 +141,7 @@ public class IssueService {
 			userId,
 			accessContext.project().getId()
 		));
+
+		return issue.getId();
 	}
 }
