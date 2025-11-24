@@ -136,10 +136,10 @@ describe('Home Page - 통합 테스트', () => {
 
       // Given: API가 401 에러를 반환 (비인증 상태)
       server.use(
-        http.get('/api/v1/users/', () => {
+        http.get('/api/v1/users', () => {
           return new HttpResponse(null, { status: 401 })
         }),
-        http.get(`${API_BASE_URL}/api/v1/users/`, () => {
+        http.get(`${API_BASE_URL}/api/v1/users`, () => {
           return new HttpResponse(null, { status: 401 })
         })
       )
@@ -168,8 +168,8 @@ describe('Home Page - 통합 테스트', () => {
 
       // Given: API가 네트워크 에러를 반환
       server.use(
-        http.get('/api/v1/users/', () => HttpResponse.error()),
-        http.get(`${API_BASE_URL}/api/v1/users/`, () => HttpResponse.error())
+        http.get('/api/v1/users', () => HttpResponse.error()),
+        http.get(`${API_BASE_URL}/api/v1/users`, () => HttpResponse.error())
       )
 
       render(<Home />, { wrapper: createWrapper() })

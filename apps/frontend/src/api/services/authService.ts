@@ -23,7 +23,7 @@ export const authService = {
    * 현재 로그인한 사용자 정보 조회
    */
   getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get<User>('/api/v1/users/')
+    const response = await apiClient.get<User>('/api/v1/users')
     return response.data
   },
 }

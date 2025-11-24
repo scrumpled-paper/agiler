@@ -105,10 +105,10 @@ describe('ProtectedRoute - 통합 테스트', () => {
     it('인증되지 않은 사용자는 로그인 페이지로 리다이렉트된다', async () => {
       // Given: API가 401 에러를 반환하도록 설정
       server.use(
-        http.get('/api/v1/users/', () => {
+        http.get('/api/v1/users', () => {
           return new HttpResponse(null, { status: 401 })
         }),
-        http.get(`${API_BASE_URL}/api/v1/users/`, () => {
+        http.get(`${API_BASE_URL}/api/v1/users`, () => {
           return new HttpResponse(null, { status: 401 })
         })
       )
@@ -141,8 +141,8 @@ describe('ProtectedRoute - 통합 테스트', () => {
     it('네트워크 에러 시 로그인 페이지로 리다이렉트된다', async () => {
       // Given: API가 네트워크 에러를 반환
       server.use(
-        http.get('/api/v1/users/', () => HttpResponse.error()),
-        http.get(`${API_BASE_URL}/api/v1/users/`, () => HttpResponse.error())
+        http.get('/api/v1/users', () => HttpResponse.error()),
+        http.get(`${API_BASE_URL}/api/v1/users`, () => HttpResponse.error())
       )
 
       // When: ProtectedRoute 렌더링
