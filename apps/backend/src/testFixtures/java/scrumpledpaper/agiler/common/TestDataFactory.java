@@ -16,9 +16,12 @@ import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.fixture.LabelFixture;
 import scrumpledpaper.agiler.fixture.MeetingTemplateFixture;
+import scrumpledpaper.agiler.fixture.NotificationSubscriptionFixture;
 import scrumpledpaper.agiler.fixture.ProfileFixture;
+import scrumpledpaper.agiler.fixture.ProfileNotificationChannelFixture;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.fixture.RetroTemplateFixture;
+import scrumpledpaper.agiler.fixture.ScheduleNotificationFixture;
 import scrumpledpaper.agiler.fixture.ScrumTemplateFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
@@ -79,8 +82,6 @@ public class TestDataFactory {
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
-	private final IssueRepository issueRepository;
-	private final KanbanConfigRepository kanbanConfigRepository;
 	private final EntityManager entityManager;
 
 	public static String randomString(int length) {
@@ -322,6 +323,7 @@ public class TestDataFactory {
 	public List<IssueProfile> findIssueProfilesByIssueId(Long id) {
 		return issueProfileRepository.findByIssueId(id);
 	}
+
 	public List<ProfileNotificationChannel> getAllProfileNotificationChannels(long profileId) {
 		return profileNotificationChannelRepository.findByProfileId(profileId);
 	}
@@ -329,11 +331,6 @@ public class TestDataFactory {
 	public ProfileNotificationChannel createProfileNotificationChannel(User user, Profile profile, String channelType, String webhookUrl) {
 		ProfileNotificationChannel channel = ProfileNotificationChannelFixture.create(user.getId(), profile.getId(), ChannelType.valueOf(channelType), webhookUrl);
 		return profileNotificationChannelRepository.save(channel);
-	}
-
-	public Issue createIssue(KanbanConfig kanbanConfig, Profile profile, String title, Boolean isDone, String contents, LocalDateTime startedAt, LocalDateTime dueAt) {
-		Issue issue = IssueFixture.createIssue(kanbanConfig, profile, title, isDone, contents, startedAt, dueAt);
-		return issueRepository.save(issue);
 	}
 
 	public KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
@@ -358,9 +355,4 @@ public class TestDataFactory {
 		ScheduledNotification scheduledNotification = ScheduleNotificationFixture.create(user.getId(), profile.getId(), issue.getId(), message, notificationTime);
 		return scheduledNotificationRepository.save(scheduledNotification);
 	}
-
-	public Issue findIssueById(Long id) {
-		return issueRepository.findById(id).orElseThrow();
-	}
-
 }

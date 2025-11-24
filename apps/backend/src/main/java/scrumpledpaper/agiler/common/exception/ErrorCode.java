@@ -17,6 +17,8 @@ public enum ErrorCode {
 
 	INVALID_REQUEST(400, "C001", "잘못된 요청입니다."),
 	PAGE_NOT_FOUND(404, "C002", "페이지를 찾을 수 없습니다."),
+	JSON_PROCESSING_ERROR(500, "C003", "JSON 처리 중 오류가 발생했습니다."),
+	REDIS_NOT_FOUND_STATE(404, "C004", "Redis에서 상태를 찾을 수 없습니다."),
 
 	PROJECT_URL_ALREADY_EXISTS(409, "P001", "이미 존재하는 프로젝트 URL입니다."),
 	PROJECT_NOT_FOUND(404, "P002", "프로젝트를 찾을 수 없습니다."),
@@ -36,9 +38,7 @@ public enum ErrorCode {
 	DEFAULT_KANBAN_CONFIG_NOT_FOUND(404, "K001", "Default 칸반 설정을 찾을 수 없습니다."),
 	KANBAN_CONFIG_NOT_FOUND(404, "K002", "칸반 설정을 찾을 수 없습니다."),
 
-	ISSUE_NOT_FOUND(404, "IS001", "이슈를 찾을 수 없습니다.");
-	ISSUE_NOT_FOUND(404, "K001", "이슈를 찾을 수 없습니다."),
-	KANBAN_CONFIG_NOT_FOUND(404, "K002", "칸반 설정을 찾을 수 없습니다."),
+	ISSUE_NOT_FOUND(404, "IS001", "이슈를 찾을 수 없습니다."),
 
 	NOTIFICATION_CHANNEL_NOT_FOUND(404, "N001", "알림 채널을 찾을 수 없습니다."),
 	SLACK_OAUTH_FAILED(400, "N002", "Slack OAuth 인증에 실패했습니다."),
@@ -47,9 +47,7 @@ public enum ErrorCode {
 	NOTIFICATION_UNAUTHORIZED(403, "N005", "알림 채널에 대한 권한이 없습니다."),
 	NOTIFICATION_SUBSCRIPTION_NOT_FOUND(404, "N006", "알림 구독을 찾을 수 없습니다."),
 	INVALID_SCHEDULE_REQUEST(400, "N007", "잘못된 알림 예약 요청입니다. delayInMinutes 또는 notificationTime 중 하나만 지정해야 합니다."),
-	JSON_PROCESSING_ERROR(500, "C003", "JSON 처리 중 오류가 발생했습니다."),
-	DUPLICATE_NOTIFICATION_CHANNEL(409, "N008", "이미 등록된 알림 채널입니다."),
-	REDIS_NOT_FOUND_STATE(404, "C004", "Redis에서 상태를 찾을 수 없습니다.");
+	DUPLICATE_NOTIFICATION_CHANNEL(409, "N008", "이미 등록된 알림 채널입니다.");
 
 	private final int status;
 	private final String code;

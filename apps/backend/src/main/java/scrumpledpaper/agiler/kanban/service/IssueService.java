@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.kanban.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import scrumpledpaper.agiler.kanban.mapper.IssueMapper;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
+import scrumpledpaper.agiler.notification.event.IssueStatusChangedEvent;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -37,6 +39,7 @@ public class IssueService {
 	private final IssueLabelRepository issueLabelRepository;
 	private final IssueProfileRepository issueProfileRepository;
 	private final IssueMapper issueMapper;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public long createIssue(long userId, String projectUrl, IssueCreateReqDto issueCreateReqDto) {
@@ -119,10 +122,20 @@ public class IssueService {
 
 	@Transactional
 	public void updateIssueKanbanConfig(long userId, String projectUrl, Long issueId, IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
-		projectValidator.validateAccess(userId, projectUrl);
+		ProjectAccessContext accessContext = projectValidator.validateAccess(userId, projectUrl);
 
 		Issue issue = findIssueById(issueId);
-		KanbanConfig kanbanConfig = kanbanConfigService.getKanbanConfigById(issueKanbanConfigReqDto.kanbanConfigId());
-		issue.updateKanbanConfig(kanbanConfig);
+		KanbanConfig fromKanbanConfig = issue.getKanbanConfig();
+		KanbanConfig toKanbanConfig = kanbanConfigService.getKanbanConfigById(issueKanbanConfigReqDto.kanbanConfigId());
+		issue.updateKanbanConfig(toKanbanConfig);
+
+		eventPublisher.publishEvent(new IssueStatusChangedEvent(
+			this,
+			issueId,
+			fromKanbanConfig.getId(),
+			toKanbanConfig.getId(),
+			userId,
+			accessContext.project().getId()
+		));
 	}
 }
