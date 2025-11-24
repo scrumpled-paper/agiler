@@ -1,6 +1,6 @@
 // lib/sidebar/types.ts
 
-import type { ProjectInfo, ProjectMember } from '@/types'
+import type { ProjectInfo, ProjectMember, UserInfo } from '@/types'
 
 export type SidebarContext = 'dashboard' | 'project' | 'project-settings'
 
@@ -70,4 +70,5 @@ export interface SidebarConfig {
 export interface SidebarData {
   projects?: ProjectInfo[]
   members?: ProjectMember[]
+  userInfo?: UserInfo
 }

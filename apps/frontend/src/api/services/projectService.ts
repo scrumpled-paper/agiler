@@ -5,6 +5,7 @@ import type {
   GetProjectMembersParams,
   ProjectInfo,
   GetProjectSummaryResponse,
+  UserInfo,
 } from '@/types'
 import { apiClient } from '../client'
 
@@ -83,6 +84,21 @@ export const projectService = {
       url,
       summary,
     })
+    return response.data
+  },
+  async getUserInfo(projectUrl: string): Promise<UserInfo> {
+    const userUrl = `${this.apiUrl}/${projectUrl}/profiles/me`
+    const response = await apiClient.get(userUrl)
+    return response.data
+  },
+  async getMemberProfileById(
+    projectUrl: string,
+    profileId: number
+  ): Promise<UserInfo> {
+    const memberUrl = `${this.apiUrl}/${projectUrl}/profiles/${profileId}`
+
+    const response = await apiClient.get<UserInfo>(memberUrl)
+
     return response.data
   },
 }

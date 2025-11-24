@@ -11,12 +11,12 @@ export default function ProjectCard({ props }: { props: ProjectInfo }) {
         {/* 이미지 영역 */}
         <div className="h-[240px] w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex justify-center items-center">
           {imageUrl === null ? (
-            <ImageIcon className="w-full h-full opacity-20 " />
+            <ImageIcon className="w-[340px] h-[240px] opacity-20 " />
           ) : (
             <img
               src={imageUrl}
               alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-[340px] h-[240px] object-cover group-hover:scale-105 transition-transform duration-300"
             />
           )}
         </div>

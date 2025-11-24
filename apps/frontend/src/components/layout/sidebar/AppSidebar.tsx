@@ -33,7 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* Header: project 컨텍스트에서는 유저 정보 카드, 그 외에는 기본 유저 정보 */}
       {config.header?.type === 'user-info' && (
         <SidebarHeader>
-          <UserInfoSection />
+          <UserInfoSection userInfo={data.userInfo} context={context} />
         </SidebarHeader>
       )}
 

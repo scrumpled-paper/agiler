@@ -1,7 +1,10 @@
 export interface UserInfo {
+  profileId?: number
   nickname: string
   email?: string
-  image?: string
+  imageUrl?: string
+  role?: string
+  description?: string
 }
 
 export interface ProjectInfo {

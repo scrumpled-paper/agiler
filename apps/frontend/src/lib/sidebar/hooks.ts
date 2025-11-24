@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom'
 import type { SidebarContext, SidebarData } from './types'
 import { getSidebarContext } from './config'
 import { projectService } from '@/api/services/projectService'
-import type { ProjectInfo, UserInfo } from '@/types'
+import type { ProjectInfo } from '@/types'
 import { userService } from '@/api/services/userService'
 
 /**
@@ -70,25 +70,40 @@ export const useSidebarData = (
     context === 'project'
   )
 
+  // UserInfo는 context에 따라 다른 API 호출
+  // dashboard: userService.getUserInfo()
+  // project: projectService.getUserInfo(projectUrl)
+  const { data: dashboardUserInfo } = useQuery({
+    queryKey: ['userInfo', 'dashboard'],
+    queryFn: async () => {
+      console.log('[useSidebarData] Fetching dashboard user info')
+      const response = await userService.getUserInfo()
+      return response
+    },
+    enabled: context === 'dashboard',
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: projectUserInfo } = useQuery({
+    queryKey: ['userInfo', 'project', projectUrl],
+    queryFn: async () => {
+      if (!projectUrl) throw new Error('projectUrl is required')
+      console.log(
+        '[useSidebarData] Fetching project user info for:',
+        projectUrl
+      )
+      const response = await projectService.getUserInfo(projectUrl)
+      return response
+    },
+    enabled: context === 'project' && !!projectUrl,
+    staleTime: 5 * 60 * 1000,
+  })
+
   return {
     projects: projectsData,
     members: membersData?.contents,
+    userInfo: context === 'dashboard' ? dashboardUserInfo : projectUserInfo,
   }
-}
-
-// 유저 정보를 불러오는 훅
-export const useUserInfo = () => {
-  return useQuery<UserInfo>({
-    // 이 키는 앱 전역에서 사용자 정보를 참조하고 업데이트할 수 있게 합니다.
-    queryKey: ['userInfo'],
-    queryFn: async () => {
-      console.log('[useUserInfo] Fetching current user info')
-      const response = await userService.getUserInfo()
-      return response // API 응답 데이터 (User 객체)
-    },
-    // 앱이 처음 로드될 때 항상 유저 정보가 필요하므로 enabled는 별도 설정이 필요하지 않습니다.
-    staleTime: 5 * 60 * 1000, // 예: 5분 동안은 데이터를 신선하게 유지
-  })
 }
 
 /**

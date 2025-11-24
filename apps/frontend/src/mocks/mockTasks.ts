@@ -1,12 +1,12 @@
-import type { Issue, IssueColumn, UserInfo, Label } from '@/types'
+import type { Issue, IssueColumn, UserInfo, Label, ProjectInfo } from '@/types'
 
 // Mock Users
 // UserInfo 타입은 이미 정의된 mockUsers 배열과 호환됩니다.
 export const mockUsers: UserInfo[] = [
-  { nickname: 'Alice Johnson', image: 'https://placehold.co/6x6' },
-  { nickname: 'Bob Smith', image: 'https://placehold.co/6x6' },
-  { nickname: 'Charlie Day', image: 'https://placehold.co/6x6' },
-  { nickname: 'Dana Scully', image: 'https://placehold.co/6x6' },
+  { nickname: 'Alice Johnson', imageUrl: 'https://placehold.co/6x6' },
+  { nickname: 'Bob Smith', imageUrl: 'https://placehold.co/6x6' },
+  { nickname: 'Charlie Day', imageUrl: 'https://placehold.co/6x6' },
+  { nickname: 'Dana Scully', imageUrl: 'https://placehold.co/6x6' },
 ]
 
 // Mock Labels (새로 추가)
@@ -118,5 +118,32 @@ export const mockIssues: Issue[] = [
     owner: mockUsers[3], // Dana
     subscribers: [mockUsers[0], mockUsers[1], mockUsers[2], mockUsers[3]], // 4명 이상 (to test +N display)
     labels: [mockLabels[1], mockLabels[3]], // Backend, Urgent
+  },
+]
+
+export const mockProjectList: ProjectInfo[] = [
+  {
+    title: 'Agile Project',
+    url: 'agile-project',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'An agile project management tool',
+  },
+  {
+    title: 'Design System',
+    url: 'design-system1',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Company-wide design system',
+  },
+  {
+    title: 'Design System2',
+    url: 'design-system2',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Company-wide design system2',
+  },
+  {
+    title: 'Design System3',
+    url: 'design-system3',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Company-wide design system3',
   },
 ]

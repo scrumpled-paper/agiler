@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 import type { User } from '@/api/services/authService'
-import { mockIssues } from '@/mocks/mockTasks'
+import { mockIssues, mockProjectList } from '@/mocks/mockTasks'
 
 // MSW 핸들러: 상대 경로와 절대 URL 모두 매칭
 // - 개발: /api/v1/... (Vite 프록시)
@@ -59,20 +59,7 @@ export const handlers = [
     const size = Number(url.searchParams.get('size')) || 6
 
     const response: GetProjectListResponse = {
-      contents: [
-        {
-          title: 'Agile Project',
-          url: '/projects/agile-project',
-          imageUrl: 'https://placehold.co/600x400',
-          summary: 'An agile project management tool',
-        },
-        {
-          title: 'Design System',
-          url: '/projects/design-system',
-          imageUrl: 'https://placehold.co/600x400',
-          summary: 'Company-wide design system',
-        },
-      ],
+      contents: mockProjectList,
       totalPages: 1,
       totalElements: 2,
       currentPage: page,
@@ -85,20 +72,7 @@ export const handlers = [
   // 사이드바용 프로젝트 목록 조회
   ...createHandlers('/api/v1/projects', () => {
     const response: GetProjectListResponse = {
-      contents: [
-        {
-          title: 'Agile Project',
-          url: '/projects/agile-project',
-          imageUrl: 'https://placehold.co/600x400',
-          summary: 'An agile project management tool',
-        },
-        {
-          title: 'Design System',
-          url: '/projects/design-system',
-          imageUrl: 'https://placehold.co/600x400',
-          summary: 'Company-wide design system',
-        },
-      ],
+      contents: mockProjectList,
       totalPages: 1,
       totalElements: 2,
       currentPage: 0,
@@ -138,9 +112,10 @@ export const handlers = [
     return HttpResponse.json(response)
   }),
 
-  // 프로젝트 URL 검증
-  ...createHandlers('/api/v1/projects/check/:projectUrl', ({ params }) => {
-    const { projectUrl } = params
+  // 프로젝트 URL 검증 (쿼리 파라미터 방식)
+  ...createHandlers('/api/v1/projects/check', ({ request }) => {
+    const url = new URL(request.url)
+    const projectUrl = url.searchParams.get('url')
     // 'existing-project'는 이미 존재하는 것으로 처리
     const isAvailable = projectUrl !== 'existing-project'
     return HttpResponse.json(isAvailable)
@@ -158,6 +133,15 @@ export const handlers = [
     return HttpResponse.json(123)
   }),
 
+  // 프로젝트 상세내용 조회
+  ...createHandlers('/api/v1/projects/:projectUrl', () => {
+    console.log('[MSW] 프로젝트 상세 조회 호출됨:')
+    const response = {
+      contents: mockIssues,
+      size: mockIssues.length,
+    }
+    return HttpResponse.json(response)
+  }),
   // 칸반 정보 조회
   ...createHandlers('/api/v1/projects/:projectUrl/kanban', ({ params }) => {
     console.log('[MSW] 프로젝트 칸반 조회 호출됨:', params.projectUrl)
@@ -182,4 +166,26 @@ export const handlers = [
       return HttpResponse.json({ success: true })
     }
   ),
+
+  // 프로젝트별 사용자 정보 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/profiles/me',
+    ({ params }) => {
+      console.log('[MSW] 프로젝트 사용자 정보 조회:', params.projectUrl)
+      return HttpResponse.json({
+        profileId: 1,
+        nickname: 'Project User',
+        email: 'project@agiler.com',
+        imageUrl: 'https://via.placeholder.com/150',
+        role: 'Owner',
+      })
+    }
+  ),
+
+  // 사용자 정보 업데이트 (닉네임 변경 등)
+  ...createPatchHandlers('/api/v1/users', async ({ request }) => {
+    const body = (await request.json()) as { nickname: string }
+    console.log('[MSW] 사용자 정보 업데이트:', body)
+    return HttpResponse.json(body.nickname)
+  }),
 ]
