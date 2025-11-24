@@ -2,13 +2,14 @@ package scrumpledpaper.agiler.user.dto;
 
 import lombok.Builder;
 import lombok.Getter;
+import scrumpledpaper.agiler.auth.oauth2.ProviderType;
 import scrumpledpaper.agiler.user.entity.User;
 
 @Getter
 @Builder
 public class UserDto {
 	private Long id;
-	private String vendor;
+	private ProviderType vendor;
 	private String vendorId;
 	private String email;
 	private String nickname;
