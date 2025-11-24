@@ -1,12 +1,39 @@
 package scrumpledpaper.agiler.common;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import scrumpledpaper.agiler.fixture.*;
+import scrumpledpaper.agiler.fixture.ImageFixture;
+import scrumpledpaper.agiler.fixture.IssueFixture;
+import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
+import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
+import scrumpledpaper.agiler.fixture.LabelFixture;
+import scrumpledpaper.agiler.fixture.MeetingTemplateFixture;
+import scrumpledpaper.agiler.fixture.NotificationSubscriptionFixture;
+import scrumpledpaper.agiler.fixture.ProfileFixture;
+import scrumpledpaper.agiler.fixture.ProfileNotificationChannelFixture;
+import scrumpledpaper.agiler.fixture.ProjectFixture;
+import scrumpledpaper.agiler.fixture.RetroTemplateFixture;
+import scrumpledpaper.agiler.fixture.ScheduleNotificationFixture;
+import scrumpledpaper.agiler.fixture.ScrumTemplateFixture;
+import scrumpledpaper.agiler.fixture.TokenFixture;
+import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.kanban.entity.Issue;
+import scrumpledpaper.agiler.kanban.entity.IssueLabel;
+import scrumpledpaper.agiler.kanban.entity.IssueProfile;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
+import scrumpledpaper.agiler.kanban.entity.Label;
+import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
+import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
@@ -35,19 +62,19 @@ import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class TestDataFactory {
 	private final TokenFixture tokenFixture;
 	private final UserRepository userRepository;
+	private final IssueRepository issueRepository;
 	private final ImageRepository imageRepository;
 	private final LabelRepository labelRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
+	private final IssueLabelRepository issueLabelRepository;
+	private final IssueProfileRepository issueProfileRepository;
+	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
@@ -55,17 +82,20 @@ public class TestDataFactory {
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
-	private final IssueRepository issueRepository;
-	private final KanbanConfigRepository kanbanConfigRepository;
 	private final EntityManager entityManager;
+
+	public static String randomString(int length) {
+		StringBuilder sb = new StringBuilder();
+		while (sb.length() < length) {
+			sb.append(UUID.randomUUID().toString().replace("-", ""));
+		}
+		return sb.substring(0, length);
+	}
+
 
 	public Image createDefaultImage() {
 		Image image = ImageFixture.createImage();
 		return imageRepository.save(image);
-	}
-
-	public String createNotAllowedAccessToken() {
-		return tokenFixture.createNotAllowedAccessToken();
 	}
 
 	public String createAccessToken(User user) {
@@ -259,6 +289,41 @@ public class TestDataFactory {
 		return meetingTemplateRepository.findById(id).orElseThrow();
 	}
 
+	public Issue findIssueByProjectId(Long projectId) {
+		return issueRepository.findByProjectId(projectId).orElseThrow();
+	}
+
+	public List<IssueLabel> findIssueLabelsByIssueId(Long issueId) {
+		return issueLabelRepository.findByIssueId(issueId);
+	}
+
+	public Issue createIssue(Project project, KanbanConfig kanbanConfig, List<Profile> assignees, List<Label> labels, Boolean isDone, LocalDateTime startedAt, LocalDateTime dueAt) {
+		Issue issue = IssueFixture.createIssue(project, kanbanConfig, isDone, startedAt, dueAt);
+		issue = issueRepository.saveAndFlush(issue);
+		List<IssueProfile> issueProfiles = IssueFixture.createIssueProfiles(issue, assignees);
+		issueProfileRepository.saveAll(issueProfiles);
+		List<IssueLabel> issueLabels = IssueFixture.createIssueLabels(issue, labels);
+		issueLabelRepository.saveAll(issueLabels);
+		return issue;
+	}
+
+	public KanbanConfig createKanbanConfig(Project project, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
+		KanbanConfig kanbanConfig = KanbanConfigFixture.create(project, randomString(20), priority, defaultStatus, backlog, isDone);
+		return kanbanConfigRepository.save(kanbanConfig);
+	}
+
+	public Optional<Issue> findIssueById(Long id) {
+		return issueRepository.findById(id);
+	}
+
+	public KanbanConfig findKanbanConfigById(Long id) {
+		return kanbanConfigRepository.findById(id).orElseThrow();
+	}
+
+	public List<IssueProfile> findIssueProfilesByIssueId(Long id) {
+		return issueProfileRepository.findByIssueId(id);
+	}
+
 	public List<ProfileNotificationChannel> getAllProfileNotificationChannels(long profileId) {
 		return profileNotificationChannelRepository.findByProfileId(profileId);
 	}
@@ -266,11 +331,6 @@ public class TestDataFactory {
 	public ProfileNotificationChannel createProfileNotificationChannel(User user, Profile profile, String channelType, String webhookUrl) {
 		ProfileNotificationChannel channel = ProfileNotificationChannelFixture.create(user.getId(), profile.getId(), ChannelType.valueOf(channelType), webhookUrl);
 		return profileNotificationChannelRepository.save(channel);
-	}
-
-	public Issue createIssue(KanbanConfig kanbanConfig, Profile profile, String title, Boolean isDone, String contents, LocalDateTime startedAt, LocalDateTime dueAt) {
-		Issue issue = IssueFixture.createIssue(kanbanConfig, profile, title, isDone, contents, startedAt, dueAt);
-		return issueRepository.save(issue);
 	}
 
 	public KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
@@ -295,9 +355,4 @@ public class TestDataFactory {
 		ScheduledNotification scheduledNotification = ScheduleNotificationFixture.create(user.getId(), profile.getId(), issue.getId(), message, notificationTime);
 		return scheduledNotificationRepository.save(scheduledNotification);
 	}
-
-	public Issue findIssueById(Long id) {
-		return issueRepository.findById(id).orElseThrow();
-	}
-
 }

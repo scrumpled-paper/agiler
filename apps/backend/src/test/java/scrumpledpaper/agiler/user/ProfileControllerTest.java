@@ -57,7 +57,7 @@ public class ProfileControllerTest {
 		void getProjectProfilesSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			AuthContext member1 = testDataFactory.createAuth(testDataFactory.createDefaultImage());
 			AuthContext member2 = testDataFactory.createAuth(testDataFactory.createDefaultImage());
@@ -108,7 +108,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 
 			// when
@@ -129,7 +129,7 @@ public class ProfileControllerTest {
 		void getProjectProfilesInvalidPage() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 
 			// when
@@ -159,7 +159,7 @@ public class ProfileControllerTest {
 		public void getMyProjectProfileOwnerSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProject(url);
 			Profile profile = testDataFactory.createProfile(auth.getUser(), project, Role.OWNER);
 
@@ -187,7 +187,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile profile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 
@@ -234,7 +234,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 
 			// when
@@ -265,7 +265,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 
@@ -293,7 +293,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(ownerAuth.getUser().getId(), project.getId());
 			testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
@@ -319,7 +319,7 @@ public class ProfileControllerTest {
 		public void getMyProfileById() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile myProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 
@@ -342,7 +342,7 @@ public class ProfileControllerTest {
 		public void getProjectProfileByIdNotFoundProfile() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Long nonExistentProfileId = 99999L;
 
@@ -384,7 +384,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(ownerAuth.getUser().getId(), project.getId());
 
@@ -438,7 +438,7 @@ public class ProfileControllerTest {
 		public void updateProjectProfileSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
 				"NewNickname",
@@ -467,7 +467,7 @@ public class ProfileControllerTest {
 		public void updateProjectProfileWithSameValuesSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
@@ -524,7 +524,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProfileUpdateReqDto updateReqDto = new ProfileUpdateReqDto(
 				"NewNickname",
@@ -561,7 +561,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), role);
@@ -588,7 +588,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), role);
@@ -615,7 +615,7 @@ public class ProfileControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext anotherOwnerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createProfile(ownerAuth.getUser(), project, Role.OWNER);
 			Profile anotherOwnerProfile = testDataFactory.createProfile(anotherOwnerAuth.getUser(), project, Role.OWNER);
@@ -665,7 +665,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), Role.OWNER.toString());
@@ -691,7 +691,7 @@ public class ProfileControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(), Role.OWNER.toString());
@@ -715,7 +715,7 @@ public class ProfileControllerTest {
 		public void updateProfileRoleLastOwner() throws Exception {
 			// given
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(ownerAuth.getUser().getId(),
 				project.getId());
@@ -740,7 +740,7 @@ public class ProfileControllerTest {
 		public void updateProfileRoleNotFoundProfile() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(9999L, Role.MEMBER.toString());
 			String updateJson = objectMapper.writeValueAsString(roleUpdateReqDto);
@@ -764,7 +764,7 @@ public class ProfileControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext memberAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(memberAuth.getUser(), project, Role.MEMBER);
 			ProfileRoleUpdateReqDto roleUpdateReqDto = new ProfileRoleUpdateReqDto(memberProfile.getId(),

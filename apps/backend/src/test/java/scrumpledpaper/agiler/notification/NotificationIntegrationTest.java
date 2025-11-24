@@ -1,7 +1,16 @@
 package scrumpledpaper.agiler.notification;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
+import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,11 +24,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.Cookie;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.kanban.dto.IssueStatusUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.notification.client.DiscordAuthClient;
@@ -30,23 +43,16 @@ import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
 import scrumpledpaper.agiler.notification.domain.ScheduledNotification;
-import scrumpledpaper.agiler.notification.dto.*;
+import scrumpledpaper.agiler.notification.dto.DiscordOAuthResDto;
+import scrumpledpaper.agiler.notification.dto.NotificationChannelsResDto;
+import scrumpledpaper.agiler.notification.dto.NotificationSubscriptionReqDto;
+import scrumpledpaper.agiler.notification.dto.ScheduleNotificationReqDto;
+import scrumpledpaper.agiler.notification.dto.SlackOAuthResDto;
+import scrumpledpaper.agiler.notification.dto.SubscriptionsListResDto;
 import scrumpledpaper.agiler.notification.service.OAuthStateService;
 import scrumpledpaper.agiler.notification.service.ScheduledNotificationService;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
-
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @Transactional
@@ -284,7 +290,15 @@ class NotificationIntegrationTest {
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			todoKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 
 		NotificationSubscriptionReqDto request = new NotificationSubscriptionReqDto(issue.getId(), todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
@@ -313,9 +327,33 @@ class NotificationIntegrationTest {
 		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
 		KanbanConfig inProgressKanbanConfig = testDataFactory.createKanbanConfig(project, "IN_PROGRESS", 2, false, false, false);
-		Issue issue1 = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		Issue issue2 = testDataFactory.createIssue(doneKanbanConfig, profile, "Another Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
-		Issue issue3 = testDataFactory.createIssue(todoKanbanConfig, profile, "Unsubscribed Issue", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue1 = testDataFactory.createIssue(
+			project,
+			todoKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
+		Issue issue2 = testDataFactory.createIssue(
+			project,
+			doneKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
+		Issue issue3 = testDataFactory.createIssue(
+			project,
+			todoKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue1, todoKanbanConfig.getId(), doneKanbanConfig.getId());
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue2, inProgressKanbanConfig.getId(), doneKanbanConfig.getId());
@@ -340,7 +378,15 @@ class NotificationIntegrationTest {
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			todoKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 
 		NotificationSubscription subscription = testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
 
@@ -362,7 +408,15 @@ class NotificationIntegrationTest {
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			kanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 		ScheduleNotificationReqDto request = new ScheduleNotificationReqDto(issue.getId(), 60L, "Test schedule delay");
 
 		// when
@@ -388,9 +442,16 @@ class NotificationIntegrationTest {
 		// given
 		String anyProjectUrl = "test-project";
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
-		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			kanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 		ScheduleNotificationReqDto request = new ScheduleNotificationReqDto(issue.getId(), delayMin, "Test schedule delay");
 
 		// when
@@ -412,23 +473,31 @@ class NotificationIntegrationTest {
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			todoKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 		String testWebhookUrl = "https://hooks.slack.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl);
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
-		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
+		IssueKanbanConfigReqDto request = new IssueKanbanConfigReqDto(doneKanbanConfig.getId());
 
 		// when
-		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/status", anyProjectUrl, issue.getId())
+		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", anyProjectUrl, issue.getId())
 				.cookie(getAuthCookie())
 				.content(objectMapper.writeValueAsString(request))
 				.contentType("application/json"));
 
 		// then
 		result.andExpect(status().isOk());
-		Issue updatedIssue = testDataFactory.findIssueById(issue.getId());
+		Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
 		assertThat(updatedIssue.getId()).isEqualTo(issue.getId());
-		assertThat(updatedIssue.getKanbanConfig().getStatusName()).isEqualTo("DONE");
+		assertThat(updatedIssue.getKanbanConfig().getStatusName()).isEqualTo(doneKanbanConfig.getStatusName());
 		verify(slackNotificationClient, times(1))
 				.sendNotification(ArgumentMatchers.eq(URI.create(testWebhookUrl)), ArgumentMatchers.contains("Issue #"));
 	}
@@ -442,21 +511,29 @@ class NotificationIntegrationTest {
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig todoKanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
 		KanbanConfig doneKanbanConfig = testDataFactory.createKanbanConfig(project, "DONE", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(todoKanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			todoKanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 		String testWebhookUrl = "https://hooks.discord.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", testWebhookUrl);
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
-		IssueStatusUpdateReqDto request = new IssueStatusUpdateReqDto(todoKanbanConfig.getId(), doneKanbanConfig.getId());
+		IssueKanbanConfigReqDto request = new IssueKanbanConfigReqDto(doneKanbanConfig.getId());
 
 		// when
-		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/status", anyProjectUrl, issue.getId())
+		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", anyProjectUrl, issue.getId())
 				.cookie(getAuthCookie())
 				.content(objectMapper.writeValueAsString(request))
 				.contentType("application/json"));
 
 		// then
 		result.andExpect(status().isOk());
-		Issue updatedIssue = testDataFactory.findIssueById(issue.getId());
+		Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
 		assertThat(updatedIssue.getId()).isEqualTo(issue.getId());
 		assertThat(updatedIssue.getKanbanConfig().getStatusName()).isEqualTo("DONE");
 		verify(discordNotificationClient, times(1))
@@ -471,7 +548,15 @@ class NotificationIntegrationTest {
 		Project project = testDataFactory.createProjectAndOwnerProfile(anyProjectUrl, auth.getUser());
 		Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 		KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(project, "TODO", 2, false, false, false);
-		Issue issue = testDataFactory.createIssue(kanbanConfig, profile, "Test Issue for Subscription", false, "test", LocalDateTime.now(), LocalDateTime.now());
+		Issue issue = testDataFactory.createIssue(
+			project,
+			kanbanConfig,
+			Collections.emptyList(),
+			Collections.emptyList(),
+			false,
+			null,
+			null
+		);
 		String testWebhookUrl = "https://hooks.discord.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl);
 		LocalDateTime pastTime = LocalDateTime.now().minusMinutes(10);

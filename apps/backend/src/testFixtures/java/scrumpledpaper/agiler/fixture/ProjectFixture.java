@@ -8,7 +8,7 @@ public class ProjectFixture {
 	public static ProjectCreateReqDto createProjectCreateReqDto() {
 		return new ProjectCreateReqDto(
 			"프로젝트 이름",
-			"project-url_tag",
+			"project-url",
 			"프로젝트 요약 설명"
 		);
 	}

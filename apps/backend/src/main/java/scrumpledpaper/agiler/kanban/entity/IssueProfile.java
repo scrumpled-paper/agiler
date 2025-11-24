@@ -13,14 +13,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Profile;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "issue_label")
-public class IssueLabel extends BaseEntity {
+@Table(name = "issue_profile")
+public class IssueProfile extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -31,6 +32,6 @@ public class IssueLabel extends BaseEntity {
 	private Issue issue;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "label_id")
-	private Label label;
+	@JoinColumn(name = "profile_id")
+	private Profile profile;
 }

@@ -13,6 +13,8 @@ import jakarta.persistence.Table;
 import lombok.*;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
+import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
 @Entity
@@ -27,12 +29,12 @@ public class Issue extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(optional = false)
+	@JoinColumn(name = "project_id")
+	private Project project;
+
+	@ManyToOne(optional = false)
 	@JoinColumn(name = "kanban_config_id")
 	private KanbanConfig kanbanConfig;
-
-	@ManyToOne
-	@JoinColumn(name = "profile_id")
-	private Profile profile;
 
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -49,8 +51,12 @@ public class Issue extends BaseEntity {
 	@Column(name = "due_at")
 	private LocalDateTime dueAt;
 
-	public void updateStatus(KanbanConfig kanbanConfig) {
-		this.kanbanConfig = kanbanConfig;
+	public void update(String title, String contents) {
+		this.title = title;
+		this.contents = contents;
 	}
 
+	public void updateKanbanConfig(KanbanConfig kanbanConfig) {
+		this.kanbanConfig = kanbanConfig;
+	}
 }

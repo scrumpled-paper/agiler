@@ -53,7 +53,7 @@ public class ScrumTemplateControllerTest {
 		public void scrumTemplateCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ScrumTemplateCreateReqDto createReqDto = new ScrumTemplateCreateReqDto(
 				"스크럼 템플릿 제목",
@@ -87,7 +87,7 @@ public class ScrumTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			ScrumTemplateCreateReqDto createReqDto = new ScrumTemplateCreateReqDto(
 				"스크럼 템플릿 제목",
@@ -151,7 +151,7 @@ public class ScrumTemplateControllerTest {
 		public void scrumTemplateUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createScrumTemplate(
 				project,
@@ -188,7 +188,7 @@ public class ScrumTemplateControllerTest {
 		public void scrumTemplateUpdateTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				9999L,
@@ -217,7 +217,7 @@ public class ScrumTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createScrumTemplate(
 				project,
@@ -287,7 +287,7 @@ public class ScrumTemplateControllerTest {
 		public void getScrumTemplateListSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ScrumTemplate template1 = testDataFactory.createScrumTemplate(
 				project,
@@ -321,7 +321,7 @@ public class ScrumTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 
 			// when
@@ -350,7 +350,7 @@ public class ScrumTemplateControllerTest {
 		public void getScrumTemplateDetailSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
@@ -379,7 +379,7 @@ public class ScrumTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
 			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
@@ -405,7 +405,7 @@ public class ScrumTemplateControllerTest {
 		public void getScrumTemplateDetailNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createScrumTemplate(
 				project,
@@ -440,7 +440,7 @@ public class ScrumTemplateControllerTest {
 		public void deleteScrumTemplateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
@@ -471,7 +471,7 @@ public class ScrumTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ScrumTemplate template = testDataFactory.createScrumTemplate(
 				project,
@@ -500,7 +500,7 @@ public class ScrumTemplateControllerTest {
 		public void deleteScrumTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createScrumTemplate(
 				project,
