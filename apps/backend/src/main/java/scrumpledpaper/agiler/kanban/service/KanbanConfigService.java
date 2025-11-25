@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.mapper.KanbanConfigMapper;
@@ -76,5 +77,13 @@ public class KanbanConfigService {
 		if (doneCount != 1) {
 			throw new CustomException(ErrorCode.INVALID_KANBAN_CONFIG_DONE_STATUS);
 		}
+	}
+
+	public List<KanbanConfigResDto> getKanbanConfigList(long userId, String projectUrl) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		List<KanbanConfig> kanbanConfigs = kanbanConfigRepository.findByProjectIdOrderByPriorityAsc(project.getId());
+		return kanbanConfigMapper.toDtoList(kanbanConfigs);
 	}
 }
