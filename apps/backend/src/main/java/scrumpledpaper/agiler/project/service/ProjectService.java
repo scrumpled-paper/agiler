@@ -1,13 +1,10 @@
 package scrumpledpaper.agiler.project.service;
 
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
@@ -34,6 +31,8 @@ import scrumpledpaper.agiler.template.service.RetroTemplateService;
 import scrumpledpaper.agiler.template.service.ScrumTemplateService;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.service.UserService;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -140,4 +139,23 @@ public class ProjectService {
 
 		return projectMapper.toDto(project);
 	}
+
+	@Transactional
+	public void updateProjectImage(long userId, String projectUrl, String objectKey) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		projectValidator.validateOwner(context.profile());
+		Project project = context.project();
+
+		imageService.updateImage(project::getImageId, project::updateImageId, objectKey);
+	}
+
+	@Transactional
+	public void deleteProjectImage(long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		projectValidator.validateOwner(context.profile());
+		Project project = context.project();
+
+		imageService.deleteImage(project::getImageId, project::updateImageId);
+	}
+
 }

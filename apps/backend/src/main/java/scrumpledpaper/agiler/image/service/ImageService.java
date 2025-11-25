@@ -8,11 +8,17 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 
+import java.util.function.LongConsumer;
+import java.util.function.LongSupplier;
+
 @Service
 @RequiredArgsConstructor
 public class ImageService {
 
+	private final S3Manager s3Manager;
 	private final ImageRepository imageRepository;
+
+	private static final long DEFAULT_IMAGE_ID = 1L;
 
 	public Image findById(Long imageId) {
 		return imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
@@ -22,4 +28,44 @@ public class ImageService {
 		Image image = findById(imageId);
 		return image.getUrl();
 	}
+
+	@Transactional
+	public void updateImage(LongSupplier getImageId, LongConsumer updateImageId, String objectKey) {
+		long currentImageId = getImageId.getAsLong();
+		if (currentImageId != DEFAULT_IMAGE_ID) {
+			deleteById(currentImageId);
+		}
+
+		Image image = createImageEntity(objectKey);
+		Image savedImage = imageRepository.save(image);
+		updateImageId.accept(savedImage.getId());
+	}
+
+	@Transactional
+	public void deleteImage(LongSupplier getImageId, LongConsumer updateImageId) {
+		long currentImageId = getImageId.getAsLong();
+		if (currentImageId == DEFAULT_IMAGE_ID) {
+			return;
+		}
+
+		deleteById(currentImageId);
+		updateImageId.accept(DEFAULT_IMAGE_ID);
+	}
+
+
+	private void deleteById(long imageId) {
+		Image image = findById(imageId);
+		s3Manager.deleteS3Object(image.getObjectKey());
+		imageRepository.delete(image);
+	}
+
+	private Image createImageEntity(String objectKey) {
+		String imageUrl = s3Manager.getImageUrl(objectKey);
+
+		return Image.builder()
+				.url(imageUrl)
+				.objectKey(objectKey)
+				.build();
+	}
+
 }

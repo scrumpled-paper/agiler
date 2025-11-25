@@ -62,4 +62,9 @@ public class Profile extends BaseEntity {
 	public void updateRole(Role role) {
 		this.role = role;
 	}
+
+	public void updateImageId(long imageId) {
+		this.imageId = imageId;
+	}
+
 }
