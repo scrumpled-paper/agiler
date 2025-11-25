@@ -359,4 +359,25 @@ public class TestDataFactory {
 	public List<KanbanConfig> getKanbanConfigsByProject(Project project) {
 		return kanbanConfigRepository.findByProjectId(project.getId());
 	}
+
+	public List<KanbanConfig> createKanbanConfigs(Project project, int count) {
+		List<KanbanConfig> kanbanConfigs = new ArrayList<>();
+
+		for (int i = 1; i <= count; i++) {
+			boolean backlog = (i == 1);
+			boolean defaultStatus = (i == 2);
+			boolean isDone = (i == 3);
+
+			KanbanConfig kanbanConfig = KanbanConfigFixture.create(
+				project,
+				randomString(10),
+				i,
+				defaultStatus,
+				backlog,
+				isDone
+			);
+			kanbanConfigs.add(kanbanConfig);
+		}
+		return kanbanConfigRepository.saveAll(kanbanConfigs);
+	}
 }

@@ -250,4 +250,81 @@ public class KanbanConfigControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Kanban Config List GET API")
+	class GetKanbanConfigList {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - Kanban Config 리스트 조회 성공")
+		public void getKanbanConfigListSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			int count = 5;
+		    List<KanbanConfig> kanbanConfigs = testDataFactory.createKanbanConfigs(project, count);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/kanban-config", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			for (KanbanConfig kanbanConfig : kanbanConfigs) {
+				assertThat(response).contains(kanbanConfig.getStatusName());
+				assertThat(response).contains(String.valueOf(kanbanConfig.getPriority()));
+				assertThat(response).contains(String.valueOf(kanbanConfig.isDefaultStatus()));
+				assertThat(response).contains(String.valueOf(kanbanConfig.isBacklog()));
+				assertThat(response).contains(String.valueOf(kanbanConfig.getIsDone()));
+			}
+		}
+
+		@Test
+		@DisplayName("403 - 권한 없음으로 인한 Kanban Config 리스트 조회 실패 ")
+		public void getKanbanConfigListFail_Forbidden() throws Exception {
+			// given
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/kanban-config", url)
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트로 인한 Kanban Config 리스트 조회 실패 ")
+		public void getKanbanConfigListFail_ProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/kanban-config", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
 }
