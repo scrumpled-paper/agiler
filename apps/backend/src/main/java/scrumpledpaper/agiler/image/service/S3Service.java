@@ -1,6 +1,5 @@
 package scrumpledpaper.agiler.image.service;
 
-import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +12,9 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.image.enums.ImageContentType;
 import scrumpledpaper.agiler.image.event.ImageDeletedEvent;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
-
-import java.util.Date;
-import java.util.UUID;
+import scrumpledpaper.agiler.image.util.S3PreSignedUrlBuilder;
 
 @Service
 @RequiredArgsConstructor
@@ -32,32 +28,11 @@ public class S3Service {
 
 	@Transactional(readOnly = true)
 	public PreSignedUrlResponseDto generatePreSignedUrl(long userId, String fileName, String contentType) {
-		String objectKey = generateKeyPath(userId, fileName);
-		Date expiration = getExpirationTime();
-
-		ImageContentType imageContentType = ImageContentType.from(contentType);
-
-		GeneratePresignedUrlRequest presignedUrlRequest = new GeneratePresignedUrlRequest(bucket, objectKey)
-				.withMethod(HttpMethod.PUT)
-				.withExpiration(expiration)
-				.withContentType(imageContentType.getMimeType());
-
+		String objectKey = S3PreSignedUrlBuilder.generateObjectKey(userId, fileName);
+		GeneratePresignedUrlRequest presignedUrlRequest = S3PreSignedUrlBuilder.build(objectKey, contentType, bucket);
 		String preSignedUrl = amazonS3.generatePresignedUrl(presignedUrlRequest).toString();
 
 		return new PreSignedUrlResponseDto(preSignedUrl, objectKey);
-	}
-
-	private String generateKeyPath(long userId, String fileName) {
-		String uuid = UUID.randomUUID().toString();
-
-		return String.format("images/%d/%s-%s", userId, uuid, fileName);
-	}
-
-	private Date getExpirationTime() {
-		long expTimeMillis = System.currentTimeMillis();
-		expTimeMillis += 1000 * 60 * 5; // 5 minutes
-
-		return new Date(expTimeMillis);
 	}
 
 	@Transactional
