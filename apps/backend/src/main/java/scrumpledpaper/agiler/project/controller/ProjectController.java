@@ -77,4 +77,26 @@ public class ProjectController {
 		ProjectIdResDto projectIdResDto = projectService.updateProjectDetailByUrl(customUserDetails.getUserId(), projectUrl, projectUpdateReqDto);
 		return ResponseEntity.ok().body(projectIdResDto);
 	}
+
+	@PatchMapping("/{projectUrl}/image")
+	public ResponseEntity<Void> updateProjectImage(
+			@Parameter(hidden = true)
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
+			@PathVariable String projectUrl,
+			@RequestBody @Valid ImageUpdateReqDto imageUpdateReqDto
+	) {
+		projectService.updateProjectImage(customUserDetails.getUserId(), projectUrl, imageUpdateReqDto.objectKey());
+		return ResponseEntity.noContent().build();
+	}
+
+	@DeleteMapping("/{projectUrl}/image")
+	public ResponseEntity<Void> deleteProjectImage(
+			@Parameter(hidden = true)
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
+			@PathVariable String projectUrl
+	) {
+		projectService.deleteProjectImage(customUserDetails.getUserId(), projectUrl);
+		return ResponseEntity.noContent().build();
+	}
+
 }
