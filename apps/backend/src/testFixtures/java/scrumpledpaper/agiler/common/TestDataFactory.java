@@ -355,4 +355,8 @@ public class TestDataFactory {
 		ScheduledNotification scheduledNotification = ScheduleNotificationFixture.create(user.getId(), profile.getId(), issue.getId(), message, notificationTime);
 		return scheduledNotificationRepository.save(scheduledNotification);
 	}
+
+	public List<KanbanConfig> getKanbanConfigsByProject(Project project) {
+		return kanbanConfigRepository.findByProjectId(project.getId());
+	}
 }
