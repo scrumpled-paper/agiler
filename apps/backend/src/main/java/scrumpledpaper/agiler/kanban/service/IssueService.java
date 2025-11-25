@@ -11,7 +11,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
-import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
@@ -125,12 +125,12 @@ public class IssueService {
 	}
 
 	@Transactional
-	public long updateIssueKanbanConfig(long userId, String projectUrl, Long issueId, IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
+	public long updateIssueKanbanConfig(long userId, String projectUrl, Long issueId, IssueKanbanConfigUpdateReqDto issueKanbanConfigUpdateReqDto) {
 		ProjectAccessContext accessContext = projectValidator.validateAccess(userId, projectUrl);
 
 		Issue issue = findIssueById(issueId);
 		KanbanConfig fromKanbanConfig = issue.getKanbanConfig();
-		KanbanConfig toKanbanConfig = kanbanConfigService.getKanbanConfigById(issueKanbanConfigReqDto.kanbanConfigId());
+		KanbanConfig toKanbanConfig = kanbanConfigService.getKanbanConfigById(issueKanbanConfigUpdateReqDto.kanbanConfigId());
 		issue.updateKanbanConfig(toKanbanConfig);
 
 		eventPublisher.publishEvent(new IssueStatusChangedEvent(
