@@ -43,13 +43,4 @@ public class KanbanConfig extends BaseEntity {
 	@Column(name = "is_done", nullable = false)
 	private Boolean isDone;
 
-	public KanbanConfig(KanbanConfig oldKanbanConfig) {
-		this.project = oldKanbanConfig.getProject();
-		this.statusName = oldKanbanConfig.getStatusName();
-		this.priority = oldKanbanConfig.getPriority();
-		this.defaultStatus = oldKanbanConfig.isDefaultStatus();
-		this.backlog = oldKanbanConfig.isBacklog();
-		this.isDone = oldKanbanConfig.getIsDone();
-	}
-
 }
