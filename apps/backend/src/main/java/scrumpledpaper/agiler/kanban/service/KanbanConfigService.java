@@ -21,6 +21,11 @@ import scrumpledpaper.agiler.project.service.ProjectValidator;
 @Service
 @RequiredArgsConstructor
 public class KanbanConfigService {
+
+	private static final int REQUIRED_DEFAULT_STATUS_COUNT = 1;
+	private static final int REQUIRED_BACKLOG_COUNT = 1;
+	private static final int REQUIRED_DONE_COUNT = 1;
+
 	private final ProjectValidator projectValidator;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final KanbanConfigMapper kanbanConfigMapper;
@@ -55,12 +60,15 @@ public class KanbanConfigService {
 		Set<Integer> prioritySet = new HashSet<>();
 
 		for (KanbanConfigUpdateReqDto.KanbanConfigReqDto dto : kanbanConfigUpdateReqDto.kanbanConfigs()) {
-			if (Boolean.TRUE.equals(dto.defaultStatus()))
+			if (Boolean.TRUE.equals(dto.defaultStatus())) {
 				defaultStatusCount++;
-			if (Boolean.TRUE.equals(dto.backlog()))
+			}
+			if (Boolean.TRUE.equals(dto.backlog())) {
 				backlogCount++;
-			if (Boolean.TRUE.equals(dto.isDone()))
+			}
+			if (Boolean.TRUE.equals(dto.isDone())) {
 				doneCount++;
+			}
 
 			Integer priority = dto.priority();
 			if (!prioritySet.add(priority)) {
@@ -68,13 +76,13 @@ public class KanbanConfigService {
 			}
 		}
 
-		if (defaultStatusCount != 1) {
+		if (defaultStatusCount != REQUIRED_DEFAULT_STATUS_COUNT) {
 			throw new CustomException(ErrorCode.INVALID_KANBAN_CONFIG_DEFAULT_STATUS);
 		}
-		if (backlogCount != 1) {
+		if (backlogCount != REQUIRED_BACKLOG_COUNT) {
 			throw new CustomException(ErrorCode.INVALID_KANBAN_CONFIG_BACKLOG_STATUS);
 		}
-		if (doneCount != 1) {
+		if (doneCount != REQUIRED_DONE_COUNT) {
 			throw new CustomException(ErrorCode.INVALID_KANBAN_CONFIG_DONE_STATUS);
 		}
 	}
