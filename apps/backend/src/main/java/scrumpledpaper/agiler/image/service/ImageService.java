@@ -29,6 +29,13 @@ public class ImageService {
 		return image.getUrl();
 	}
 
+	/**
+	* @param getImageId function to get current image ID <br>
+	* 						e.g. () -> entity.getImageId()
+	* @param updateImageId function to update image ID <br>
+	* 						e.g. (newImageId) -> entity.updateImageId(newImageId)
+	* @param objectKey S3 object key
+	* */
 	@Transactional
 	public void updateImage(LongSupplier getImageId, LongConsumer updateImageId, String objectKey) {
 		long currentImageId = getImageId.getAsLong();
@@ -41,6 +48,12 @@ public class ImageService {
 		updateImageId.accept(savedImage.getId());
 	}
 
+	/**
+	* @param getImageId function to get current image ID <br>
+	* 						e.g. () -> entity.getImageId()
+	* @param updateImageId function to update image ID <br>
+	* 						e.g. (newImageId) -> entity.updateImageId(newImageId)
+	* */
 	@Transactional
 	public void deleteImage(LongSupplier getImageId, LongConsumer updateImageId) {
 		long currentImageId = getImageId.getAsLong();
