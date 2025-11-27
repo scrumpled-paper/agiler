@@ -100,7 +100,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           { label: 'User Profile', route: ':projectUrl/settings/users' },
           {
             label: 'Project Management',
-            route: ':projectUrl/settings/project',
+            route: ':projectUrl/settings/project-management',
           },
           {
             label: 'Database Management',

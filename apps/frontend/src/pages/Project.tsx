@@ -90,7 +90,7 @@ export default function Project() {
       <ProjectSummaryCard></ProjectSummaryCard>
 
       {isError && (
-        <Alert className="flex flex-row gap-2 items-center">
+        <Alert className="flex flex-row gap-2 items-center my-5">
           <Info className="h-4 w-4" />
           <AlertDescription>데이터가 없습니다</AlertDescription>
         </Alert>

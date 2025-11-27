@@ -10,6 +10,7 @@ import ProjectSetting from './pages/ProjectSetting'
 import ProjectUserSetting from './pages/ProjectUserSetting'
 import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
+import ProjectManagement from './pages/ProjectManagement'
 
 export const routers = createBrowserRouter([
   {
@@ -73,6 +74,14 @@ export const routers = createBrowserRouter([
                 element: (
                   <ProtectedRoute>
                     <ProjectUserSetting />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'project-management',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectManagement />
                   </ProtectedRoute>
                 ),
               },

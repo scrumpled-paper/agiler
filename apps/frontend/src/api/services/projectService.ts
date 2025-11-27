@@ -46,6 +46,19 @@ export const projectService = {
     const response = await apiClient.get<GetProjectSummaryResponse>(infoUrl)
     return response.data
   },
+  //프로젝트 상세내용 수정
+  async updateProjectSummery(
+    projectUrl: string,
+    { title, url, summary }: ProjectInfo
+  ): Promise<number> {
+    const infoUrl = `${this.apiUrl}/${projectUrl}`
+    const response = await apiClient.put<number>(infoUrl, {
+      title,
+      url,
+      summary,
+    })
+    return response.data
+  },
 
   // 프로젝트 생성 URL 검증
 
