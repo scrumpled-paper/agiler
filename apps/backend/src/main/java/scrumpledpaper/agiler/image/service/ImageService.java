@@ -9,7 +9,7 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 
 import java.util.function.LongConsumer;
-import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +37,9 @@ public class ImageService {
 	* @param objectKey S3 object key
 	* */
 	@Transactional
-	public void updateImage(LongSupplier getImageId, LongConsumer updateImageId, String objectKey) {
-		long currentImageId = getImageId.getAsLong();
-		if (currentImageId != DEFAULT_IMAGE_ID) {
+	public void updateImage(Supplier<Long> getImageId, LongConsumer updateImageId, String objectKey) {
+		Long currentImageId = getImageId.get();
+		if (currentImageId != null && currentImageId != DEFAULT_IMAGE_ID) {
 			deleteById(currentImageId);
 		}
 
@@ -55,9 +55,9 @@ public class ImageService {
 	* 						e.g. (newImageId) -> entity.updateImageId(newImageId)
 	* */
 	@Transactional
-	public void deleteImage(LongSupplier getImageId, LongConsumer updateImageId) {
-		long currentImageId = getImageId.getAsLong();
-		if (currentImageId == DEFAULT_IMAGE_ID) {
+	public void deleteImage(Supplier<Long> getImageId, LongConsumer updateImageId) {
+		Long currentImageId = getImageId.get();
+		if (currentImageId == null || currentImageId == DEFAULT_IMAGE_ID) {
 			return;
 		}
 
