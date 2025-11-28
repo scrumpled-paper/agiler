@@ -1027,7 +1027,7 @@ public class ProjectControllerTest {
 		void updateProjectSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
 					"새로운 제목",
@@ -1060,11 +1060,11 @@ public class ProjectControllerTest {
 		void updateProjectSameUrlSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
 					"새로운 제목",
-					"test_url",
+					"test-url",
 					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
@@ -1095,7 +1095,7 @@ public class ProjectControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
 					"새로운 제목",
-					"test_url",
+					"test-url",
 					"새로운 요약"
 			);
 
@@ -1118,11 +1118,11 @@ public class ProjectControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
 					"새로운 제목",
-					"another_url",
+					"another-url",
 					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
@@ -1146,7 +1146,7 @@ public class ProjectControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext anotherAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile memberProfile = testDataFactory.createProfile(anotherAuth.getUser(), project, Role.MEMBER);
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
@@ -1174,8 +1174,8 @@ public class ProjectControllerTest {
 		void updateProjectDuplicateUrl() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url1 = "test_url-1";
-			String url2 = "test_url-2";
+			String url1 = "test-url-1";
+			String url2 = "test-url-2";
 			Project project1 = testDataFactory.createProjectAndOwnerProfile(url1, auth.getUser());
 			Project project2 = testDataFactory.createProjectAndOwnerProfile(url2, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
@@ -1212,7 +1212,7 @@ public class ProjectControllerTest {
 		void updateProjectImageSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project beforeProject = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 
 			String newImageObjectKey = "new-image-object-key";
@@ -1238,7 +1238,7 @@ public class ProjectControllerTest {
 		void updateProjectImageFromExistingToNewSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project beforeProject = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Image existingImage = testDataFactory.createImage("http://example.com/existing.png", "existing-image-object-key");
 			testDataFactory.setProjectImage(beforeProject, existingImage);
@@ -1266,7 +1266,7 @@ public class ProjectControllerTest {
 		void updateProjectImageNonObjectKeyFail() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project beforeProject = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 
 			ImageUpdateReqDto updateReqDto = new ImageUpdateReqDto("");
@@ -1297,7 +1297,7 @@ public class ProjectControllerTest {
 		void deleteProjectSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.setProjectImage(project, defaultImage);
 
@@ -1317,7 +1317,7 @@ public class ProjectControllerTest {
 		void deleteProjectWithExistingImageSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Image existingImage = testDataFactory.createImage("existing-image-object-key", "http://example.com/existing.png");
 			testDataFactory.setProjectImage(project, existingImage);
