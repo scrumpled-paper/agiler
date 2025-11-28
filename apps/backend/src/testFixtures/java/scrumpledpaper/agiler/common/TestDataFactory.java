@@ -1,15 +1,8 @@
 package scrumpledpaper.agiler.common;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Component;
-
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
@@ -34,8 +27,6 @@ import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
-import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
-import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
@@ -62,6 +53,12 @@ import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class TestDataFactory {
@@ -82,8 +79,6 @@ public class TestDataFactory {
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
-	private final IssueRepository issueRepository;
-	private final KanbanConfigRepository kanbanConfigRepository;
 	private final EntityManager entityManager;
 
 	public static final long DEFAULT_IMAGE_ID = 1L;
@@ -358,11 +353,6 @@ public class TestDataFactory {
 	public ProfileNotificationChannel createProfileNotificationChannel(User user, Profile profile, String channelType, String webhookUrl) {
 		ProfileNotificationChannel channel = ProfileNotificationChannelFixture.create(user.getId(), profile.getId(), ChannelType.valueOf(channelType), webhookUrl);
 		return profileNotificationChannelRepository.save(channel);
-	}
-
-	public Issue createIssue(KanbanConfig kanbanConfig, Profile profile, String title, Boolean isDone, String contents, LocalDateTime startedAt, LocalDateTime dueAt) {
-		Issue issue = IssueFixture.createIssue(kanbanConfig, profile, title, isDone, contents, startedAt, dueAt);
-		return issueRepository.save(issue);
 	}
 
 	public KanbanConfig createKanbanConfig(Project project, String statusName, int priority, boolean defaultStatus, boolean backlog, Boolean isDone) {
