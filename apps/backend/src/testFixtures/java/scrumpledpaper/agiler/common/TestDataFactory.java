@@ -59,9 +59,21 @@ public class TestDataFactory {
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final EntityManager entityManager;
 
+	public static final long DEFAULT_IMAGE_ID = 1L;
+
 	public Image createDefaultImage() {
 		Image image = ImageFixture.createImage();
 		return imageRepository.save(image);
+	}
+
+	public Image createImage(String imageUrl, String objectKey) {
+		Image image = ImageFixture.createImage(imageUrl, objectKey);
+		return imageRepository.save(image);
+	}
+
+	public void setUserImage(User user, Image image) {
+		user.updateImageId(image.getId());
+		userRepository.save(user);
 	}
 
 	public String createNotAllowedAccessToken() {
@@ -99,6 +111,16 @@ public class TestDataFactory {
 		imageRepository.save(image);
 		Project project = ProjectFixture.createProject(image.getId());
 		return projectRepository.save(project);
+	}
+
+	public void setProjectImage(Project project, Image image) {
+		project.updateImageId(image.getId());
+		projectRepository.save(project);
+	}
+
+	public void setProfileImage(Profile profile, Image image) {
+		profile.updateImageId(image.getId());
+		profileRepository.save(profile);
 	}
 
 	public Project createProjectAndOwnerProfile(String url, User user) {
