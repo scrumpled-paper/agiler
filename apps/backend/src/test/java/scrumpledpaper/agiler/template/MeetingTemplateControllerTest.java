@@ -53,7 +53,7 @@ public class MeetingTemplateControllerTest {
 		public void meetingTemplateCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplateCreateReqDto createReqDto = new MeetingTemplateCreateReqDto(
 				"회의 템플릿 제목",
@@ -87,7 +87,7 @@ public class MeetingTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			MeetingTemplateCreateReqDto createReqDto = new MeetingTemplateCreateReqDto(
 				"회의 템플릿 제목",
@@ -151,7 +151,7 @@ public class MeetingTemplateControllerTest {
 		public void meetingTemplateUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createMeetingTemplate(
 				project,
@@ -188,7 +188,7 @@ public class MeetingTemplateControllerTest {
 		public void meetingTemplateUpdateTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
 				9999L,
@@ -217,7 +217,7 @@ public class MeetingTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createMeetingTemplate(
 				project,
@@ -287,7 +287,7 @@ public class MeetingTemplateControllerTest {
 		public void getMeetingTemplateListSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template1 = testDataFactory.createMeetingTemplate(
 				project,
@@ -321,7 +321,7 @@ public class MeetingTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 
 			// when
@@ -350,7 +350,7 @@ public class MeetingTemplateControllerTest {
 		public void getMeetingTemplateDetailSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
 				project,
@@ -378,7 +378,7 @@ public class MeetingTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
 				project,
@@ -404,7 +404,7 @@ public class MeetingTemplateControllerTest {
 		public void getMeetingTemplateDetailNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createMeetingTemplate(
 				project,
@@ -439,7 +439,7 @@ public class MeetingTemplateControllerTest {
 		public void deleteMeetingTemplateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
 				project,
@@ -470,7 +470,7 @@ public class MeetingTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
 				project,
@@ -499,7 +499,7 @@ public class MeetingTemplateControllerTest {
 		public void deleteMeetingTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createMeetingTemplate(
 				project,

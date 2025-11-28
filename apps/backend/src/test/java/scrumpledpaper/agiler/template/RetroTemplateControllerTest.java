@@ -53,7 +53,7 @@ public class RetroTemplateControllerTest {
 		public void retroTemplateCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			RetroTemplateCreateReqDto createReqDto = new RetroTemplateCreateReqDto(
 				"회고 템플릿 제목",
@@ -87,7 +87,7 @@ public class RetroTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 			RetroTemplateCreateReqDto createReqDto = new RetroTemplateCreateReqDto(
 				"회고 템플릿 제목",
@@ -151,7 +151,7 @@ public class RetroTemplateControllerTest {
 		public void retroTemplateUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createRetroTemplate(
 				project,
@@ -188,7 +188,7 @@ public class RetroTemplateControllerTest {
 		public void retroTemplateUpdateTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
 				9999L,
@@ -217,7 +217,7 @@ public class RetroTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createRetroTemplate(
 				project,
@@ -287,7 +287,7 @@ public class RetroTemplateControllerTest {
 		public void getRetroTemplateListSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			RetroTemplate template1 = testDataFactory.createRetroTemplate(
 				project,
@@ -321,7 +321,7 @@ public class RetroTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
 
 			// when
@@ -350,7 +350,7 @@ public class RetroTemplateControllerTest {
 		public void getRetroTemplateDetailSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			RetroTemplate template = testDataFactory.createRetroTemplate(
 				project,
@@ -379,7 +379,7 @@ public class RetroTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
 			RetroTemplate template = testDataFactory.createRetroTemplate(
 				project,
@@ -405,7 +405,7 @@ public class RetroTemplateControllerTest {
 		public void getRetroTemplateDetailNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createRetroTemplate(
 				project,
@@ -440,7 +440,7 @@ public class RetroTemplateControllerTest {
 		public void deleteRetroTemplateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			RetroTemplate template = testDataFactory.createRetroTemplate(
 				project,
@@ -471,7 +471,7 @@ public class RetroTemplateControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			RetroTemplate template = testDataFactory.createRetroTemplate(
 				project,
@@ -500,7 +500,7 @@ public class RetroTemplateControllerTest {
 		public void deleteRetroTemplateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createRetroTemplate(
 				project,

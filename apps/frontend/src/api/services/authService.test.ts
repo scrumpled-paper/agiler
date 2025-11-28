@@ -29,7 +29,7 @@ describe('authService', () => {
 
       const user = await authService.getCurrentUser()
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users/')
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users')
       expect(user).toEqual(mockUser)
       expect(user.id).toBe(1)
       expect(user.email).toBe('test@agiler.com')
@@ -48,7 +48,7 @@ describe('authService', () => {
 
       const user = await authService.getCurrentUser()
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users/')
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users')
       expect(user).toEqual(mockUser)
       expect(user.imageUrl).toBeUndefined()
     })
@@ -60,7 +60,7 @@ describe('authService', () => {
       await expect(authService.getCurrentUser()).rejects.toThrow(
         'Network Error'
       )
-      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users/')
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users')
     })
   })
 

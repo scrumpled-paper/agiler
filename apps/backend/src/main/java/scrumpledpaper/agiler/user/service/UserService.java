@@ -63,7 +63,11 @@ public class UserService {
 	@Transactional
 	public void updateUser(long userId, UserUpdateReqDto userUpdateReqDto) {
 		User user = findById(userId);
-		user.updateNickname(userUpdateReqDto.nickname());
+
+		user.update(
+			userUpdateReqDto.email(),
+			userUpdateReqDto.nickname()
+		);
 	}
 
 	@Transactional

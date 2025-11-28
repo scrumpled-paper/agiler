@@ -1,5 +1,8 @@
 package scrumpledpaper.agiler.user.dto;
 
 
-public record UserResDto(String nickname, String imageUrl) {
-}
+public record UserResDto(
+	String nickname,
+	String email,
+	String imageUrl
+) {}

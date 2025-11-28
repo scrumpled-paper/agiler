@@ -1,5 +1,7 @@
 package scrumpledpaper.agiler.project.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,5 +36,10 @@ public class ProjectValidator {
 		if (profile.getRole() != Role.OWNER) {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_REQUIRED);
 		}
+	}
+
+	public List<Profile> projectMembersByIds(Project project, List<Long> profileIds) {
+		List<Profile> profiles = profileRepository.findByProjectIdAndIdIn(project.getId(), profileIds);
+		return profiles;
 	}
 }

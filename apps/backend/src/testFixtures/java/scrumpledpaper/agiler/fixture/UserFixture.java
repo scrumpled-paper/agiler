@@ -29,8 +29,4 @@ public class UserFixture {
 			.imageId(defaultImage.getId())
 			.build();
 	}
-
-	public static UserUpdateReqDto createUpdateReqDto(String nickname) {
-		return new UserUpdateReqDto(nickname);
-	}
 }

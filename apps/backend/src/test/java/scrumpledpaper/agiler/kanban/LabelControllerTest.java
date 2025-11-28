@@ -54,7 +54,7 @@ public class LabelControllerTest {
 		public void labelCreateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			LabelCreateReqDto createReqDto = new LabelCreateReqDto("New Label", "Description", "#123456");
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
@@ -84,7 +84,7 @@ public class LabelControllerTest {
 		public void labelCreateInvalidColorCode(String colorCode) throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			LabelCreateReqDto createReqDto = new LabelCreateReqDto("New Label", "Description", colorCode);
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
@@ -103,7 +103,7 @@ public class LabelControllerTest {
 		public void labelCreateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
 			LabelCreateReqDto createReqDto = new LabelCreateReqDto("New Label", "Description", "#123456");
@@ -158,7 +158,7 @@ public class LabelControllerTest {
 		public void getLabelsSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Label label1 = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
 			Label label2 = testDataFactory.createLabel(project, "Label 2", "Description 2", "#222222");
@@ -185,7 +185,7 @@ public class LabelControllerTest {
 		public void getLabelsForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
 
@@ -234,7 +234,7 @@ public class LabelControllerTest {
 		public void labelUpdateSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Label label = testDataFactory.createLabel(project, "Old Label", "Old Description", "#000000");
 			LabelCreateReqDto updateReqDto = new LabelCreateReqDto("Updated Label", "Updated Description", "#FFFFFF");
@@ -260,7 +260,7 @@ public class LabelControllerTest {
 		public void labelUpdateNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Long nonExistentLabelId = 9999L;
 			LabelCreateReqDto updateReqDto = new LabelCreateReqDto("Updated Label", "Updated Description", "#FFFFFF");
@@ -284,7 +284,7 @@ public class LabelControllerTest {
 		public void labelUpdateForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Label label = testDataFactory.createLabel(project, "Old Label", "Old Description", "#000000");
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);
@@ -342,7 +342,7 @@ public class LabelControllerTest {
 		public void labelDeleteSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Label label = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
 			LabelDeleteReqDto deleteReqDto = new LabelDeleteReqDto(label.getId());
@@ -366,7 +366,7 @@ public class LabelControllerTest {
 		public void labelDeleteNotFound() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Long nonExistentLabelId = 9999L;
 			LabelDeleteReqDto deleteReqDto = new LabelDeleteReqDto(nonExistentLabelId);
@@ -390,7 +390,7 @@ public class LabelControllerTest {
 		public void labelDeleteForbidden() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test_url";
+			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Label label = testDataFactory.createLabel(project, "Label 1", "Description 1", "#111111");
 			AuthContext nonMemberAuth = testDataFactory.createAuth(defaultImage);

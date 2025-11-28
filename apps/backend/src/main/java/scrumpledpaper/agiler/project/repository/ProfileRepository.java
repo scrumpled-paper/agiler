@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.project.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -14,11 +15,10 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 	Page<Profile> findByUserId(Long userId, Pageable pageable);
 
-	boolean existsByUserIdAndProjectId(Long userId, Long projectId);
-
 	Page<Profile> findByProjectId(Long projectId, Pageable pageable);
 
 	Optional<Profile> findByIdAndProjectId(Long profileId, Long projectId);
 
 	long countByProjectIdAndRoleAndIdNot(Long projectId, Role role, Long excludeProfileId);
+	List<Profile> findByProjectIdAndIdIn(Long projectId, List<Long> profileIds);
 }

@@ -157,7 +157,7 @@ public class ProjectControllerTest {
 		public void alreadyProjectUrlCheckSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test-url_tag";
+			String url = "test-url-tag";
 			testDataFactory.createProject(url);
 			// when
 			String response = mockMvc.perform(
@@ -177,7 +177,7 @@ public class ProjectControllerTest {
 		public void ProjectUrlCheckSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test-url_tag";
+			String url = "test-url-tag";
 			// when
 			String response = mockMvc.perform(
 							get("/api/v1/projects/check")
@@ -193,13 +193,7 @@ public class ProjectControllerTest {
 
 		@ParameterizedTest
 		@ValueSource(strings = {
-				"test_url_tag",
-				"test__tag",
-				"_tag",
-				"test_",
-				"test",
 				"test#tag",
-				"test tag",
 				"test+tag_name",
 				"",
 				"very-long-project-name-here_very-long-tag-name-here-too"
@@ -1031,7 +1025,7 @@ public class ProjectControllerTest {
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
 					"새로운 제목",
-					"another_url",
+					"another-url",
 					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);
@@ -1125,7 +1119,6 @@ public class ProjectControllerTest {
 					"another-url",
 					"새로운 요약"
 			);
-			String requestBody = objectMapper.writeValueAsString(updateReqDto);
 
 			// when & then
 			String response = mockMvc.perform(
@@ -1151,7 +1144,7 @@ public class ProjectControllerTest {
 			Profile memberProfile = testDataFactory.createProfile(anotherAuth.getUser(), project, Role.MEMBER);
 			ProjectUpdateReqDto updateReqDto = new ProjectUpdateReqDto(
 					"새로운 제목",
-					"another_url",
+					"another-url",
 					"새로운 요약"
 			);
 			String requestBody = objectMapper.writeValueAsString(updateReqDto);

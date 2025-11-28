@@ -8,17 +8,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.common.BaseEntity;
+import scrumpledpaper.agiler.project.entity.Profile;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "issue_status_history")
-public class IssueStatusHistory extends BaseEntity {
+@Table(name = "issue_profile")
+public class IssueProfile extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -31,12 +34,4 @@ public class IssueStatusHistory extends BaseEntity {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "profile_id")
 	private Profile profile;
-
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "from_kanban_config")
-	private KanbanConfig fromKanbanConfig;
-
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "to_kanban_config")
-	private KanbanConfig toKanbanConfig;
 }

@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 @IntegrationTest
 @Transactional
@@ -70,6 +71,7 @@ public class UserControllerTest {
 			Image image = imageRepository.findById(auth.getUser().getImageId())
 					.orElseThrow();
 			assertThat(userResDto.imageUrl()).isEqualTo(image.getUrl());
+			assertThat(userResDto.email()).isEqualTo(auth.getUser().getEmail());
 		}
 
 		@Test
@@ -104,7 +106,10 @@ public class UserControllerTest {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String updateNickname = "newNickname";
-			UserUpdateReqDto updateReqDto = UserFixture.createUpdateReqDto(updateNickname);
+			UserUpdateReqDto updateReqDto = new UserUpdateReqDto(
+					updateNickname,
+					randomString(10)
+				);
 			String updateJson = objectMapper.writeValueAsString(updateReqDto);
 			// when
 			mockMvc.perform(
@@ -117,8 +122,8 @@ public class UserControllerTest {
 			User updatedUser = userRepository.findById(auth.getUser().getId())
 					.orElseThrow();
 			assertThat(updatedUser.getNickname()).isEqualTo(updateNickname);
+			assertThat(updatedUser.getEmail()).isEqualTo(updateReqDto.email());
 		}
-
 	}
 
 	@Nested

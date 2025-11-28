@@ -53,6 +53,7 @@ CREATE TABLE `kanban_config` (
 
 CREATE TABLE `issue` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `project_id` BIGINT NOT NULL,
     `kanban_config_id` BIGINT NOT NULL,
     `profile_id` BIGINT,
     `title` VARCHAR(20) NOT NULL,
@@ -64,6 +65,17 @@ CREATE TABLE `issue` (
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME,
     FOREIGN KEY (`kanban_config_id`) REFERENCES `kanban_config`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `issue_profile` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `issue_id` BIGINT NOT NULL,
+    `profile_id` BIGINT NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    FOREIGN KEY (`issue_id`) REFERENCES `issue`(`id`),
+    FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `image` (
