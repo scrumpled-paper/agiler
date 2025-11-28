@@ -20,10 +20,12 @@ public class ImageService {
 
 	private static final long DEFAULT_IMAGE_ID = 1L;
 
+	@Transactional(readOnly = true)
 	public Image findById(Long imageId) {
 		return imageRepository.findById(imageId).orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 	}
 
+	@Transactional(readOnly = true)
 	public String getImageUrlById(Long imageId) {
 		Image image = findById(imageId);
 		return image.getUrl();
