@@ -37,6 +37,11 @@ public enum ErrorCode {
 
 	DEFAULT_KANBAN_CONFIG_NOT_FOUND(404, "K001", "Default 칸반 설정을 찾을 수 없습니다."),
 	KANBAN_CONFIG_NOT_FOUND(404, "K002", "칸반 설정을 찾을 수 없습니다."),
+	INVALID_KANBAN_CONFIG_DEFAULT_STATUS(400, "K003", "칸반 설정에는 정확히 하나의 기본 상태가 있어야 합니다."),
+	INVALID_KANBAN_CONFIG_BACKLOG_STATUS(400, "K004", "칸반 설정에는 정확히 하나의 백로그 상태가 있어야 합니다."),
+	INVALID_KANBAN_CONFIG_DONE_STATUS(400, "K005", "칸반 설정에는 정확히 하나의 완료 상태가 있어야 합니다."),
+	DUPLICATE_KANBAN_CONFIG_PRIORITY(400, "K006", "칸반 설정의 우선순위가 중복됩니다."),
+	
 
 	ISSUE_NOT_FOUND(404, "IS001", "이슈를 찾을 수 없습니다."),
 

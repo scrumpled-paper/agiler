@@ -32,7 +32,7 @@ import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.notification.client.DiscordAuthClient;
@@ -485,7 +485,7 @@ class NotificationIntegrationTest {
 		String testWebhookUrl = "https://hooks.slack.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "SLACK", testWebhookUrl);
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
-		IssueKanbanConfigReqDto request = new IssueKanbanConfigReqDto(doneKanbanConfig.getId());
+		IssueKanbanConfigUpdateReqDto request = new IssueKanbanConfigUpdateReqDto(doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", anyProjectUrl, issue.getId())
@@ -523,7 +523,7 @@ class NotificationIntegrationTest {
 		String testWebhookUrl = "https://hooks.discord.test/webhook";
 		testDataFactory.createProfileNotificationChannel(auth.getUser(), profile, "DISCORD", testWebhookUrl);
 		testDataFactory.createNotificationSubscription(auth.getUser(), profile, issue, todoKanbanConfig.getId(), doneKanbanConfig.getId());
-		IssueKanbanConfigReqDto request = new IssueKanbanConfigReqDto(doneKanbanConfig.getId());
+		IssueKanbanConfigUpdateReqDto request = new IssueKanbanConfigUpdateReqDto(doneKanbanConfig.getId());
 
 		// when
 		ResultActions result = mockMvc.perform(patch("/api/v1/projects/{projectUrl}/issues/{issueId}/kanban-config", anyProjectUrl, issue.getId())

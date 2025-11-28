@@ -1,4 +1,4 @@
-package scrumpledpaper.agiler.user;
+package scrumpledpaper.agiler.project;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

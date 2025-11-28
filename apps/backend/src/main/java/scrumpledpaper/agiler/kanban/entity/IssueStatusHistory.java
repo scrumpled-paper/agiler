@@ -39,12 +39,4 @@ public class IssueStatusHistory extends BaseEntity {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "to_kanban_config")
 	private KanbanConfig toKanbanConfig;
-
-	public IssueStatusHistory(Issue issue, Profile profile, KanbanConfig fromKanbanConfig, KanbanConfig toKanbanConfig) {
-		this.issue = issue;
-		this.profile = profile;
-		this.fromKanbanConfig = fromKanbanConfig;
-		this.toKanbanConfig = toKanbanConfig;
-	}
-
 }

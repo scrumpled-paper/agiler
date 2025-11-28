@@ -7,7 +7,6 @@ import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +29,7 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
-import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
@@ -941,7 +940,7 @@ public class IssueControllerTest {
 				null,
 				null
 			);
-			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+			IssueKanbanConfigUpdateReqDto updateKanbanConfigReqDto = new IssueKanbanConfigUpdateReqDto(
 				newKanbanConfig.getId()
 			);
 
@@ -974,7 +973,7 @@ public class IssueControllerTest {
 				false,
 				false
 			);
-			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+			IssueKanbanConfigUpdateReqDto updateKanbanConfigReqDto = new IssueKanbanConfigUpdateReqDto(
 				kanbanConfig.getId()
 			);
 
@@ -1015,7 +1014,7 @@ public class IssueControllerTest {
 				null,
 				null
 			);
-			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+			IssueKanbanConfigUpdateReqDto updateKanbanConfigReqDto = new IssueKanbanConfigUpdateReqDto(
 				defaultKanbanConfig.getId()
 			);
 
@@ -1037,7 +1036,7 @@ public class IssueControllerTest {
 		public void issueUpdateKanbanConfigNotFoundProject() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+			IssueKanbanConfigUpdateReqDto updateKanbanConfigReqDto = new IssueKanbanConfigUpdateReqDto(
 				9999L
 			);
 
@@ -1077,7 +1076,7 @@ public class IssueControllerTest {
 				null,
 				null
 			);
-			IssueKanbanConfigReqDto updateKanbanConfigReqDto = new IssueKanbanConfigReqDto(
+			IssueKanbanConfigUpdateReqDto updateKanbanConfigReqDto = new IssueKanbanConfigUpdateReqDto(
 				9999L
 			);
 

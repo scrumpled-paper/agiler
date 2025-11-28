@@ -18,7 +18,7 @@ import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
-import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.service.IssueService;
@@ -87,9 +87,9 @@ public class IssueController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@PathVariable Long issueId,
-		@RequestBody @Valid IssueKanbanConfigReqDto issueKanbanConfigReqDto) {
+		@RequestBody @Valid IssueKanbanConfigUpdateReqDto request) {
 		long updatedIssueId = issueService.updateIssueKanbanConfig(customUserDetails.getUserId(), projectUrl, issueId,
-			issueKanbanConfigReqDto);
+			request);
 		return ResponseEntity.ok(new IssueIdResDto(updatedIssueId));
 	}
 }
