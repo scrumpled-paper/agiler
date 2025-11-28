@@ -1,15 +1,8 @@
 package scrumpledpaper.agiler.common;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Component;
-
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
@@ -34,8 +27,6 @@ import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
-import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
-import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
@@ -62,6 +53,12 @@ import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class TestDataFactory {
@@ -84,6 +81,8 @@ public class TestDataFactory {
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
 	private final EntityManager entityManager;
 
+	public static final long DEFAULT_IMAGE_ID = 1L;
+
 	public static String randomString(int length) {
 		StringBuilder sb = new StringBuilder();
 		while (sb.length() < length) {
@@ -92,10 +91,23 @@ public class TestDataFactory {
 		return sb.substring(0, length);
 	}
 
-
 	public Image createDefaultImage() {
 		Image image = ImageFixture.createImage();
 		return imageRepository.save(image);
+	}
+
+	public Image createImage(String imageUrl, String objectKey) {
+		Image image = ImageFixture.createImage(imageUrl, objectKey);
+		return imageRepository.save(image);
+	}
+
+	public void setUserImage(User user, Image image) {
+		user.updateImageId(image.getId());
+		userRepository.save(user);
+	}
+
+	public String createNotAllowedAccessToken() {
+		return tokenFixture.createNotAllowedAccessToken();
 	}
 
 	public String createAccessToken(User user) {
@@ -129,6 +141,16 @@ public class TestDataFactory {
 		imageRepository.save(image);
 		Project project = ProjectFixture.createProject(image.getId());
 		return projectRepository.save(project);
+	}
+
+	public void setProjectImage(Project project, Image image) {
+		project.updateImageId(image.getId());
+		projectRepository.save(project);
+	}
+
+	public void setProfileImage(Profile profile, Image image) {
+		profile.updateImageId(image.getId());
+		profileRepository.save(profile);
 	}
 
 	public Project createProjectAndOwnerProfile(String url, User user) {

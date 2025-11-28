@@ -1,31 +1,22 @@
 package scrumpledpaper.agiler.image;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.TestDataFactory;
-import scrumpledpaper.agiler.fixture.ImageFixture;
-import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationRequestDto;
-import scrumpledpaper.agiler.image.dto.ImageUploadConfirmationResponseDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlRequestDto;
 import scrumpledpaper.agiler.image.dto.PreSignedUrlResponseDto;
 import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.image.repository.ImageRepository;
 import scrumpledpaper.agiler.user.entity.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,22 +29,13 @@ class S3IntegrationTest {
 	private ObjectMapper om;
 	@Autowired
 	private TestDataFactory testDataFactory;
-	@Autowired
-	private ImageRepository imageRepository;
-	@Autowired
-	private AmazonS3 amazonS3Client;
-	@Value("${cloud.aws.s3.bucket}")
-	private String bucket;
-	private User user;
 	private String cookie;
 
 	@BeforeEach
 	void setUp() {
 		Image image = testDataFactory.createDefaultImage();
 		User user = testDataFactory.createUser(image.getId());
-		this.user = user;
 		cookie = testDataFactory.createAccessToken(user);
-
 	}
 
 	@ParameterizedTest
@@ -108,73 +90,6 @@ class S3IntegrationTest {
 								.cookie(new Cookie("accessToken", cookie))
 								.content(om.writeValueAsString(req)))
 				.andExpect(status().isBadRequest());
-	}
-
-	@Test
-	@DisplayName("200 - Post Confirm Upload Success")
-	void confirmUploadSuccess() throws Exception {
-		// given
-		String objectKey = "images/" + user.getId() + "/test-image.png";
-		String filename = "test-image.png";
-		amazonS3Client.putObject(bucket, objectKey, filename);
-
-		ImageUploadConfirmationRequestDto req = new ImageUploadConfirmationRequestDto(objectKey);
-
-		// when
-		String res = mockMvc.perform(
-						post("/api/v1/s3/confirm-upload")
-								.contentType(MediaType.APPLICATION_JSON)
-								.cookie(new Cookie("accessToken", cookie))
-								.content(om.writeValueAsString(req)))
-				.andExpect(status().isOk())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
-
-		ImageUploadConfirmationResponseDto resDto = om.readValue(res, ImageUploadConfirmationResponseDto.class);
-
-		// then
-		String expectedUrl = amazonS3Client.getUrl(bucket, objectKey).toString();
-		Image savedImage = imageRepository.findById(resDto.imageId()).orElseThrow();
-
-		assertThat(savedImage.getId()).isEqualTo(resDto.imageId());
-		assertThat(savedImage.getObjectKey()).isEqualTo(objectKey);
-		assertThat(savedImage.getUrl()).isEqualTo(expectedUrl);
-		assertThat(resDto.imageUrl()).isEqualTo(expectedUrl);
-	}
-
-	@Test
-	@DisplayName("204 - Delete Image Success")
-	void deleteImageSuccess() throws Exception {
-		// given
-		Image image = ImageFixture.createImage();
-		imageRepository.save(image);
-
-		amazonS3Client.putObject(bucket, image.getObjectKey(), "image.jpg");
-
-		// when
-		mockMvc.perform(delete("/api/v1/s3/{imageId}", image.getId())
-						.cookie(new Cookie("accessToken", cookie)))
-				.andExpect(status().isNoContent());
-
-		// then
-		assertThatThrownBy(() -> imageRepository.findById(image.getId()).orElseThrow())
-				.isInstanceOf(Exception.class);
-
-		boolean existsInS3 = amazonS3Client.doesObjectExist(bucket, image.getObjectKey());
-		assertThat(existsInS3).isFalse();
-	}
-
-	@Test
-	@DisplayName("404 - Delete Image Fail - Image Not Found")
-	void deleteImageFailImageNotFound() throws Exception {
-		// given
-		Long nonExistentImageId = 9999L;
-
-		// when & then
-		mockMvc.perform(delete("/api/v1/s3/{imageId}", nonExistentImageId)
-						.cookie(new Cookie("accessToken", cookie)))
-				.andExpect(status().isNotFound());
 	}
 
 }

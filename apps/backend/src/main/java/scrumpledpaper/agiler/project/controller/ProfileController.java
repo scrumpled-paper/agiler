@@ -3,6 +3,7 @@ package scrumpledpaper.agiler.project.controller;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.common.PageReqDto;
 import scrumpledpaper.agiler.common.PageResDto;
+import scrumpledpaper.agiler.project.dto.ImageUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
@@ -83,4 +85,26 @@ public class ProfileController {
 			profileRoleUpdateReqDto.role());
 		return ResponseEntity.noContent().build();
 	}
+
+	@PatchMapping("/{projectUrl}/profiles/image")
+	public ResponseEntity<Void> updateProfileImage(
+			@Parameter(hidden = true)
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
+			@PathVariable String projectUrl,
+			@RequestBody @Valid ImageUpdateReqDto imageUpdateReqDto
+	) {
+		profileService.updateProfileImage(customUserDetails.getUserId(), projectUrl, imageUpdateReqDto.objectKey());
+		return ResponseEntity.noContent().build();
+	}
+
+	@DeleteMapping("/{projectUrl}/profiles/image")
+	public ResponseEntity<Void> deleteProfileImage(
+			@Parameter(hidden = true)
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
+			@PathVariable String projectUrl
+	) {
+		profileService.deleteProfileImage(customUserDetails.getUserId(), projectUrl);
+		return ResponseEntity.noContent().build();
+	}
+
 }

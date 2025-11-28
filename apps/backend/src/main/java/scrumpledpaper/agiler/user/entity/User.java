@@ -47,4 +47,9 @@ public class User extends BaseEntity {
 		this.email = email;
 		this.nickname = nickname;
 	}
+
+	public void updateImageId(long imageId) {
+		this.imageId = imageId;
+	}
+
 }

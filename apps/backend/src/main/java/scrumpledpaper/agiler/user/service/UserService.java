@@ -69,5 +69,19 @@ public class UserService {
 			userUpdateReqDto.nickname()
 		);
 	}
-}
 
+	@Transactional
+	public void updateUserImage(long userId, String objectKey) {
+		User user = findById(userId);
+
+		imageService.updateImage(user::getImageId, user::updateImageId, objectKey);
+	}
+
+	@Transactional
+	public void deleteUserImage(long userId) {
+		User user = findById(userId);
+
+		imageService.deleteImage(user::getImageId, user::updateImageId);
+	}
+
+}

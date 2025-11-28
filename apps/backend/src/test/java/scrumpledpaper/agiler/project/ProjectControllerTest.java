@@ -22,6 +22,7 @@ import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
 import scrumpledpaper.agiler.kanban.entity.Label;
+import scrumpledpaper.agiler.project.dto.ImageUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
 import scrumpledpaper.agiler.project.dto.ProjectCreateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectDetailResDto;
@@ -29,8 +30,8 @@ import scrumpledpaper.agiler.project.dto.ProjectIdResDto;
 import scrumpledpaper.agiler.project.dto.ProjectInfoResDto;
 import scrumpledpaper.agiler.project.dto.ProjectSideResDto;
 import scrumpledpaper.agiler.project.dto.ProjectUpdateReqDto;
-import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.template.entity.DefaultIssueTemplate;
 import scrumpledpaper.agiler.template.entity.DefaultMeetingTemplate;
@@ -46,9 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
@@ -1192,4 +1191,142 @@ public class ProjectControllerTest {
 			assertThat(response).contains(ErrorCode.PROJECT_URL_ALREADY_EXISTS.getCode());
 		}
 	}
+
+	@Nested
+	@DisplayName("Project Image Update Test")
+	class ProjectImageUpdateTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Default Image to New Image Success")
+		void updateProjectImageSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project beforeProject = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+
+			String newImageObjectKey = "new-image-object-key";
+			ImageUpdateReqDto updateReqDto = new ImageUpdateReqDto(newImageObjectKey);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+							patch("/api/v1/projects/{projectUrl}/image", beforeProject.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(requestBody))
+					.andExpect(status().isNoContent());
+
+			// then
+			Project afterProject = testDataFactory.findProjectById(beforeProject.getId());
+			Image afterImage = testDataFactory.findImageById(afterProject.getImageId());
+			assertThat(afterImage.getObjectKey()).isEqualTo(newImageObjectKey);
+		}
+
+		@Test
+		@DisplayName("204 - Existing Image to New Image Success")
+		void updateProjectImageFromExistingToNewSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project beforeProject = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Image existingImage = testDataFactory.createImage("http://example.com/existing.png", "existing-image-object-key");
+			testDataFactory.setProjectImage(beforeProject, existingImage);
+
+			String newImageObjectKey = "new-image-object-key";
+			ImageUpdateReqDto updateReqDto = new ImageUpdateReqDto(newImageObjectKey);
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when
+			mockMvc.perform(
+							patch("/api/v1/projects/{projectUrl}/image", beforeProject.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(requestBody))
+					.andExpect(status().isNoContent());
+
+			// then
+			Project afterProject = testDataFactory.findProjectById(beforeProject.getId());
+			Image afterImage = testDataFactory.findImageById(afterProject.getImageId());
+			assertThat(afterImage.getObjectKey()).isEqualTo(newImageObjectKey);
+		}
+
+		@Test
+		@DisplayName("400 - Non ObjectKey Image Update Request Fail")
+		void updateProjectImageNonObjectKeyFail() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project beforeProject = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+
+			ImageUpdateReqDto updateReqDto = new ImageUpdateReqDto("");
+			String requestBody = objectMapper.writeValueAsString(updateReqDto);
+
+			// when & then
+			mockMvc.perform(
+							patch("/api/v1/projects/{projectUrl}/image", beforeProject.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+									.contentType(MediaType.APPLICATION_JSON)
+									.content(requestBody))
+					.andExpect(status().isBadRequest());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Project Delete Test")
+	class ProjectDeleteTest {
+
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Default Image Project Delete Success")
+		void deleteProjectSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.setProjectImage(project, defaultImage);
+
+			// when
+			mockMvc.perform(
+							delete("/api/v1/projects/{projectUrl}/image", project.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+					)
+					.andExpect(status().isNoContent());
+
+			// then
+			assertThat(project.getImageId()).isEqualTo(TestDataFactory.DEFAULT_IMAGE_ID);
+		}
+
+		@Test
+		@DisplayName("204 - Existing Image Project Delete Success")
+		void deleteProjectWithExistingImageSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Image existingImage = testDataFactory.createImage("existing-image-object-key", "http://example.com/existing.png");
+			testDataFactory.setProjectImage(project, existingImage);
+
+			// when
+			mockMvc.perform(
+							delete("/api/v1/projects/{projectUrl}/image", project.getUrl())
+									.cookie(new Cookie("accessToken", auth.getToken()))
+					)
+					.andExpect(status().isNoContent());
+
+			// then
+			assertThat(project.getImageId()).isEqualTo(TestDataFactory.DEFAULT_IMAGE_ID);
+			assertThat(project.getImageId()).isNotEqualTo(existingImage.getId());
+		}
+
+	}
+
 }

@@ -1,13 +1,10 @@
 package scrumpledpaper.agiler.project.service;
 
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
@@ -22,6 +19,8 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProfileMapper;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.entity.User;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +41,7 @@ public class ProfileService {
 
 	public Profile getProfileByProfileIdAndProjectId(long profileId, long projectId) {
 		return profileRepository.findByIdAndProjectId(profileId, projectId)
-			.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_PROFILE_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(ErrorCode.PROJECT_PROFILE_NOT_FOUND));
 	}
 
 	@Transactional(readOnly = true)
@@ -122,4 +121,21 @@ public class ProfileService {
 			throw new CustomException(ErrorCode.PROJECT_OWNER_MINIMUM_REQUIRED);
 		}
 	}
+
+	@Transactional
+	public void updateProfileImage(long userId, String projectUrl, String objectKey) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Profile profile = context.profile();
+
+		imageService.updateImage(profile::getImageId, profile::updateImageId, objectKey);
+	}
+
+	@Transactional
+	public void deleteProfileImage(long userId, String projectUrl) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Profile profile = context.profile();
+
+		imageService.deleteImage(profile::getImageId, profile::updateImageId);
+	}
+
 }

@@ -1,9 +1,8 @@
 package scrumpledpaper.agiler.project;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,27 +10,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.servlet.http.Cookie;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.project.dto.ImageUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileRoleUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @Transactional
@@ -784,4 +782,148 @@ public class ProfileControllerTest {
 			assertThat(response).contains(ErrorCode.INVALID_ROLE.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Update Profile Image Test")
+	class UpdateProfileImageTest {
+
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Defafult Image to New Image Success")
+		public void updateProfileImageSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			testDataFactory.setProfileImage(ownerProfile, defaultImage);
+
+			String newImageObjectKey = "new-image-object-key";
+			ImageUpdateReqDto imageUpdateReqDto = new ImageUpdateReqDto(newImageObjectKey);
+			String request = objectMapper.writeValueAsString(imageUpdateReqDto);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/image", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isNoContent());
+
+			// then
+			Image afterImage = testDataFactory.findImageById(ownerProfile.getImageId());
+			assertThat(afterImage.getObjectKey()).isEqualTo(newImageObjectKey);
+			assertThat(afterImage.getId()).isNotEqualTo(TestDataFactory.DEFAULT_IMAGE_ID);
+		}
+
+		@Test
+		@DisplayName("204 - existing Image to New Image Success")
+		public void updateProfileImageNotFoundProfile() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Image existingImage = testDataFactory.createImage("http://example.com/existing.png", "existing-object-key");
+			testDataFactory.setProfileImage(ownerProfile, existingImage);
+
+			String newImageObjectKey = "new-image-object-key";
+			ImageUpdateReqDto imageUpdateReqDto = new ImageUpdateReqDto(newImageObjectKey);
+			String request = objectMapper.writeValueAsString(imageUpdateReqDto);
+
+			// when
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/image", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isNoContent());
+
+			// then
+			Image afterImage = testDataFactory.findImageById(ownerProfile.getImageId());
+			assertThat(afterImage.getObjectKey()).isEqualTo(newImageObjectKey);
+			assertThat(afterImage.getId()).isNotEqualTo(existingImage.getId());
+		}
+
+		@Test
+		@DisplayName("400 - Non ObjectKey Image Update Request")
+		public void updateProfileImageBadRequest() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+
+			ImageUpdateReqDto imageUpdateReqDto = new ImageUpdateReqDto("");
+			String request = objectMapper.writeValueAsString(imageUpdateReqDto);
+
+			// when & then
+			mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/profiles/image", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isBadRequest());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Delete Project Profile Test")
+	class DeleteProjectProfileTest {
+
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Default Image Project Delete Success")
+		public void deleteProjectProfileSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			testDataFactory.setProfileImage(ownerProfile, defaultImage);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/profiles/image", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNoContent());
+
+			// then
+			assertThat(ownerProfile.getImageId()).isEqualTo(TestDataFactory.DEFAULT_IMAGE_ID);
+		}
+
+		@Test
+		@DisplayName("204 - Existing Image Project Delete Success")
+		public void deleteProjectProfileWithExistingImageSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test_url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Image existingImage = testDataFactory.createImage("http://example.com/existing.png", "existing-object-key");
+			testDataFactory.setProfileImage(ownerProfile, existingImage);
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/profiles/image", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNoContent());
+
+			// then
+			assertThat(ownerProfile.getImageId()).isEqualTo(TestDataFactory.DEFAULT_IMAGE_ID);
+			assertThat(ownerProfile.getImageId()).isNotEqualTo(existingImage.getId());
+		}
+
+	}
+
 }
