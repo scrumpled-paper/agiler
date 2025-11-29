@@ -2,7 +2,11 @@ import { useRef, useState } from 'react'
 import { Button } from './ui/button'
 import { Upload, UserIcon } from 'lucide-react'
 import { s3Service } from '@/api/services/s3Service'
-import { useUserInfo, useUserProfileMutation } from '@/hooks/use-user'
+import {
+  useUserInfo,
+  useDashboardProfileMutation,
+  useProjectProfileMutation,
+} from '@/hooks/use-user'
 
 type UserProfileBoxProps = {
   context: 'dashboard' | 'project'
@@ -16,8 +20,9 @@ export default function UserProfileBox({
   // 1. useUserInfo를 사용하여 데이터 조회
   const userInfo = useUserInfo(context, projectUrl)
 
-  // 2. useMutation으로 데이터 수정 기능 준비
-  const { mutate } = useUserProfileMutation(context, projectUrl)
+  // 2. context에 따라 적절한 mutation 훅 사용
+  const dashboardMutation = useDashboardProfileMutation()
+  const projectMutation = useProjectProfileMutation(projectUrl || '')
 
   // 로컬 상태 (편집 모드에서만 사용)
   const [isEditing, setIsEditing] = useState<boolean>(false)
@@ -98,14 +103,14 @@ export default function UserProfileBox({
     // context에 따라 다른 필드 저장
     if (context === 'dashboard') {
       // dashboard: name과 email만
-      mutate({ nickname: editedName, email: editedEmail })
+      dashboardMutation.mutate({ nickname: editedName, email: editedEmail })
       console.log('Saving dashboard profile:', {
         nickname: editedName,
         email: editedEmail,
       })
     } else {
       // project: name, email, description 모두
-      mutate({
+      projectMutation.mutate({
         nickname: editedName,
         email: editedEmail,
         description: editedDescription,

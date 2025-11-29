@@ -13,7 +13,6 @@ export default function JoinProjectModal({
 }: JoinProjectModalProps) {
   const navigate = useNavigate()
   const handleCreateSuccess = (projectUrl: string) => {
-    //[ ] 생성 성공 요청
     onOpenChange(false) // 모달 닫기
     navigate(`/projects/${projectUrl}`) // 페이지 이동
   }

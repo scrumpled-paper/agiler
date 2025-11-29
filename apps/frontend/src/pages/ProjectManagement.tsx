@@ -37,7 +37,7 @@ export default function ProjectManagement() {
           <div className="flex flex-col gap-[30px] py-[30px]">
             <div>
               <div className="text-center text-[40px] font-bold leading-[48px] font-['Roboto']">
-                Project Create
+                Project Management
               </div>
             </div>
 
@@ -46,6 +46,7 @@ export default function ProjectManagement() {
               initialData={initialDataForForm}
               onCreateSuccess={handleCreateSuccess}
               onCancel={handleCancel}
+              submitButtonLabel="Save"
             />
           </div>
         </div>

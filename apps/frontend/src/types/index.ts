@@ -83,11 +83,21 @@ export interface Label extends Record<string, unknown> {
   color: string // #FFFFFF 형태
 }
 
-//유저 정보 수정
+//  대시보드 유저 프로필 수정 (전역)
 export interface UserUpdateParams {
-  nickname?: string
-  email?: string
-  description?: string
-  profileId?: number
-  role?: string
+  nickname: string
+  email: string
+}
+
+//  프로젝트별 프로필 수정
+export interface ProjectProfileUpdateParams {
+  nickname: string
+  email: string
+  description: string
+}
+
+//  프로젝트 멤버 역할 수정
+export interface MemberRoleUpdateParams {
+  profileId: number
+  role: string
 }

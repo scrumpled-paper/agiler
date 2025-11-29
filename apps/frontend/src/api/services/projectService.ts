@@ -6,7 +6,8 @@ import type {
   ProjectInfo,
   GetProjectSummaryResponse,
   UserInfo,
-  UserUpdateParams,
+  ProjectProfileUpdateParams,
+  MemberRoleUpdateParams,
 } from '@/types'
 import { apiClient } from '../client'
 
@@ -118,7 +119,7 @@ export const projectService = {
 
   async updateMyProfile(
     projectUrl: string,
-    payload: UserUpdateParams
+    payload: ProjectProfileUpdateParams
   ): Promise<void> {
     const updateUrl = `${this.apiUrl}/${projectUrl}/profiles`
     // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
@@ -126,7 +127,7 @@ export const projectService = {
   },
   async updateMemberRole(
     projectUrl: string,
-    payload: UserUpdateParams
+    payload: MemberRoleUpdateParams
   ): Promise<void> {
     const roleUrl = `${this.apiUrl}/${projectUrl}/profiles/role`
     // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
