@@ -52,6 +52,16 @@ export default function ProjectForm({
     summary: '',
   })
 
+  // initialData가 변경되면 폼 상태를 업데이트
+  useEffect(() => {
+    if (initialData) {
+      setProjectTitle(initialData.title || '')
+      setProjectSlug(initialData.url || '')
+      setProjectSummary(initialData.summary || '')
+      setIsUrlManuallyEdited(!!initialData.url)
+    }
+  }, [initialData])
+
   // Title 변경 시 URL slug 자동 생성 로직
   useEffect(() => {
     if (!isUrlManuallyEdited && projectTitle) {
@@ -124,11 +134,8 @@ export default function ProjectForm({
         setIsUrlManuallyEdited(false)
         setErrors({ title: '', url: '', summary: '' })
         onCreateSuccess(projectSlug) // 외부로 성공 알림
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'Failed to create project. Please try again.'
+      } catch {
+        const errorMessage = 'Failed to create project. Please try again.'
         setErrors(prev => ({ ...prev, summary: errorMessage }))
       }
     } finally {

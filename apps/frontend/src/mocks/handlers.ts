@@ -41,6 +41,14 @@ const createPatchHandlers = (
   http.patch(`${API_BASE_URL}${path}`, handler), // 절대 URL
 ]
 
+const createPutHandlers = (
+  path: string,
+  handler: Parameters<typeof http.put>[1]
+) => [
+  http.put(path, handler), // 상대 경로
+  http.put(`${API_BASE_URL}${path}`, handler), // 절대 URL
+]
+
 export const handlers = [
   // 현재 사용자 정보 조회
   ...createHandlers('/api/v1/users', () => {
@@ -133,12 +141,29 @@ export const handlers = [
     return HttpResponse.json(123)
   }),
 
+  // 프로젝트 상세내용 수정 (PUT은 GET보다 먼저 와야 함)
+  ...createPutHandlers(
+    '/api/v1/projects/:projectUrl',
+    async ({ params, request }) => {
+      const body = (await request.json()) as {
+        title: string
+        url: string
+        summary: string
+      }
+      console.log('[MSW] 프로젝트 수정됨:', params.projectUrl, body)
+      // 수정된 프로젝트 ID 반환
+      return HttpResponse.json(123)
+    }
+  ),
+
   // 프로젝트 상세내용 조회
-  ...createHandlers('/api/v1/projects/:projectUrl', () => {
-    console.log('[MSW] 프로젝트 상세 조회 호출됨:')
+  ...createHandlers('/api/v1/projects/:projectUrl', ({ params }) => {
+    console.log('[MSW] 프로젝트 상세 조회 호출됨:', params.projectUrl)
     const response = {
-      contents: mockIssues,
-      size: mockIssues.length,
+      title: 'Test Project',
+      url: 'test-project',
+      summary: 'Test project summary',
+      imageUrl: 'https://placehold.co/600x400',
     }
     return HttpResponse.json(response)
   }),

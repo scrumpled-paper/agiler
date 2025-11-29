@@ -66,40 +66,40 @@ describe('userService', () => {
 
   describe('updateUserNickname', () => {
     it('should update user nickname successfully', async () => {
-      const newNickname = 'NewNickname'
+      const newNickname = { nickname: 'NewNickname', email: '' }
       const mockResponse = 'NewNickname'
 
       vi.mocked(apiClient.patch).mockResolvedValue({ data: mockResponse })
 
       const result = await userService.updateUserNickname(newNickname)
 
-      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
-        nickname: newNickname,
-      })
+      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', newNickname)
       expect(result).toBe(mockResponse)
     })
 
     it('should update nickname with Korean characters', async () => {
-      const koreanNickname = '테스트유저'
+      const koreanNickname = { nickname: '테스트유저', email: '' }
       vi.mocked(apiClient.patch).mockResolvedValue({ data: koreanNickname })
 
       const result = await userService.updateUserNickname(koreanNickname)
 
-      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
-        nickname: koreanNickname,
-      })
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/api/v1/users',
+        koreanNickname
+      )
       expect(result).toBe(koreanNickname)
     })
 
     it('should update nickname with special characters', async () => {
-      const specialNickname = 'User_123!@#'
+      const specialNickname = { nickname: 'User_123!@#', email: '' }
       vi.mocked(apiClient.patch).mockResolvedValue({ data: specialNickname })
 
       const result = await userService.updateUserNickname(specialNickname)
 
-      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
-        nickname: specialNickname,
-      })
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/api/v1/users',
+        specialNickname
+      )
       expect(result).toBe(specialNickname)
     })
 
@@ -108,10 +108,11 @@ describe('userService', () => {
       vi.mocked(apiClient.patch).mockRejectedValue(error)
 
       await expect(
-        userService.updateUserNickname('NewNickname')
+        userService.updateUserNickname({ nickname: 'NewNickname', email: '' })
       ).rejects.toThrow('Update failed')
       expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
         nickname: 'NewNickname',
+        email: '',
       })
     })
 
@@ -125,7 +126,7 @@ describe('userService', () => {
       vi.mocked(apiClient.patch).mockRejectedValue(error)
 
       await expect(
-        userService.updateUserNickname('Invalid@@@')
+        userService.updateUserNickname({ nickname: 'Invalid@@@', email: '' })
       ).rejects.toEqual(error)
     })
 
@@ -139,20 +140,21 @@ describe('userService', () => {
       vi.mocked(apiClient.patch).mockRejectedValue(error)
 
       await expect(
-        userService.updateUserNickname('DuplicateNick')
+        userService.updateUserNickname({ nickname: 'DuplicateNick', email: '' })
       ).rejects.toEqual(error)
     })
 
     it('should handle empty string nickname', async () => {
-      const emptyNickname = ''
-      vi.mocked(apiClient.patch).mockResolvedValue({ data: emptyNickname })
+      const emptyNickname = { nickname: '', email: '' }
+      vi.mocked(apiClient.patch).mockResolvedValue({ data: '' })
 
       const result = await userService.updateUserNickname(emptyNickname)
 
-      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users', {
-        nickname: emptyNickname,
-      })
-      expect(result).toBe(emptyNickname)
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/api/v1/users',
+        emptyNickname
+      )
+      expect(result).toBe('')
     })
   })
 })

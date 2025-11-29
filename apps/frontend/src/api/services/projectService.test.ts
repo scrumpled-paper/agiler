@@ -8,6 +8,7 @@ vi.mock('../client', () => ({
   apiClient: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
   },
 }))
 
@@ -216,6 +217,73 @@ describe('projectService', () => {
           summary: 'A new project',
         })
       ).rejects.toThrow('Project creation failed')
+    })
+  })
+
+  describe('getProjectSummery', () => {
+    it('should fetch project summary successfully', async () => {
+      const mockResponse = {
+        title: 'Test Project',
+        url: 'test-project',
+        summary: 'Test project summary',
+        imageUrl: 'https://placehold.co/600x400',
+      }
+
+      vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
+
+      const result = await projectService.getProjectSummery('test-project')
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/api/v1/projects/test-project'
+      )
+      expect(result).toEqual(mockResponse)
+    })
+
+    it('should handle axios error', async () => {
+      const axiosError = new Error('Project not found')
+
+      vi.mocked(apiClient.get).mockRejectedValue(axiosError)
+
+      await expect(
+        projectService.getProjectSummery('nonexistent-project')
+      ).rejects.toThrow('Project not found')
+    })
+  })
+
+  describe('updateProjectSummery', () => {
+    it('should update project summary successfully', async () => {
+      const projectId = 123
+      vi.mocked(apiClient.put).mockResolvedValue({ data: projectId })
+
+      const result = await projectService.updateProjectSummery('old-project', {
+        title: 'Updated Project',
+        url: 'new-project',
+        summary: 'Updated summary',
+      })
+
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/api/v1/projects/old-project',
+        {
+          title: 'Updated Project',
+          url: 'new-project',
+          summary: 'Updated summary',
+        }
+      )
+      expect(result).toBe(projectId)
+    })
+
+    it('should handle axios error during update', async () => {
+      const axiosError = new Error('Update failed')
+
+      vi.mocked(apiClient.put).mockRejectedValue(axiosError)
+
+      await expect(
+        projectService.updateProjectSummery('test-project', {
+          title: 'Updated Project',
+          url: 'new-url',
+          summary: 'Updated summary',
+        })
+      ).rejects.toThrow('Update failed')
     })
   })
 })
