@@ -93,12 +93,12 @@ export default function ProjectUserSetting() {
   }))
 
   return (
-    <div className="flex flex-col w-full items-start justify-center gap-10  px-[60px] pb-[60px] pt-10">
-      <h1 className="w-full text-center text-[40px] font-bold leading-tight text-black">
+    <div className="container p-8">
+      <h1 className="text-center text-[40px] font-bold leading-tight text-black">
         My Information
       </h1>
       <UserProfileBox context="project" projectUrl={projectUrl} />
-      <div className="flex w-full max-w-[1100px] flex-col gap-[60px] pt-10">
+      <div className="flex flex-col pt-10">
         <MemberList
           members={members}
           onRoleChange={handleRoleChange}

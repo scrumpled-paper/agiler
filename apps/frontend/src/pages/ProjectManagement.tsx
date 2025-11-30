@@ -31,10 +31,10 @@ export default function ProjectManagement() {
   }
 
   return (
-    <div className="container p-8">
+    <div className="container p-4">
       <div>
-        <div className="sm:max-w-[640px] p-0">
-          <div className="flex flex-col gap-[30px] py-[30px]">
+        <div className=" p-0">
+          <div className="flex flex-col">
             <div>
               <div className="text-center text-[40px] font-bold leading-[48px] font-['Roboto']">
                 Project Management
