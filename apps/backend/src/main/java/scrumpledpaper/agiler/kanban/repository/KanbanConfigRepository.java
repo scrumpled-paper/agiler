@@ -12,4 +12,6 @@ public interface KanbanConfigRepository extends JpaRepository<KanbanConfig, Long
 	List<KanbanConfig> findByProjectId(Long id);
 
 	List<KanbanConfig> findByProjectIdOrderByPriorityAsc(Long id);
+
+	Optional<KanbanConfig> findByProjectIdAndBacklogTrue(Long projectId);
 }

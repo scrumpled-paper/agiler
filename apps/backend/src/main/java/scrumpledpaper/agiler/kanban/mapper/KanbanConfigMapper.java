@@ -9,6 +9,7 @@ import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfigSnapshot;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @Mapper(componentModel = "spring")
@@ -18,6 +19,9 @@ public interface KanbanConfigMapper {
 	KanbanConfig toEntity(Project project, KanbanConfigUpdateReqDto.KanbanConfigReqDto dto);
 
 	List<KanbanConfigResDto> toDtoList(List<KanbanConfig> kanbanConfigs);
+
+	@Mapping(target = "id", ignore = true)
+	KanbanConfigSnapshot toKanbanConfigSnapshot(KanbanConfig kanbanConfig);
 
 	@Mapping(target = "id", ignore = true)
 	KanbanConfig toEntity(Project savedProject, DefaultKanbanConfig defaultKanbanConfig);

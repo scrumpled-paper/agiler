@@ -29,6 +29,7 @@ public class KanbanConfigService {
 	private static final int REQUIRED_DONE_COUNT = 1;
 
 	private final ProjectValidator projectValidator;
+	private final SnapshotService snapshotService;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final KanbanConfigMapper kanbanConfigMapper;
 
@@ -49,6 +50,7 @@ public class KanbanConfigService {
 		kanbanConfigValidation(kanbanConfigUpdateReqDto);
 
 		List<KanbanConfig> existingConfigs = kanbanConfigRepository.findByProjectId(project.getId());
+		snapshotService.kanbanConfigSnapshot(existingConfigs);
 		kanbanConfigRepository.deleteAll(existingConfigs);
 
 		List<KanbanConfig> newConfigs = kanbanConfigUpdateReqDto.kanbanConfigs().stream()
@@ -95,6 +97,11 @@ public class KanbanConfigService {
 
 		List<KanbanConfig> kanbanConfigs = kanbanConfigRepository.findByProjectIdOrderByPriorityAsc(project.getId());
 		return kanbanConfigMapper.toDtoList(kanbanConfigs);
+	}
+
+	public KanbanConfig getBacklogKanbanConfig(Long projectId) {
+		return kanbanConfigRepository.findByProjectIdAndBacklogTrue(projectId)
+			.orElseThrow(() -> new CustomException(ErrorCode.KANBAN_CONFIG_NOT_FOUND));
 	}
 
 	public void createDefaultKanbanConfigs(Project savedProject) {
