@@ -8,7 +8,7 @@ export type TemplateListItem = {
 }
 
 export type IssueTemplateListResponse = {
-  IssueTemplates: TemplateListItem[]
+  issueTemplates: TemplateListItem[]
   size: number
 }
 export type MeetingTemplateListResponse = {

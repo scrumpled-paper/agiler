@@ -75,9 +75,6 @@ export default function ProjectTemplateSetting() {
     const key = RESOURCE_RESPONSE_KEYS[selectedResourceType]
     const responseData = data as Record<string, TemplateListItem[] | number>
     const templates = responseData[key]
-    console.log(data)
-    console.log('res', responseData)
-    console.log(templates)
     return Array.isArray(templates) ? templates : []
   }
 

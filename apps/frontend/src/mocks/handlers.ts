@@ -117,22 +117,26 @@ const templateDetailsStore: Record<number, TemplateDetail> = {
   1: {
     title: 'Bug Report Template',
     description: 'Template for reporting bugs',
-    contents: '# Bug Report\n\n## Description\n\n## Steps to Reproduce\n\n## Expected Behavior\n\n## Actual Behavior',
+    contents:
+      '# Bug Report\n\n## Description\n\n## Steps to Reproduce\n\n## Expected Behavior\n\n## Actual Behavior',
   },
   2: {
     title: 'Feature Request Template',
     description: 'Template for requesting new features',
-    contents: '# Feature Request\n\n## Problem Statement\n\n## Proposed Solution\n\n## Alternatives Considered',
+    contents:
+      '# Feature Request\n\n## Problem Statement\n\n## Proposed Solution\n\n## Alternatives Considered',
   },
   3: {
     title: 'Sprint Planning',
     description: 'Template for sprint planning meetings',
-    contents: '# Sprint Planning\n\n## Sprint Goal\n\n## Stories to Include\n\n## Team Capacity',
+    contents:
+      '# Sprint Planning\n\n## Sprint Goal\n\n## Stories to Include\n\n## Team Capacity',
   },
   4: {
     title: 'Sprint Retrospective',
     description: 'Template for sprint retrospective',
-    contents: '# Sprint Retrospective\n\n## What Went Well\n\n## What Could Be Improved\n\n## Action Items',
+    contents:
+      '# Sprint Retrospective\n\n## What Went Well\n\n## What Could Be Improved\n\n## Action Items',
   },
   5: {
     title: 'Daily Standup',
@@ -466,7 +470,7 @@ export const handlers = [
     ({ params }) => {
       console.log('[MSW] Issue 템플릿 목록 조회 호출됨:', params.projectUrl)
       const response: IssueTemplateListResponse = {
-        IssueTemplates: issueTemplatesStore,
+        issueTemplates: issueTemplatesStore,
         size: issueTemplatesStore.length,
       }
       return HttpResponse.json(response)
@@ -527,10 +531,7 @@ export const handlers = [
       if (detail) {
         return HttpResponse.json(detail)
       }
-      return HttpResponse.json(
-        { error: 'Template not found' },
-        { status: 404 }
-      )
+      return HttpResponse.json({ error: 'Template not found' }, { status: 404 })
     }
   ),
 
