@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 import type { User } from '@/api/services/authService'
+import type { LabelListResponse, Label } from '@/types/label'
 import { mockIssues, mockProjectList } from '@/mocks/mockTasks'
 
 // MSW 핸들러: 상대 경로와 절대 URL 모두 매칭
@@ -15,6 +16,44 @@ export const MOCK_USER: User = {
   nickname: 'AgileTester',
   imageUrl: 'https://via.placeholder.com/150',
 }
+
+// Mock labels data
+export const MOCK_LABELS: Label[] = [
+  {
+    id: 1,
+    name: 'bug',
+    description: '라벨에 대한 설명이 들어감',
+    color: '#FF4040',
+  },
+  {
+    id: 2,
+    name: 'documentation',
+    description: '라벨에 대한 설명이 들어감',
+    color: '#4040FF',
+  },
+  {
+    id: 3,
+    name: 'duplicate',
+    description: '라벨에 대한 설명이 들어감',
+    color: '#40FF46',
+  },
+  {
+    id: 4,
+    name: 'enhancement',
+    description: '라벨에 대한 설명이 들어감',
+    color: '#40FFF5',
+  },
+  {
+    id: 5,
+    name: 'invalid',
+    description: '라벨에 대한 설명이 들어감',
+    color: '#FFE240',
+  },
+]
+
+// In-memory storage for labels during tests
+let labelsStore: Label[] = [...MOCK_LABELS]
+let nextLabelId = 6
 
 // 각 경로에 대해 상대/절대 핸들러 모두 생성
 const createHandlers = (
@@ -47,6 +86,14 @@ const createPutHandlers = (
 ) => [
   http.put(path, handler), // 상대 경로
   http.put(`${API_BASE_URL}${path}`, handler), // 절대 URL
+]
+
+const createDeleteHandlers = (
+  path: string,
+  handler: Parameters<typeof http.delete>[1]
+) => [
+  http.delete(path, handler), // 상대 경로
+  http.delete(`${API_BASE_URL}${path}`, handler), // 절대 URL
 ]
 
 export const handlers = [
@@ -213,4 +260,74 @@ export const handlers = [
     console.log('[MSW] 사용자 정보 업데이트:', body)
     return HttpResponse.json(body.nickname)
   }),
+
+  // 라벨 목록 조회
+  ...createHandlers('/api/v1/projects/:projectUrl/labels', ({ params }) => {
+    console.log('[MSW] 라벨 목록 조회 호출됨:', params.projectUrl)
+    const response: LabelListResponse = {
+      labels: labelsStore,
+      size: labelsStore.length,
+    }
+    return HttpResponse.json(response)
+  }),
+
+  // 라벨 생성
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/labels',
+    async ({ params, request }) => {
+      const body = (await request.json()) as {
+        name: string
+        description: string
+        color: string
+      }
+      console.log('[MSW] 라벨 생성됨:', params.projectUrl, body)
+      const newLabel: Label = {
+        id: nextLabelId++,
+        ...body,
+      }
+      labelsStore.push(newLabel)
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 라벨 수정
+  ...createPutHandlers(
+    '/api/v1/projects/:projectUrl/labels/:labelId',
+    async ({ params, request }) => {
+      const body = (await request.json()) as {
+        name: string
+        description: string
+        color: string
+      }
+      const labelId = Number(params.labelId)
+      console.log('[MSW] 라벨 수정됨:', params.projectUrl, labelId, body)
+
+      const labelIndex = labelsStore.findIndex(label => label.id === labelId)
+      if (labelIndex !== -1) {
+        labelsStore[labelIndex] = {
+          ...labelsStore[labelIndex],
+          ...body,
+        }
+      }
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 라벨 삭제
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/labels',
+    async ({ params, request }) => {
+      const body = (await request.json()) as { labelId: number }
+      console.log('[MSW] 라벨 삭제됨:', params.projectUrl, body.labelId)
+
+      labelsStore = labelsStore.filter(label => label.id !== body.labelId)
+      return HttpResponse.json(undefined)
+    }
+  ),
 ]
+
+// Helper function to reset labels store for tests
+export const resetLabelsStore = () => {
+  labelsStore = [...MOCK_LABELS]
+  nextLabelId = 6
+}
