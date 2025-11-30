@@ -12,6 +12,7 @@ import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
 import ProjectManagement from './pages/ProjectManagement'
 import ProjectLabelSetting from './pages/ProjectLabelSetting'
+import ProjectTemplateSetting from './pages/ProjectTemplateSetting'
 
 export const routers = createBrowserRouter([
   {
@@ -66,7 +67,9 @@ export const routers = createBrowserRouter([
                 index: true,
                 element: (
                   <ProtectedRoute>
-                    <ProjectSetting />
+                    <ProjectUserSetting />
+                    {/*[ ]  셋팅페이지 완성 후 수정 예정입니다 */}
+                    {/* <ProjectSetting /> */}
                   </ProtectedRoute>
                 ),
               },
@@ -91,6 +94,14 @@ export const routers = createBrowserRouter([
                 element: (
                   <ProtectedRoute>
                     <ProjectLabelSetting />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'project-template',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectTemplateSetting />
                   </ProtectedRoute>
                 ),
               },

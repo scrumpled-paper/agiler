@@ -148,7 +148,10 @@ export function LabelFormModal({
   }
 
   const selectColor = () => {
-    const color = prompt('색상 코드를 입력하세요 (예: #FF4040):', formData.color)
+    const color = prompt(
+      '색상 코드를 입력하세요 (예: #FF4040):',
+      formData.color
+    )
     if (color && /^#[0-9A-F]{6}$/i.test(color)) {
       setFormData({ ...formData, color })
     } else if (color) {

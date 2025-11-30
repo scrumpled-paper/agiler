@@ -2,6 +2,14 @@ import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 import type { User } from '@/api/services/authService'
 import type { LabelListResponse, Label } from '@/types/label'
+import type {
+  TemplateListItem,
+  TemplateDetail,
+  IssueTemplateListResponse,
+  MeetingTemplateListResponse,
+  RetroTemplateListResponse,
+  ScrumTemplateListResponse,
+} from '@/types/template'
 import {
   MOCK_MEMBER_PROFILES,
   mockIssues,
@@ -58,6 +66,80 @@ export const MOCK_LABELS: Label[] = [
 // In-memory storage for labels during tests
 let labelsStore: Label[] = [...MOCK_LABELS]
 let nextLabelId = 6
+
+// Mock templates data
+export const MOCK_ISSUE_TEMPLATES: TemplateListItem[] = [
+  {
+    templateId: 1,
+    title: 'Bug Report Template',
+    description: 'Template for reporting bugs',
+  },
+  {
+    templateId: 2,
+    title: 'Feature Request Template',
+    description: 'Template for requesting new features',
+  },
+]
+
+export const MOCK_MEETING_TEMPLATES: TemplateListItem[] = [
+  {
+    templateId: 3,
+    title: 'Sprint Planning',
+    description: 'Template for sprint planning meetings',
+  },
+]
+
+export const MOCK_RETRO_TEMPLATES: TemplateListItem[] = [
+  {
+    templateId: 4,
+    title: 'Sprint Retrospective',
+    description: 'Template for sprint retrospective',
+  },
+]
+
+export const MOCK_SCRUM_TEMPLATES: TemplateListItem[] = [
+  {
+    templateId: 5,
+    title: 'Daily Standup',
+    description: 'Template for daily scrum meetings',
+  },
+]
+
+// In-memory storage for templates during tests
+let issueTemplatesStore: TemplateListItem[] = [...MOCK_ISSUE_TEMPLATES]
+let meetingTemplatesStore: TemplateListItem[] = [...MOCK_MEETING_TEMPLATES]
+let retroTemplatesStore: TemplateListItem[] = [...MOCK_RETRO_TEMPLATES]
+let scrumTemplatesStore: TemplateListItem[] = [...MOCK_SCRUM_TEMPLATES]
+let nextTemplateId = 6
+
+// Template details storage (for full content)
+const templateDetailsStore: Record<number, TemplateDetail> = {
+  1: {
+    title: 'Bug Report Template',
+    description: 'Template for reporting bugs',
+    contents: '# Bug Report\n\n## Description\n\n## Steps to Reproduce\n\n## Expected Behavior\n\n## Actual Behavior',
+  },
+  2: {
+    title: 'Feature Request Template',
+    description: 'Template for requesting new features',
+    contents: '# Feature Request\n\n## Problem Statement\n\n## Proposed Solution\n\n## Alternatives Considered',
+  },
+  3: {
+    title: 'Sprint Planning',
+    description: 'Template for sprint planning meetings',
+    contents: '# Sprint Planning\n\n## Sprint Goal\n\n## Stories to Include\n\n## Team Capacity',
+  },
+  4: {
+    title: 'Sprint Retrospective',
+    description: 'Template for sprint retrospective',
+    contents: '# Sprint Retrospective\n\n## What Went Well\n\n## What Could Be Improved\n\n## Action Items',
+  },
+  5: {
+    title: 'Daily Standup',
+    description: 'Template for daily scrum meetings',
+    contents: '# Daily Standup\n\n## Yesterday\n\n## Today\n\n## Blockers',
+  },
+}
 
 // 각 경로에 대해 상대/절대 핸들러 모두 생성
 const createHandlers = (
@@ -377,10 +459,245 @@ export const handlers = [
       return HttpResponse.json(undefined)
     }
   ),
+
+  // 템플릿 목록 조회 (Issues)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/issues/templates',
+    ({ params }) => {
+      console.log('[MSW] Issue 템플릿 목록 조회 호출됨:', params.projectUrl)
+      const response: IssueTemplateListResponse = {
+        IssueTemplates: issueTemplatesStore,
+        size: issueTemplatesStore.length,
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+
+  // 템플릿 목록 조회 (Meetings)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/meetings/templates',
+    ({ params }) => {
+      console.log('[MSW] Meeting 템플릿 목록 조회 호출됨:', params.projectUrl)
+      const response: MeetingTemplateListResponse = {
+        meetingTemplates: meetingTemplatesStore,
+        size: meetingTemplatesStore.length,
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+
+  // 템플릿 목록 조회 (Retros)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/retros/templates',
+    ({ params }) => {
+      console.log('[MSW] Retro 템플릿 목록 조회 호출됨:', params.projectUrl)
+      const response: RetroTemplateListResponse = {
+        retroTemplates: retroTemplatesStore,
+        size: retroTemplatesStore.length,
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+
+  // 템플릿 목록 조회 (Scrums)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/scrums/templates',
+    ({ params }) => {
+      console.log('[MSW] Scrum 템플릿 목록 조회 호출됨:', params.projectUrl)
+      const response: ScrumTemplateListResponse = {
+        scrumTemplates: scrumTemplatesStore,
+        size: scrumTemplatesStore.length,
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+
+  // 템플릿 상세 조회 (모든 리소스 타입)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/:resourceType/templates/:templateId',
+    ({ params }) => {
+      const templateId = Number(params.templateId)
+      console.log(
+        '[MSW] 템플릿 상세 조회 호출됨:',
+        params.projectUrl,
+        params.resourceType,
+        templateId
+      )
+      const detail = templateDetailsStore[templateId]
+      if (detail) {
+        return HttpResponse.json(detail)
+      }
+      return HttpResponse.json(
+        { error: 'Template not found' },
+        { status: 404 }
+      )
+    }
+  ),
+
+  // 템플릿 생성 (Issues)
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/issues/templates',
+    async ({ params, request }) => {
+      const body = (await request.json()) as TemplateDetail
+      console.log('[MSW] Issue 템플릿 생성됨:', params.projectUrl, body)
+      const newTemplate: TemplateListItem = {
+        templateId: nextTemplateId,
+        title: body.title,
+        description: body.description,
+      }
+      issueTemplatesStore.push(newTemplate)
+      templateDetailsStore[nextTemplateId] = body
+      nextTemplateId++
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 템플릿 생성 (Meetings)
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/meetings/templates',
+    async ({ params, request }) => {
+      const body = (await request.json()) as TemplateDetail
+      console.log('[MSW] Meeting 템플릿 생성됨:', params.projectUrl, body)
+      const newTemplate: TemplateListItem = {
+        templateId: nextTemplateId,
+        title: body.title,
+        description: body.description,
+      }
+      meetingTemplatesStore.push(newTemplate)
+      templateDetailsStore[nextTemplateId] = body
+      nextTemplateId++
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 템플릿 생성 (Retros)
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/retros/templates',
+    async ({ params, request }) => {
+      const body = (await request.json()) as TemplateDetail
+      console.log('[MSW] Retro 템플릿 생성됨:', params.projectUrl, body)
+      const newTemplate: TemplateListItem = {
+        templateId: nextTemplateId,
+        title: body.title,
+        description: body.description,
+      }
+      retroTemplatesStore.push(newTemplate)
+      templateDetailsStore[nextTemplateId] = body
+      nextTemplateId++
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 템플릿 생성 (Scrums)
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/scrums/templates',
+    async ({ params, request }) => {
+      const body = (await request.json()) as TemplateDetail
+      console.log('[MSW] Scrum 템플릿 생성됨:', params.projectUrl, body)
+      const newTemplate: TemplateListItem = {
+        templateId: nextTemplateId,
+        title: body.title,
+        description: body.description,
+      }
+      scrumTemplatesStore.push(newTemplate)
+      templateDetailsStore[nextTemplateId] = body
+      nextTemplateId++
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 템플릿 수정 (모든 리소스 타입)
+  ...createPutHandlers(
+    '/api/v1/projects/:projectUrl/:resourceType/templates',
+    async ({ params, request }) => {
+      const body = (await request.json()) as {
+        templateId: number
+        title: string
+        description: string
+        contents: string
+      }
+      console.log(
+        '[MSW] 템플릿 수정됨:',
+        params.projectUrl,
+        params.resourceType,
+        body.templateId
+      )
+
+      // Update in appropriate store based on resource type
+      const resourceType = params.resourceType as string
+      let store: TemplateListItem[]
+      if (resourceType === 'issues') store = issueTemplatesStore
+      else if (resourceType === 'meetings') store = meetingTemplatesStore
+      else if (resourceType === 'retros') store = retroTemplatesStore
+      else store = scrumTemplatesStore
+
+      const templateIndex = store.findIndex(
+        t => t.templateId === body.templateId
+      )
+      if (templateIndex !== -1) {
+        store[templateIndex] = {
+          templateId: body.templateId,
+          title: body.title,
+          description: body.description,
+        }
+        templateDetailsStore[body.templateId] = {
+          title: body.title,
+          description: body.description,
+          contents: body.contents,
+        }
+      }
+      return HttpResponse.json(undefined)
+    }
+  ),
+
+  // 템플릿 삭제 (모든 리소스 타입)
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/:resourceType/templates',
+    async ({ params, request }) => {
+      const body = (await request.json()) as { templateId: number }
+      console.log(
+        '[MSW] 템플릿 삭제됨:',
+        params.projectUrl,
+        params.resourceType,
+        body.templateId
+      )
+
+      // Delete from appropriate store based on resource type
+      const resourceType = params.resourceType as string
+      if (resourceType === 'issues') {
+        issueTemplatesStore = issueTemplatesStore.filter(
+          t => t.templateId !== body.templateId
+        )
+      } else if (resourceType === 'meetings') {
+        meetingTemplatesStore = meetingTemplatesStore.filter(
+          t => t.templateId !== body.templateId
+        )
+      } else if (resourceType === 'retros') {
+        retroTemplatesStore = retroTemplatesStore.filter(
+          t => t.templateId !== body.templateId
+        )
+      } else {
+        scrumTemplatesStore = scrumTemplatesStore.filter(
+          t => t.templateId !== body.templateId
+        )
+      }
+      delete templateDetailsStore[body.templateId]
+      return HttpResponse.json(undefined)
+    }
+  ),
 ]
 
 // Helper function to reset labels store for tests
 export const resetLabelsStore = () => {
   labelsStore = [...MOCK_LABELS]
   nextLabelId = 6
+}
+
+// Helper function to reset templates store for tests
+export const resetTemplatesStore = () => {
+  issueTemplatesStore = [...MOCK_ISSUE_TEMPLATES]
+  meetingTemplatesStore = [...MOCK_MEETING_TEMPLATES]
+  retroTemplatesStore = [...MOCK_RETRO_TEMPLATES]
+  scrumTemplatesStore = [...MOCK_SCRUM_TEMPLATES]
+  nextTemplateId = 6
 }
