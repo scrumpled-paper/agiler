@@ -10,6 +10,7 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.kanban.service.KanbanConfigService;
 import scrumpledpaper.agiler.kanban.service.LabelService;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.dto.ProjectCheckReqDto;
@@ -42,6 +43,7 @@ public class ProjectService {
 	private final ImageService imageService;
 	private final LabelService labelService;
 	private final ProfileService profileService;
+	private final KanbanConfigService kanbanConfigService;
 	private final IssueTemplateService issueTemplateService;
 	private final MeetingTemplateService meetingTemplateService;
 	private final RetroTemplateService retroTemplateService;
@@ -62,6 +64,7 @@ public class ProjectService {
 
 		profileService.createDefaultProfile(user, savedProject, Role.OWNER);
 		labelService.createDefaultLabels(savedProject);
+		kanbanConfigService.createDefaultKanbanConfigs(savedProject);
 		issueTemplateService.createDefaultIssueTemplates(savedProject);
 		scrumTemplateService.createDefaultScrumTemplates(savedProject);
 		meetingTemplateService.createDefaultMeetingTemplates(savedProject);
@@ -157,5 +160,4 @@ public class ProjectService {
 
 		imageService.deleteImage(project::getImageId, project::updateImageId);
 	}
-
 }

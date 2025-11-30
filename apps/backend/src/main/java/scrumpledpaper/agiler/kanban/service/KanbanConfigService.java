@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.kanban.service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
+import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.mapper.KanbanConfigMapper;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
@@ -93,5 +95,13 @@ public class KanbanConfigService {
 
 		List<KanbanConfig> kanbanConfigs = kanbanConfigRepository.findByProjectIdOrderByPriorityAsc(project.getId());
 		return kanbanConfigMapper.toDtoList(kanbanConfigs);
+	}
+
+	public void createDefaultKanbanConfigs(Project savedProject) {
+		kanbanConfigRepository.saveAll(
+			Arrays.stream(DefaultKanbanConfig.values())
+				.map(defaultKanbanConfig -> kanbanConfigMapper.toEntity(savedProject, defaultKanbanConfig))
+				.toList()
+		);
 	}
 }
