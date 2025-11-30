@@ -25,7 +25,9 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
+import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfigSnapshot;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @IntegrationTest
@@ -54,6 +56,7 @@ public class KanbanConfigControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.defaultKanbanConfigSet(project);
 			int count = 5;
 			KanbanConfigUpdateReqDto updateReqDto = KanbanConfigFixture.createUpdateReqDto(count);
 
@@ -68,8 +71,8 @@ public class KanbanConfigControllerTest {
 
 			// then
 			List<KanbanConfig> kanbanConfigs = testDataFactory.getKanbanConfigsByProject(project);
-
 			assertThat(kanbanConfigs).hasSize(count);
+
 			for (int i = 0; i < count; i++) {
 				KanbanConfigUpdateReqDto.KanbanConfigReqDto reqDto = updateReqDto.kanbanConfigs().get(i);
 				KanbanConfig kanbanConfig = kanbanConfigs.get(i);
@@ -80,6 +83,9 @@ public class KanbanConfigControllerTest {
 				assertThat(kanbanConfig.isBacklog()).isEqualTo(reqDto.backlog());
 				assertThat(kanbanConfig.getIsDone()).isEqualTo(reqDto.isDone());
 			}
+
+			List<KanbanConfigSnapshot> kanbanConfigSnapshots = testDataFactory.findKanbanConfigSnapshotsByProjectId(project.getId());
+			assertThat(kanbanConfigSnapshots).hasSize(DefaultKanbanConfig.values().length);
 		}
 
 		@Test

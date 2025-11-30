@@ -25,11 +25,13 @@ import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfigSnapshot;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
+import scrumpledpaper.agiler.kanban.repository.KanbanConfigSnapshotRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
@@ -77,6 +79,7 @@ public class TestDataFactory {
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
 	private final MeetingTemplateRepository meetingTemplateRepository;
+	private final KanbanConfigSnapshotRepository kanbanConfigSnapshotRepository;
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
@@ -402,6 +405,25 @@ public class TestDataFactory {
 			kanbanConfigs.add(kanbanConfig);
 		}
 		return kanbanConfigRepository.saveAll(kanbanConfigs);
+	}
+
+	public List<KanbanConfigSnapshot> findKanbanConfigSnapshotsByProjectId(Long projectId) {
+		return kanbanConfigSnapshotRepository.findByProjectId(projectId);
+	}
+
+	public void defaultKanbanConfigSet(Project project) {
+		DefaultKanbanConfig[] defaults = DefaultKanbanConfig.values();
+		for (DefaultKanbanConfig def : defaults) {
+			KanbanConfig kanbanConfig = KanbanConfigFixture.create(
+				project,
+				def.getName(),
+				def.getPriority(),
+				def.isDefaultStatus(),
+				def.isBacklog(),
+				def.isDone()
+			);
+			kanbanConfigRepository.save(kanbanConfig);
+		}
 	}
 
 	public List<KanbanConfig> findKanbanConfigsByProjectId(Long id) {
