@@ -9,6 +9,33 @@ export const mockUsers: UserInfo[] = [
   { nickname: 'Dana Scully', imageUrl: 'https://placehold.co/6x6' },
 ]
 
+export const MOCK_MEMBER_PROFILES = [
+  {
+    profileId: 101,
+    nickname: 'Alice_Owner',
+    email: 'alice@projectagile.com',
+    imageUrl: 'https://placehold.co/100x100/007bff/ffffff?text=A',
+    role: 'OWNER',
+    description: '프로젝트의 오너이자 주요 기획 담당자입니다.',
+  },
+  {
+    profileId: 102,
+    nickname: 'Bob_Manager',
+    email: 'bob@projectagile.com',
+    imageUrl: 'https://placehold.co/100x100/28a745/ffffff?text=B',
+    role: 'MANAGER',
+    description: '스프린트 관리 및 팀 리소스를 조율하는 매니저입니다.',
+  },
+  {
+    profileId: 103,
+    nickname: 'Charlie_Member',
+    email: 'charlie@projectagile.com',
+    imageUrl: 'https://placehold.co/100x100/ffc107/343a40?text=C',
+    role: 'MEMBER',
+    description: '프론트엔드 개발 및 이슈 해결을 담당하는 팀원입니다.',
+  },
+]
+
 // Mock Labels (새로 추가)
 export const mockLabels: Label[] = [
   { name: 'Frontend', description: 'Client-side UI tasks', color: '#10B981' }, // green

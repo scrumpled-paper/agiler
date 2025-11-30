@@ -2,7 +2,11 @@ import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 import type { User } from '@/api/services/authService'
 import type { LabelListResponse, Label } from '@/types/label'
-import { mockIssues, mockProjectList } from '@/mocks/mockTasks'
+import {
+  MOCK_MEMBER_PROFILES,
+  mockIssues,
+  mockProjectList,
+} from '@/mocks/mockTasks'
 
 // MSW 핸들러: 상대 경로와 절대 URL 모두 매칭
 // - 개발: /api/v1/... (Vite 프록시)
@@ -147,7 +151,7 @@ export const handlers = [
           nickname: 'Alice',
           email: 'alice@example.com',
           imageUrl: 'https://placehold.co/100x100',
-          role: 'Developer',
+          role: 'OWNER',
           description: 'Frontend developer',
         },
         {
@@ -155,7 +159,7 @@ export const handlers = [
           nickname: 'Bob',
           email: 'bob@example.com',
           imageUrl: 'https://placehold.co/100x100',
-          role: 'Designer',
+          role: 'MEMBER',
           description: 'UI/UX designer',
         },
       ],
@@ -249,8 +253,57 @@ export const handlers = [
         nickname: 'Project User',
         email: 'project@agiler.com',
         imageUrl: 'https://via.placeholder.com/150',
-        role: 'Owner',
+        role: 'OWNER',
       })
+    }
+  ),
+
+  // 프로젝트별 사용자 정보 조회 (getUserInfo)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/profiles/me',
+    ({ params }) => {
+      console.log('[MSW] 프로젝트 내 내 정보 조회:', params.projectUrl)
+      // 실제 API에서는 해당 프로젝트의 내 정보를 반환
+      return HttpResponse.json(MOCK_MEMBER_PROFILES)
+    }
+  ),
+
+  // 특정 멤버 프로필 조회 (getMemberProfileById)
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/profiles/:profileId',
+    ({ params }) => {
+      console.log(
+        '[MSW] 특정 멤버 프로필 조회:',
+        params.projectUrl,
+        params.profileId
+      )
+      // profileId에 따라 다른 Mock 데이터를 반환하거나, 여기서는 하나의 Mock 데이터를 반환
+      if (Number(params.profileId) === MOCK_MEMBER_PROFILES[0].profileId) {
+        return HttpResponse.json(MOCK_MEMBER_PROFILES[0])
+      }
+      return HttpResponse.json(MOCK_MEMBER_PROFILES[0])
+    }
+  ),
+
+  // 내 프로필 수정 (updateMyProfile - PUT)
+  ...createPutHandlers(
+    '/api/v1/projects/:projectUrl/profiles',
+    async ({ params, request }) => {
+      const body = await request.json()
+      console.log('[MSW] 프로젝트 내 내 프로필 수정:', params.projectUrl, body)
+      // 응답 본문이 비어있는 200 OK를 가정
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
+
+  // 멤버 역할 수정 (updateMemberRole - PATCH)
+  ...createPatchHandlers(
+    '/api/v1/projects/:projectUrl/profiles/role',
+    async ({ params, request }) => {
+      const body = await request.json()
+      console.log('[MSW] 멤버 역할 수정:', params.projectUrl, body)
+      // 응답 본문이 비어있는 200 OK를 가정
+      return new HttpResponse(null, { status: 200 })
     }
   ),
 

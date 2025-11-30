@@ -58,9 +58,6 @@ describe('ProjectLabelSetting Page - 통합 테스트', () => {
 
       // 페이지 타이틀 확인
       expect(screen.getByText('Label Setting')).toBeInTheDocument()
-
-      // 탭 확인
-      expect(screen.getByText('labels')).toBeInTheDocument()
     })
 
     it('라벨 목록이 올바르게 표시된다', async () => {

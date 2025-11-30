@@ -35,7 +35,7 @@ export function MemberListItem({
   }
 
   return (
-    <div className="relative flex items-center justify-start gap-4 rounded-lg border border-[#e1e4ed] bg-white px-6 py-6">
+    <div className="relative flex items-center justify-start gap-10 rounded-lg border border-[#e1e4ed] bg-white px-6 py-6">
       <div className="flex items-center gap-4">
         <Avatar className="size-8">
           <AvatarImage src={member.imageUrl} alt={member.nickname} />
