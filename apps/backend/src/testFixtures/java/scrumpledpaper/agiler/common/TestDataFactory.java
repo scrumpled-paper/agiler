@@ -20,6 +20,7 @@ import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
@@ -401,5 +402,9 @@ public class TestDataFactory {
 			kanbanConfigs.add(kanbanConfig);
 		}
 		return kanbanConfigRepository.saveAll(kanbanConfigs);
+	}
+
+	public List<KanbanConfig> findKanbanConfigsByProjectId(Long id) {
+		return kanbanConfigRepository.findByProjectId(id);
 	}
 }

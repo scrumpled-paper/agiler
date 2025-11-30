@@ -20,7 +20,9 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
+import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.project.dto.ImageUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectCheckResDto;
@@ -121,6 +123,11 @@ public class ProjectControllerTest {
 			List<MeetingTemplate> meetingTemplates = testDataFactory.findMeetingTemplatesByProjectId(createdProject.getId());
 			DefaultMeetingTemplate[] defaultMeetingTemplates = DefaultMeetingTemplate.values();
 			assertThat(meetingTemplates).hasSize(defaultMeetingTemplates.length);
+
+			List<KanbanConfig> kanbanConfigs = testDataFactory.findKanbanConfigsByProjectId(createdProject.getId());
+			DefaultKanbanConfig[] defaultKanbanConfigs = DefaultKanbanConfig.values();
+			assertThat(kanbanConfigs).hasSize(defaultKanbanConfigs.length);
+
 		}
 
 		@Test
