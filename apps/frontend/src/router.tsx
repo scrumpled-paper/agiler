@@ -11,6 +11,7 @@ import ProjectUserSetting from './pages/ProjectUserSetting'
 import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
 import ProjectManagement from './pages/ProjectManagement'
+import ProjectLabelSetting from './pages/ProjectLabelSetting'
 
 export const routers = createBrowserRouter([
   {
@@ -82,6 +83,14 @@ export const routers = createBrowserRouter([
                 element: (
                   <ProtectedRoute>
                     <ProjectManagement />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'project-label',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectLabelSetting />
                   </ProtectedRoute>
                 ),
               },
