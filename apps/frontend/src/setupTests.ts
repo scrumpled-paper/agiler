@@ -4,6 +4,25 @@ import '@testing-library/jest-dom'
 import { server } from './mocks/server'
 import { beforeAll, afterEach, afterAll, vi } from 'vitest'
 
+// Polyfill for Pointer Events in jsdom
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = function () {
+    return false
+  }
+}
+
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = function () {
+    // No-op
+  }
+}
+
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = function () {
+    // No-op
+  }
+}
+
 // MSW 서버 설정
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => server.resetHandlers())

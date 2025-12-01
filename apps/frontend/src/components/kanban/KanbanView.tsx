@@ -200,7 +200,7 @@ export default function KanbanView({
                                   className="h-6 w-6 border-2 border-background"
                                 >
                                   <AvatarImage
-                                    src={subscriber.image}
+                                    src={subscriber.imageUrl}
                                     alt={subscriber.nickname}
                                   />
                                   <AvatarFallback className="text-[10px]">
@@ -225,7 +225,7 @@ export default function KanbanView({
                       {/* task.owner는 Issue['owner'] (UserInfo) 타입입니다. */}
                       <div className="flex flex-ro items-center gap-1">
                         <Avatar className="h-6 w-6 border-2">
-                          <AvatarImage src={task.owner.image} />
+                          <AvatarImage src={task.owner.imageUrl} />
                           <AvatarFallback>
                             {task.owner.nickname.slice(0, 2).toUpperCase()}
                           </AvatarFallback>

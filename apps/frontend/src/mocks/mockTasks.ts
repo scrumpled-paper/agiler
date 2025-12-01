@@ -1,12 +1,39 @@
-import type { Issue, IssueColumn, UserInfo, Label } from '@/types'
+import type { Issue, IssueColumn, UserInfo, Label, ProjectInfo } from '@/types'
 
 // Mock Users
 // UserInfo 타입은 이미 정의된 mockUsers 배열과 호환됩니다.
 export const mockUsers: UserInfo[] = [
-  { nickname: 'Alice Johnson', image: 'https://placehold.co/6x6' },
-  { nickname: 'Bob Smith', image: 'https://placehold.co/6x6' },
-  { nickname: 'Charlie Day', image: 'https://placehold.co/6x6' },
-  { nickname: 'Dana Scully', image: 'https://placehold.co/6x6' },
+  { nickname: 'Alice Johnson', imageUrl: 'https://placehold.co/6x6' },
+  { nickname: 'Bob Smith', imageUrl: 'https://placehold.co/6x6' },
+  { nickname: 'Charlie Day', imageUrl: 'https://placehold.co/6x6' },
+  { nickname: 'Dana Scully', imageUrl: 'https://placehold.co/6x6' },
+]
+
+export const MOCK_MEMBER_PROFILES = [
+  {
+    profileId: 101,
+    nickname: 'Alice_Owner',
+    email: 'alice@projectagile.com',
+    imageUrl: 'https://placehold.co/100x100/007bff/ffffff?text=A',
+    role: 'OWNER',
+    description: '프로젝트의 오너이자 주요 기획 담당자입니다.',
+  },
+  {
+    profileId: 102,
+    nickname: 'Bob_Manager',
+    email: 'bob@projectagile.com',
+    imageUrl: 'https://placehold.co/100x100/28a745/ffffff?text=B',
+    role: 'MANAGER',
+    description: '스프린트 관리 및 팀 리소스를 조율하는 매니저입니다.',
+  },
+  {
+    profileId: 103,
+    nickname: 'Charlie_Member',
+    email: 'charlie@projectagile.com',
+    imageUrl: 'https://placehold.co/100x100/ffc107/343a40?text=C',
+    role: 'MEMBER',
+    description: '프론트엔드 개발 및 이슈 해결을 담당하는 팀원입니다.',
+  },
 ]
 
 // Mock Labels (새로 추가)
@@ -118,5 +145,32 @@ export const mockIssues: Issue[] = [
     owner: mockUsers[3], // Dana
     subscribers: [mockUsers[0], mockUsers[1], mockUsers[2], mockUsers[3]], // 4명 이상 (to test +N display)
     labels: [mockLabels[1], mockLabels[3]], // Backend, Urgent
+  },
+]
+
+export const mockProjectList: ProjectInfo[] = [
+  {
+    title: 'Agile Project',
+    url: 'agile-project',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'An agile project management tool',
+  },
+  {
+    title: 'Design System',
+    url: 'design-system1',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Company-wide design system',
+  },
+  {
+    title: 'Design System2',
+    url: 'design-system2',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Company-wide design system2',
+  },
+  {
+    title: 'Design System3',
+    url: 'design-system3',
+    imageUrl: 'https://placehold.co/600x400',
+    summary: 'Company-wide design system3',
   },
 ]

@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useParams } from 'react-router-dom'
-import type { SidebarContext, SidebarData } from './types'
-import { getSidebarContext } from './config'
+import type { SidebarContext, SidebarData } from '../lib/sidebar/types'
+import { getSidebarContext } from '../lib/sidebar/config'
 import { projectService } from '@/api/services/projectService'
 import type { ProjectInfo } from '@/types'
+import { useUserInfo } from './use-user'
 
 /**
  * 현재 경로를 기반으로 사이드바 컨텍스트를 반환하는 훅
@@ -69,9 +70,13 @@ export const useSidebarData = (
     context === 'project'
   )
 
+  // UserInfo는 context에 따라 다른 API 호출
+  const userInfo = useUserInfo(context, projectUrl)
+
   return {
     projects: projectsData,
     members: membersData?.contents,
+    userInfo: userInfo,
   }
 }
 

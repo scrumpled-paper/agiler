@@ -89,7 +89,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
   },
 
   'project-settings': {
-    header: { type: 'user-info' },
+    // header: { type: 'user-info' },
     sections: [
       {
         type: 'navigation',
@@ -97,19 +97,18 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         displayTitle: true,
         icon: '👤',
         items: [
-          { label: 'User Profile', route: ':projectUrl/settings/profile' },
+          { label: 'User Profile', route: ':projectUrl/settings/users' },
           {
             label: 'Project Management',
-            route: ':projectUrl/settings/project',
+            route: ':projectUrl/settings/project-management',
           },
           {
-            label: 'Database Management',
-            route: ':projectUrl/settings/database',
+            label: 'Label Setting',
+            route: ':projectUrl/settings/project-label',
           },
-          { label: 'API Settings', route: ':projectUrl/settings/api' },
           {
-            label: 'Additional Settings',
-            route: ':projectUrl/settings/additional',
+            label: 'Template Setting',
+            route: ':projectUrl/settings/project-template',
           },
         ],
       },

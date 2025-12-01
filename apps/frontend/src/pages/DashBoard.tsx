@@ -30,7 +30,10 @@ export default function DashBoard() {
 
   return (
     <div className="container p-8">
-      <UserProfileBox />
+      <p className="text-black text-2xl font-bold font-['Roboto'] w-full">
+        User Profile
+      </p>
+      <UserProfileBox context="dashboard" />
       <div className="border h-96">
         <div className="relative flex justify-center items-center w-full p-10 pt-20">
           <p className="text-black text-4xl font-bold font-['Roboto']">

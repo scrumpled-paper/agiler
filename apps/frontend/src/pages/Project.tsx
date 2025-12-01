@@ -3,13 +3,14 @@ import TableView from '@/components/table/TableView'
 import ProjectSummaryCard from '@/components/ProjectSummaryCard'
 import { Button } from '@/components/ui/button'
 import { issueColumns } from '@/mocks/mockTasks'
-import { LayoutGrid, Table } from 'lucide-react'
+import { Info, LayoutGrid, Table } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import type { Issue } from '@/types'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { kanbanService } from '@/api/services/kanbanService'
 import { KanbanDateSelector } from '@/components/kanban/KanbanDateSelector'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 type ViewMode = 'kanban' | 'table'
 
@@ -36,11 +37,9 @@ export default function Project() {
 
   // 드래그 앤 드롭 시 API 호출 (낙관적 업데이트 + 에러 롤백)
   const updateMutation = useMutation({
-    // ⚠️ updatedTasks 타입 변경: Task[] -> Issue[]
     mutationFn: (updatedTasks: Issue[]) =>
       kanbanService.updateIssue(projectUrl!, 'bulk', updatedTasks),
 
-    // ⚠️ onMutate 인자 타입 변경: Task[] -> Issue[]
     onMutate: async (updatedTasks: Issue[]) => {
       // 진행 중인 쿼리 취소 (낙관적 업데이트와 충돌 방지)
       await queryClient.cancelQueries({ queryKey: ['kanban', projectUrl] })
@@ -51,7 +50,6 @@ export default function Project() {
       // 낙관적 업데이트
       queryClient.setQueryData(
         ['kanban', projectUrl],
-        // ⚠️ oldData contents 타입 변경: Task[] -> Issue[]
         (oldData: { contents: Issue[]; size: number } | undefined) => ({
           contents: updatedTasks,
           size: updatedTasks.length,
@@ -85,24 +83,18 @@ export default function Project() {
     )
   }
 
-  if (isError || !data) {
-    return (
-      <div className="container p-4">
-        <div className="flex justify-center items-center h-96">
-          에러가 발생했습니다.
-        </div>
-      </div>
-    )
-  }
-
-  // data.contents는 Issue[] 타입
-  const tasks = data.contents || []
+  const tasks: Issue[] = (data?.contents as Issue[]) || []
 
   return (
     <div className="container p-4">
-      {/* <h1 className="text-3xl font-bold mb-4">Project</h1> */}
       <ProjectSummaryCard></ProjectSummaryCard>
 
+      {isError && (
+        <Alert className="flex flex-row gap-2 items-center my-5">
+          <Info className="h-4 w-4" />
+          <AlertDescription>데이터가 없습니다</AlertDescription>
+        </Alert>
+      )}
       {/* 뷰 전환 버튼 및 날짜 선택기 */}
       <div className="flex items-center justify-between my-4">
         <div className="flex items-center gap-2">

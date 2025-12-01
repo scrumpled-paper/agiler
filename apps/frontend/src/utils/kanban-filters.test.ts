@@ -19,7 +19,7 @@ describe('kanban-filters', () => {
       owner: {
         nickname: 'alice',
         email: 'alice@example.com',
-        image: 'https://placehold.co/100x100',
+        imageUrl: 'https://placehold.co/100x100',
       },
       startAt: new Date('2025-01-01'),
       endAt: new Date('2025-01-10'),
@@ -39,7 +39,7 @@ describe('kanban-filters', () => {
         {
           nickname: 'bob',
           email: 'bob@example.com',
-          image: 'https://placehold.co/100x100',
+          imageUrl: 'https://placehold.co/100x100',
         },
       ],
     },
@@ -50,7 +50,7 @@ describe('kanban-filters', () => {
       owner: {
         nickname: 'bob',
         email: 'bob@example.com',
-        image: 'https://placehold.co/100x100',
+        imageUrl: 'https://placehold.co/100x100',
       },
       startAt: new Date('2025-01-05'),
       endAt: new Date('2025-01-20'),
@@ -65,12 +65,12 @@ describe('kanban-filters', () => {
         {
           nickname: 'alice',
           email: 'alice@example.com',
-          image: 'https://placehold.co/100x100',
+          imageUrl: 'https://placehold.co/100x100',
         },
         {
           nickname: 'charlie',
           email: 'charlie@example.com',
-          image: 'https://placehold.co/100x100',
+          imageUrl: 'https://placehold.co/100x100',
         },
       ],
     },
@@ -81,7 +81,7 @@ describe('kanban-filters', () => {
       owner: {
         nickname: 'charlie',
         email: 'charlie@example.com',
-        image: 'https://placehold.co/100x100',
+        imageUrl: 'https://placehold.co/100x100',
       },
       startAt: new Date('2025-01-03'),
       endAt: new Date('2025-01-08'),

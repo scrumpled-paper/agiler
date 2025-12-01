@@ -7,8 +7,12 @@ import Login from './pages/Login'
 import DashBoard from './pages/DashBoard'
 import Project from './pages/Project'
 import ProjectSetting from './pages/ProjectSetting'
+import ProjectUserSetting from './pages/ProjectUserSetting'
 import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
+import ProjectManagement from './pages/ProjectManagement'
+import ProjectLabelSetting from './pages/ProjectLabelSetting'
+import ProjectTemplateSetting from './pages/ProjectTemplateSetting'
 
 export const routers = createBrowserRouter([
   {
@@ -58,11 +62,50 @@ export const routers = createBrowserRouter([
           },
           {
             path: 'settings',
-            element: (
-              <ProtectedRoute>
-                <ProjectSetting />
-              </ProtectedRoute>
-            ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <ProtectedRoute>
+                    <ProjectUserSetting />
+                    {/*[ ]  셋팅페이지 완성 후 수정 예정입니다 */}
+                    {/* <ProjectSetting /> */}
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'users',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectUserSetting />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'project-management',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectManagement />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'project-label',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectLabelSetting />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'project-template',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectTemplateSetting />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
           },
           {
             path: 'daily-scrum',

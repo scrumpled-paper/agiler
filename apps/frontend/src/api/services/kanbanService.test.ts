@@ -26,7 +26,7 @@ describe('kanbanService', () => {
           owner: {
             nickname: 'user1',
             email: 'user1@example.com',
-            image: 'https://placehold.co/100x100',
+            imageUrl: 'https://placehold.co/100x100',
           },
           startAt: new Date('2025-01-01'),
           endAt: new Date('2025-01-10'),
@@ -40,7 +40,7 @@ describe('kanbanService', () => {
           owner: {
             nickname: 'user2',
             email: 'user2@example.com',
-            image: 'https://placehold.co/100x100',
+            imageUrl: 'https://placehold.co/100x100',
           },
           startAt: new Date('2025-01-05'),
           endAt: new Date('2025-01-15'),
@@ -71,7 +71,7 @@ describe('kanbanService', () => {
           owner: {
             nickname: 'user1',
             email: 'user1@example.com',
-            image: 'https://placehold.co/100x100',
+            imageUrl: 'https://placehold.co/100x100',
           },
           startAt: new Date('2025-01-01'),
           endAt: new Date('2025-01-10'),
@@ -122,7 +122,7 @@ describe('kanbanService', () => {
           owner: {
             nickname: 'user1',
             email: 'user1@example.com',
-            image: 'https://placehold.co/100x100',
+            imageUrl: 'https://placehold.co/100x100',
           },
           startAt: new Date('2025-01-01'),
           endAt: new Date('2025-01-10'),
@@ -165,7 +165,7 @@ describe('kanbanService', () => {
           owner: {
             nickname: 'user1',
             email: 'user1@example.com',
-            image: 'https://placehold.co/100x100',
+            imageUrl: 'https://placehold.co/100x100',
           },
           startAt: new Date('2025-01-01'),
           endAt: new Date('2025-01-10'),
@@ -179,7 +179,7 @@ describe('kanbanService', () => {
           owner: {
             nickname: 'user2',
             email: 'user2@example.com',
-            image: 'https://placehold.co/100x100',
+            imageUrl: 'https://placehold.co/100x100',
           },
           startAt: new Date('2025-01-05'),
           endAt: new Date('2025-01-15'),

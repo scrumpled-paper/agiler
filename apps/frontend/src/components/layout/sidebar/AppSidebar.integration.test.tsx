@@ -85,7 +85,7 @@ describe('AppSidebar - 통합 테스트', () => {
 
       await waitFor(() => {
         // UserInfoSection에서 렌더링되는 John Doe 확인
-        expect(screen.getByText('John Doe')).toBeInTheDocument()
+        expect(screen.getByText('AgileTester')).toBeInTheDocument()
       })
     })
 

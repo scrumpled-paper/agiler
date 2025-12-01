@@ -1,165 +1,283 @@
 import { useRef, useState } from 'react'
 import { Button } from './ui/button'
-import { PencilIcon, Upload, UserIcon, CheckIcon } from 'lucide-react'
+import { Upload, UserIcon } from 'lucide-react'
+import { s3Service } from '@/api/services/s3Service'
+import {
+  useUserInfo,
+  useDashboardProfileMutation,
+  useProjectProfileMutation,
+} from '@/hooks/use-user'
 
-export default function UserProfileBox() {
-  const [preview, setPreview] = useState<string | null>(null)
-  const [userName, setUserName] = useState<string>('userName')
-  const [isEditName, setIsEditName] = useState<boolean>(false)
-  const [isUploading, setIsUploading] = useState(false) // 업로드 상태 추가
+type UserProfileBoxProps = {
+  context: 'dashboard' | 'project'
+  projectUrl?: string
+}
+
+export default function UserProfileBox({
+  context,
+  projectUrl,
+}: UserProfileBoxProps) {
+  // 1. useUserInfo를 사용하여 데이터 조회
+  const userInfo = useUserInfo(context, projectUrl)
+
+  // 2. context에 따라 적절한 mutation 훅 사용
+  const dashboardMutation = useDashboardProfileMutation()
+  const projectMutation = useProjectProfileMutation(projectUrl || '')
+
+  // 로컬 상태 (편집 모드에서만 사용)
+  const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [editedName, setEditedName] = useState<string>('')
+  const [editedEmail, setEditedEmail] = useState<string>('')
+  const [editedDescription, setEditedDescription] = useState<string>('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
+  const emailInputRef = useRef<HTMLInputElement>(null)
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null)
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
 
-    if (!file) {
-      return // 파일이 없으면 아무것도 하지 않음
+    if (!file || isUploading) {
+      return
     }
 
-    //이미지 미리보기 로직
+    // 이미지 미리보기 로직 (로컬 파일)
     const reader = new FileReader()
     reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setPreview(reader.result)
-      }
+      // 로컬 미리보기는 API 호출 중에도 유지될 수 있도록 임시로 설정 가능
+      // setPreview(reader.result as string);
     }
     reader.readAsDataURL(file)
 
-    //API 전송 로직 (
-    setIsUploading(true) // 업로드 시작
-    const formData = new FormData()
-    formData.append('profileImage', file)
+    // API 전송 로직
+    setIsUploading(true)
 
     try {
-      // 'YOUR_API_ENDPOINT'를 실제 API 주소로 변경하세요.
-      const response = await fetch('YOUR_API_ENDPOINT', {
-        method: 'POST',
-        body: formData,
-        // headers: { 'Authorization': 'Bearer YOUR_TOKEN' }, // 인증 토큰이 필요한 경우
-      })
+      // 1. S3 업로드 서비스 호출
+      const newImageUrl = await s3Service.uploadProfileImage(file)
 
-      if (!response.ok) {
-        throw new Error('Image upload failed')
-      }
+      // 2. 서버에 새로운 이미지 URL 업데이트 요청 (useMutation 사용)
+      // mutate({ imageUrl: newImageUrl })
 
-      const result = await response.json()
-      console.log('Upload successful:', result)
-      // 예: 업로드 성공 후 받은 이미지 URL을 preview 상태에 저장할 수도 있습니다.
-      // setPreview(result.imageUrl);
+      console.log('Upload successful:', newImageUrl)
     } catch (error) {
-      console.error('Error uploading image:', error)
-      // 사용자에게 오류 알림 (예: 토스트 메시지)
+      console.error('Error uploading image or updating profile:', error)
     } finally {
-      setIsUploading(false) // 업로드 완료 (성공/실패)
+      setIsUploading(false)
+      // 파일 입력 필드 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
   const handleImageClick = () => {
-    // 업로드 중이 아닐 때만 클릭 가능하도록 수정
     if (fileInputRef.current && !isUploading) {
       fileInputRef.current.click()
     }
   }
 
-  //이름 저장 로직
-  const handleSaveName = async () => {
-    // 여기에 userName을 서버로 전송하는 API 호출을 구현합니다.
-    console.log('Saving new name:', userName)
-    // 예: await api.updateUserName(userName);
+  // 편집 시작
+  const handleStartEdit = () => {
+    setEditedName(userInfo?.nickname || '')
+    setEditedEmail(userInfo?.email || '')
+    setEditedDescription(userInfo?.description || '')
+    setIsEditing(true)
+
+    setTimeout(() => {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+    }, 0)
+  }
+
+  // 저장 로직
+  const handleSave = () => {
+    // 변경사항 검증
+    if (editedName.trim() === '') {
+      alert('닉네임은 비워둘 수 없습니다.')
+      return
+    }
+
+    // context에 따라 다른 필드 저장
+    if (context === 'dashboard') {
+      // dashboard: name과 email만
+      dashboardMutation.mutate({ nickname: editedName, email: editedEmail })
+      console.log('Saving dashboard profile:', {
+        nickname: editedName,
+        email: editedEmail,
+      })
+    } else {
+      // project: name, email, description 모두
+      projectMutation.mutate({
+        nickname: editedName,
+        email: editedEmail,
+        description: editedDescription,
+      })
+      console.log('Saving project profile:', {
+        nickname: editedName,
+        email: editedEmail,
+        description: editedDescription,
+      })
+    }
+
+    setIsEditing(false)
+  }
+
+  // 취소
+  const handleCancel = () => {
+    setIsEditing(false)
   }
 
   const handleEditToggle = () => {
-    if (isEditName) {
-      setIsEditName(false)
-      handleSaveName()
+    if (isEditing) {
+      handleSave()
     } else {
-      setIsEditName(true)
-      // state가 변경된 후(re-render) 포커스를 주기 위해 setTimeout 사용
-      setTimeout(() => {
-        nameInputRef.current?.focus()
-        nameInputRef.current?.select() // 텍스트 전체 선택
-      }, 0)
+      handleStartEdit()
     }
   }
 
+  // 데이터 로딩 중인지 확인
+  const isLoadingData = !userInfo
+
   return (
-    <div className="rounded-xl border w-full p-4 inline-flex justify-between items-center bg-white shadow-sm">
-      <div className="flex-1 inline-flex justify-start items-center gap-5">
-        {/* 프로필 이미지 영역 */}
-        <div
-          // 업로드 중일 때 스타일 추가
-          className={`relative w-20 h-20 rounded-full flex items-center justify-center bg-gray-100 cursor-pointer overflow-hidden border border-gray-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          onClick={handleImageClick}
-        >
-          {preview ? (
-            <img
-              src={preview}
-              alt="Profile Preview"
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <UserIcon className="w-10 h-10 text-gray-400" />
-          )}
-
-          {/* 업로드 중 아닐 때만 호버 효과 표시 */}
-          {!isUploading && (
-            <div className="bg-black/50 w-20 h-20 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 absolute">
-              <Upload className="text-white" />
-            </div>
-          )}
-
-          {/* 업로드 중일 때 로딩 스피너 표시 */}
-          {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <div className="w-6 h-6 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
-            </div>
-          )}
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            ref={fileInputRef}
-            className="hidden"
-            disabled={isUploading} // 업로드 중에 input 비활성화
-          />
-        </div>
-
-        <div className="flex flex-col justify-center">
-          <div className="inline-flex items-center gap-2">
-            <div className="text-black text-xl font-semibold">
-              <input
-                type="text"
-                value={userName}
-                ref={nameInputRef}
-                // 편집 중일 때(!isEditName === false) disabled가 해제됩니다.
-                disabled={!isEditName}
-                onChange={e => setUserName(e.target.value)}
-                // 비활성화 상태일 때 input처럼 보이지 않도록 스타일링
-                className="bg-transparent outline-none ring-0 disabled:border-transparent disabled:ring-0 disabled:cursor-default focus:ring-1 focus:ring-gray-300 rounded-md px-1 py-0.5 -ml-1"
-                onKeyDown={e => {
-                  // Enter 키로 저장
-                  if (e.key === 'Enter') handleEditToggle()
-                }}
+    <div className="rounded-xl border p-4 bg-white shadow-sm">
+      <div className="flex justify-between items-start gap-5 ">
+        <div className="flex flex-row gap-5">
+          {/* 프로필 이미지 영역 */}
+          <div
+            className={`relative w-20 h-20 flex-shrink-0 rounded-full flex items-center justify-center bg-gray-100 cursor-pointer overflow-hidden border border-gray-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={handleImageClick}
+          >
+            {userInfo?.imageUrl ? (
+              <img
+                src={userInfo.imageUrl}
+                alt="Profile Preview"
+                className="w-full h-full object-cover rounded-full"
               />
-            </div>
-            {/* 연필/저장 아이콘 토글 버튼 */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-500 hover:text-gray-700"
-              onClick={handleEditToggle} // 클릭 핸들러 변경
-            >
-              {isEditName ? (
-                <CheckIcon className="w-4 h-4" /> // 저장 아이콘
-              ) : (
-                <PencilIcon className="w-4 h-4" /> // 편집 아이콘
-              )}
-            </Button>
+            ) : (
+              <UserIcon className="w-10 h-10 text-gray-400" />
+            )}
+
+            {!isUploading && (
+              <div className="bg-black/50 w-20 h-20 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 absolute">
+                <Upload className="text-white" />
+              </div>
+            )}
+
+            {(isUploading || isLoadingData) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <div className="w-6 h-6 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+              </div>
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              ref={fileInputRef}
+              className="hidden"
+              disabled={isUploading || isLoadingData}
+            />
           </div>
-          <div className="text-gray-500 text-sm">User Profile</div>
+
+          {/* 프로필 정보 영역 */}
+          <div className="flex-1 flex flex-col gap-2 ">
+            {/* 이름 필드 */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <label className="text-xs text-gray-500 block mb-1">Name</label>
+                <input
+                  type="text"
+                  value={isEditing ? editedName : userInfo?.nickname || ''}
+                  ref={nameInputRef}
+                  disabled={!isEditing || isLoadingData}
+                  onChange={e => setEditedName(e.target.value)}
+                  className="w-full text-lg font-semibold bg-transparent outline-none ring-0 disabled:border-transparent disabled:ring-0 disabled:cursor-default enabled:border enabled:border-gray-300 enabled:ring-1 enabled:ring-gray-300 rounded-md px-2 py-1"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && isEditing) handleSave()
+                    if (e.key === 'Escape' && isEditing) handleCancel()
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* 이메일 필드 */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <label className="text-xs text-gray-500 block mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={
+                    isEditing
+                      ? editedEmail
+                      : userInfo?.email || '등록된 이메일이 없습니다.'
+                  }
+                  ref={emailInputRef}
+                  disabled={!isEditing || isLoadingData}
+                  onChange={e => setEditedEmail(e.target.value)}
+                  className="w-full text-sm bg-transparent outline-none ring-0 disabled:border-transparent disabled:ring-0 disabled:cursor-default enabled:border enabled:border-gray-300 enabled:ring-1 enabled:ring-gray-300 rounded-md px-2 py-1"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && isEditing) handleSave()
+                    if (e.key === 'Escape' && isEditing) handleCancel()
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Description 필드 - project context일 때만 표시 */}
+            {context === 'project' && (
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500 block mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={
+                      isEditing
+                        ? editedDescription
+                        : userInfo?.description || '등록된 내용이 없습니다.'
+                    }
+                    ref={descriptionInputRef}
+                    disabled={!isEditing || isLoadingData}
+                    onChange={e => setEditedDescription(e.target.value)}
+                    rows={2}
+                    className="w-full text-sm bg-transparent outline-none ring-0 disabled:border-transparent disabled:ring-0 disabled:cursor-default enabled:border enabled:border-gray-300 enabled:ring-1 enabled:ring-gray-300 rounded-md px-2 py-1 resize-none"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && e.ctrlKey && isEditing)
+                        handleSave()
+                      if (e.key === 'Escape' && isEditing) handleCancel()
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* 편집/저장 버튼 */}
+        <div className="flex flex-col gap-2 mt-1 w-24 justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-gray-500 hover:text-gray-700"
+            onClick={handleEditToggle}
+            disabled={isLoadingData}
+          >
+            {isEditing ? <div>Save</div> : <div>Edit</div>}
+          </Button>
+          {isEditing && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700"
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </div>
     </div>
