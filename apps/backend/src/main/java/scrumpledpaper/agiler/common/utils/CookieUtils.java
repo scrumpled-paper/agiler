@@ -57,4 +57,14 @@ public class CookieUtils {
 		return cls.cast(SerializationUtils.deserialize(
 				Base64.getUrlDecoder().decode(cookie.getValue())));
 	}
+
+	public static void addProjectUrlCookie(HttpServletResponse response, String projectUrl, long maxAgeSeconds) {
+		ResponseCookie cookie = ResponseCookie.from("project_url", projectUrl)
+			.path("/")
+			.httpOnly(true)
+			.maxAge(maxAgeSeconds)
+			.sameSite("Lax")
+			.build();
+		response.addHeader("Set-Cookie", cookie.toString());
+	}
 }

@@ -11,6 +11,8 @@ import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
+import scrumpledpaper.agiler.kanban.entity.IssueSnapshot;
+import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.project.entity.Profile;
@@ -25,6 +27,8 @@ public interface IssueMapper {
 	@Mapping(target = "contents", source = "issueCreateReqDto.contents")
 	@Mapping(target = "isDone", defaultValue = "false")
 	Issue toEntity(Project project, KanbanConfig kanbanConfig, IssueCreateReqDto issueCreateReqDto);
+
+	IssueSnapshot toIssueSnapshot(Issue issue);
 
 	default List<IssueLabel> toIssueLabel(Issue issue, List<Label> labels) {
 		if (labels.isEmpty()) {
@@ -51,4 +55,11 @@ public interface IssueMapper {
 				.build())
 			.collect(Collectors.toList());
 	}
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "kanbanConfig", source = "kanbanConfig")
+	Issue toEntity(Issue issue, KanbanConfig kanbanConfig);
+
+	@Mapping(target = "id", ignore = true)
+	IssueSnapshotDateMapping toIssueSnapshotDateMapping(Project project, int count);
 }

@@ -1,6 +1,9 @@
 package scrumpledpaper.agiler.kanban.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -73,7 +76,7 @@ public class IssueService {
 		return issue.getId();
 	}
 
-	private Issue findIssueById(Long issueId) {
+	public Issue findIssueById(Long issueId) {
 		return issueRepository.findById(issueId)
 			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
 	}
@@ -143,5 +146,41 @@ public class IssueService {
 		));
 
 		return issue.getId();
+	}
+
+	public List<Issue> findByProjectIdCreatedAtBetween(Long projectId, LocalDateTime dayStart, LocalDateTime dayEnd) {
+		return issueRepository.findByProjectIdAndCreatedAtBetween(projectId, dayStart, dayEnd);
+	}
+
+	public void copyToBacklogIssuesAndDeleteOriginalIssues(Long projectId, List<Issue> issues) {
+		KanbanConfig backlogConfig = kanbanConfigService.getBacklogKanbanConfig(projectId);
+
+		List<Issue> newBacklogIssues = issues.stream()
+			.filter(issue -> Boolean.FALSE.equals(issue.getIsDone()))
+			.map(issue -> issueMapper.toEntity(issue, backlogConfig))
+			.toList();
+		issueRepository.saveAll(newBacklogIssues);
+		issueRepository.deleteAll(issues);
+	}
+
+	public List<Issue> findIssuesForLatestCreationDay(Long projectId, int issueSnapshotStartHour) {
+		Optional<Issue> lastCreatedIssue = issueRepository.findFirstByProjectIdOrderByCreatedAtDesc(projectId);
+		if (lastCreatedIssue.isEmpty()) {
+			return List.of();
+		}
+
+		LocalDateTime lastCreatedAt = lastCreatedIssue.get().getCreatedAt();
+		LocalDate lastCreatedDate = lastCreatedAt.toLocalDate();
+
+		if (lastCreatedAt.getHour() < issueSnapshotStartHour) {
+			lastCreatedDate = lastCreatedDate.minusDays(1);
+		}
+
+		LocalDateTime dayStart = lastCreatedDate.atTime(issueSnapshotStartHour, 0);
+		LocalDateTime dayEnd = lastCreatedDate.plusDays(1)
+			.atTime(issueSnapshotStartHour, 0)
+			.minusNanos(1);
+
+		return findByProjectIdCreatedAtBetween(projectId, dayStart, dayEnd);
 	}
 }
