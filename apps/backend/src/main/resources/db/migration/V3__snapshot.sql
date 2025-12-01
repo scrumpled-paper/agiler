@@ -30,3 +30,15 @@ CREATE TABLE issue_snapshot (
     FOREIGN KEY (`kanban_config_id`) REFERENCES `kanban_config`(`id`),
     FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`)
 );
+
+CREATE TABLE issue_snapshot_date_mapping (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `project_id` BIGINT NOT NULL,
+    `issue_count` INT NOT NULL,
+    `snapshot_date` DATE NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    `updated_at` DATETIME NOT NULL,
+    `deleted_at` DATETIME,
+    UNIQUE KEY unique_project_date (project_id, snapshot_date),
+    FOREIGN KEY (`project_id`) REFERENCES `project`(`id`)
+);
