@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "apps/backend/build/libs/*.jar"
-          target: "/home/ubuntu/backend/app.jar"
+          target: "/home/ubuntu/backend"
           strip_components: 4
 
       - name: Execute deployment script on server
@@ -50,42 +50,68 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
+
             DEPLOY_PATH="/home/ubuntu/backend"
             CONFIG_PATH="$DEPLOY_PATH/config"
             JAR_PATH="$DEPLOY_PATH/app.jar"
 
-            # Create configuration directory
-            mkdir -p $CONFIG_PATH
+            # 1. Create configuration directory
+            mkdir -p "$CONFIG_PATH"
 
-            # Create application.yml from GitHub Secret
-            cat <<'EOF' > $CONFIG_PATH/application.yml
+            # 2. GitHub Secret에서 application.yml 생성
+            cat <<'EOF' > "$CONFIG_PATH/application.yml"
             ${{ secrets.APPLICATION_YML }}
             EOF
 
-            # Stop any old running process
-            pkill -f "$JAR_PATH" || true
-            # Wait until the port is released
-            echo "Waiting for port 8080 to be released..."
-            while lsof -i :8080 > /dev/null
-            do
-            sleep 1
-            done
-            echo "Port 8080 is free."
+            # 3. 가장 최근에 업로드된 JAR를 app.jar 이름으로 표준화
+            LATEST_JAR=$(ls -t "$DEPLOY_PATH"/*.jar | head -n 1 || true)
+            if [ -z "$LATEST_JAR" ]; then
+              echo "No jar file found in $DEPLOY_PATH"
+              exit 1
+            fi
 
-            # Start the new application with external config
-            nohup java -jar $JAR_PATH --spring.config.location=$CONFIG_PATH/application.yml > $DEPLOY_PATH/app.log 2>&1 &
+            echo "Latest jar: $LATEST_JAR"
+            cp "$LATEST_JAR" "$JAR_PATH"
+
+            # 4. 8080 포트를 사용 중인 프로세스 정리
+            PIDS=$(lsof -ti :8080 || true)
+            if [ -n "$PIDS" ]; then
+              echo "Killing processes on port 8080: $PIDS"
+              kill $PIDS || true
+            fi
+
+            echo "Waiting for port 8080 to be released (max 30s)..."
+            for i in $(seq 1 30); do
+              if ! lsof -i :8080 > /dev/null; then
+                echo "Port 8080 is free."
+                break
+              fi
+              sleep 1
+            done
+
+            if lsof -i :8080 > /dev/null; then
+              echo "Port 8080 is still in use after 30 seconds."
+              exit 1
+            fi
+
+            # 5. 새로운 앱 실행 (외부 설정 파일 사용)
+            echo "Starting application..."
+            nohup java -jar "$JAR_PATH" --spring.config.location="$CONFIG_PATH/application.yml" > "$DEPLOY_PATH/app.log" 2>&1 &
 
             echo "Waiting for application to start..."
-            sleep 15
-            for i in {1..10}
-            do
-              response=$(curl -s http://127.0.0.1:8080/actuator/health)
-              if [[ "$response" == *"UP"* ]]; then
+            sleep 10
+
+            # 6. 헬스 체크로 기동 여부 확인
+            for i in $(seq 1 10); do
+              response=$(curl -s http://127.0.0.1:8080/actuator/health || true)
+              if echo "$response" | grep -q "UP"; then
                 echo "Application started successfully!"
                 exit 0
               fi
-              echo "Application not up yet. Retrying in 5 seconds..."
+              echo "Health check failed (attempt $i/10). Retrying in 5 seconds..."
               sleep 5
             done
+
             echo "Application failed to start."
-            exit 1 # 헬스체크 실패 시 워크플로우를 실패 처리
+            exit 1
