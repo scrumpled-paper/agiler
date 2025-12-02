@@ -93,12 +93,17 @@ export default function ProjectUserSetting() {
   }))
 
   return (
-    <div className="container p-8">
-      <h1 className="text-center text-[40px] font-bold leading-tight text-black">
-        My Information
-      </h1>
-      <UserProfileBox context="project" projectUrl={projectUrl} />
-      <div className="flex flex-col pt-10">
+    <div className="container flex flex-col justify-center items-center gap-10 p-10">
+      <div className="w-full">
+        <h1 className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
+          My Information
+        </h1>
+        <UserProfileBox context="project" projectUrl={projectUrl} />
+      </div>
+      <div className="w-full mt-10">
+        <h1 className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
+          Current Members
+        </h1>
         <MemberList
           members={members}
           onRoleChange={handleRoleChange}

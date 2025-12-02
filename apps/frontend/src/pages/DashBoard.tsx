@@ -29,18 +29,21 @@ export default function DashBoard() {
   }
 
   return (
-    <div className="container p-8">
-      <p className="text-black text-2xl font-bold font-['Roboto'] w-full">
-        User Profile
-      </p>
-      <UserProfileBox context="dashboard" />
-      <div className="border h-96">
+    <div className="container p-8 flex flex-col justify-center items-center ">
+      <div className="flex flex-col justify-center max-w-xl">
+        {/* <p className="text-black text-4xl font-bold font-['Roboto'] text-center pb-10 max-w-3xl">
+          User Profile
+        </p> */}
+        <UserProfileBox context="dashboard" />
+      </div>
+      {/* todo 구현 후 사용할 태그 */}
+      {/* <div className="border h-96">
         <div className="relative flex justify-center items-center w-full p-10 pt-20">
           <p className="text-black text-4xl font-bold font-['Roboto']">
             Todo List
           </p>
         </div>
-      </div>
+      </div> */}
 
       <ProjectList
         contents={data.contents}

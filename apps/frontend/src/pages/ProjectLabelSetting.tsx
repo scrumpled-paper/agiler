@@ -50,10 +50,10 @@ export default function ProjectLabelSetting() {
   }
 
   return (
-    <div className="container mx-auto flex flex-col items-center gap-8 p-8">
+    <div className="container flex flex-col justify-center items-center gap-8 p-10">
       {/* Title */}
       <div className="flex w-full max-w-[1100px] flex-col items-center gap-6">
-        <h1 className="text-center text-[40px] font-bold leading-[48px] text-black">
+        <h1 className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
           Label Setting
         </h1>
 
@@ -67,7 +67,7 @@ export default function ProjectLabelSetting() {
       </div>
 
       {/* Label List */}
-      <div className="flex w-full max-w-[1100px] flex-col gap-5">
+      <div className="flex w-full flex-col gap-5 max-w-3xl">
         {data.labels.map(label => (
           <div
             key={label.id}

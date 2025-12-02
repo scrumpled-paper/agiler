@@ -34,24 +34,22 @@ export default function ProjectManagement() {
   }
 
   return (
-    <div className="container p-4">
-      <div className="flex flex-col justify-center items-center gap-5">
-        <div className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
-          Project Management
-        </div>
-        <div className="flex flex-col justify-center gap-10 max-w-3xl">
-          <ProjectFormImageBox
-            projectUrl={projectUrl || ''}
-            projectImageUrl={projectImageUrl || ''}
-          />
-          <ProjectForm
-            projectUrl={projectUrl}
-            initialData={initialDataForForm}
-            onCreateSuccess={handleCreateSuccess}
-            onCancel={handleCancel}
-            submitButtonLabel="Save"
-          />
-        </div>
+    <div className="container flex flex-col justify-center items-center gap-5  p-10">
+      <h1 className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
+        Project Management
+      </h1>
+      <div className="flex flex-col justify-center gap-10 max-w-3xl">
+        <ProjectFormImageBox
+          projectUrl={projectUrl || ''}
+          projectImageUrl={projectImageUrl || ''}
+        />
+        <ProjectForm
+          projectUrl={projectUrl}
+          initialData={initialDataForForm}
+          onCreateSuccess={handleCreateSuccess}
+          onCancel={handleCancel}
+          submitButtonLabel="Save"
+        />
       </div>
     </div>
   )

@@ -91,15 +91,15 @@ export default function ProjectTemplateSetting() {
   }
 
   return (
-    <div className="container mx-auto flex flex-col items-center gap-8 p-8">
+    <div className="container flex flex-col justify-center items-center gap-8 p-10 overflow-y-clip">
       {/* Title */}
       <div className="flex w-full max-w-[1100px] flex-col items-center gap-6">
-        <h1 className="text-center text-[40px] font-bold leading-[48px] text-black">
+        <h1 className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
           Template Setting
         </h1>
 
         {/* Category Filter */}
-        <div className="flex w-full items-center gap-4">
+        <div className="flex w-full max-w-3xl justify-start items-center gap-4">
           <label className="text-sm font-semibold text-[#6d758f]">
             Category
           </label>
@@ -124,7 +124,7 @@ export default function ProjectTemplateSetting() {
       </div>
 
       {/* Template List */}
-      <div className="flex w-full max-w-[1100px] flex-col gap-5 ">
+      <div className="flex w-full flex-col gap-5 max-w-3xl ">
         {templates.map(template => (
           <div
             key={template.templateId}
