@@ -45,6 +45,7 @@ CREATE TABLE `kanban_config` (
     `default_status` TINYINT(1) NOT NULL,
     `backlog` TINYINT(1) NOT NULL,
     `is_done` TINYINT(1) NOT NULL,
+    `version` INT NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME,
