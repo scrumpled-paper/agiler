@@ -12,4 +12,14 @@ export const userService = {
     const response = await apiClient.patch(this.apiUrl, payload)
     return response.data
   },
+
+  async updateUserImage(objectKey: string) {
+    const imageUrl = `${this.apiUrl}/image`
+    await apiClient.patch(imageUrl, { objectKey })
+  },
+
+  async deleteUserImage() {
+    const imageUrl = `${this.apiUrl}/image`
+    await apiClient.delete(imageUrl)
+  },
 }

@@ -7,12 +7,6 @@ interface PreSignedUrlResponse {
   objectKey: string
 }
 
-// 2. 업로드 확인 응답 타입 (이미지 ID와 URL)
-interface ImageConfirmResponse {
-  imageId: number
-  imageUrl: string
-}
-
 export const s3Service = {
   // 1단계: 프리사인드 URL 요청
   async getPreSignedUrl(
@@ -41,15 +35,6 @@ export const s3Service = {
     // 업로드가 성공하면 응답으로 상태 코드 200이 반환됩니다.
   },
 
-  // 3단계: 백엔드에 업로드 완료 통보 및 이미지 정보 획득
-  // [ ] 백엔드에서 이미지 업로드 로직 추가 후 수정
-  async confirmUpload(objectKey: string): Promise<ImageConfirmResponse> {
-    const response = await apiClient.post('/api/v1/s3/confirm-upload', {
-      objectKey,
-    })
-    return response.data
-  },
-
   // **통합 함수:** 전체 업로드 프로세스를 한번에 처리
   async uploadProfileImage(file: File): Promise<string> {
     const fileName = file.name
@@ -64,10 +49,7 @@ export const s3Service = {
     // 2. S3 업로드
     await this.uploadFileToS3(preSignedUrl, file, contentType)
 
-    // 3. 업로드 확인 및 이미지 정보 획득
-    const { imageUrl } = await this.confirmUpload(objectKey)
-
     // 최종 이미지 URL 반환
-    return imageUrl
+    return objectKey
   },
 }
