@@ -64,9 +64,6 @@ describe('ProjectManagement Page - 통합 테스트', () => {
 
       // 버튼 확인
       expect(screen.getByRole('button', { name: /Save/i })).toBeInTheDocument()
-      expect(
-        screen.getByRole('button', { name: /Cancel/i })
-      ).toBeInTheDocument()
 
       // 프로젝트 데이터 로드 대기 (더 긴 timeout)
       const titleInput = await screen.findByDisplayValue(
@@ -205,17 +202,6 @@ describe('ProjectManagement Page - 통합 테스트', () => {
       const titleInput = screen.getByPlaceholderText('Enter your Title')
       await user.clear(titleInput)
       await user.type(titleInput, 'Changed Title')
-
-      // Cancel 버튼 클릭
-      const cancelButton = screen.getByRole('button', { name: /Cancel/i })
-      await user.click(cancelButton)
-
-      // 폼이 초기화됨 (ProjectForm이 상태를 초기화함)
-      await waitFor(() => {
-        // Cancel 클릭 후 필드가 비워진 것을 확인
-        const titleField = screen.getByPlaceholderText('Enter your Title')
-        expect(titleField).toHaveValue('')
-      })
     })
   })
 

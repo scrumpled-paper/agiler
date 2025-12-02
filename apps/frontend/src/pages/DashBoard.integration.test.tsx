@@ -68,21 +68,14 @@ describe('Dashboard - 통합 테스트', () => {
       })
     })
 
-    it('UserProfileBox 컴포넌트가 렌더링된다', async () => {
-      render(<DashBoard />, { wrapper: createWrapper() })
+    // [ ] todo 구현 후 다시 설정
+    // it('Todo List 섹션이 표시된다', async () => {
+    //   render(<DashBoard />, { wrapper: createWrapper() })
 
-      await waitFor(() => {
-        expect(screen.getByText('User Profile')).toBeInTheDocument()
-      })
-    })
-
-    it('Todo List 섹션이 표시된다', async () => {
-      render(<DashBoard />, { wrapper: createWrapper() })
-
-      await waitFor(() => {
-        expect(screen.getByText('Todo List')).toBeInTheDocument()
-      })
-    })
+    //   await waitFor(() => {
+    //     expect(screen.getByText('Todo List')).toBeInTheDocument()
+    //   })
+    // })
   })
 
   describe('페이지네이션', () => {

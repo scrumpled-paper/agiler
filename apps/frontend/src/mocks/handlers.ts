@@ -400,6 +400,84 @@ export const handlers = [
     return HttpResponse.json(body.nickname)
   }),
 
+  // S3 pre-signed URL 생성
+  ...createPostHandlers('/api/v1/s3/pre-signed-url', async ({ request }) => {
+    const body = (await request.json()) as {
+      fileName: string
+      contentType: string
+    }
+    console.log('[MSW] S3 pre-signed URL 요청:', body)
+    return HttpResponse.json({
+      preSignedUrl: `https://mock-s3.amazonaws.com/bucket/${body.fileName}`,
+      objectKey: `uploads/${Date.now()}/${body.fileName}`,
+    })
+  }),
+
+  // S3 업로드 (외부 URL)
+  http.put('https://mock-s3.amazonaws.com/bucket/*', async () => {
+    console.log('[MSW] S3 파일 업로드')
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  // 프로젝트 메인 이미지 업데이트
+  ...createPatchHandlers(
+    '/api/v1/projects/:projectUrl/image',
+    async ({ params, request }) => {
+      const body = (await request.json()) as { objectKey: string }
+      console.log(
+        '[MSW] 프로젝트 메인 이미지 업데이트:',
+        params.projectUrl,
+        body
+      )
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
+
+  // 프로젝트 메인 이미지 삭제
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/image',
+    ({ params }) => {
+      console.log('[MSW] 프로젝트 메인 이미지 삭제:', params.projectUrl)
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
+
+  // 사용자 이미지 업데이트
+  ...createPatchHandlers('/api/v1/users/image', async ({ request }) => {
+    const body = (await request.json()) as { objectKey: string }
+    console.log('[MSW] 사용자 이미지 업데이트:', body)
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  // 사용자 이미지 삭제
+  ...createDeleteHandlers('/api/v1/users/image', () => {
+    console.log('[MSW] 사용자 이미지 삭제')
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  // 프로젝트 내 사용자 이미지 업데이트
+  ...createPatchHandlers(
+    '/api/v1/projects/:projectUrl/profiles/image',
+    async ({ params, request }) => {
+      const body = (await request.json()) as { objectKey: string }
+      console.log(
+        '[MSW] 프로젝트 사용자 이미지 업데이트:',
+        params.projectUrl,
+        body
+      )
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
+
+  // 프로젝트 내 사용자 이미지 삭제
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/profiles/image',
+    ({ params }) => {
+      console.log('[MSW] 프로젝트 사용자 이미지 삭제:', params.projectUrl)
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
+
   // 라벨 목록 조회
   ...createHandlers('/api/v1/projects/:projectUrl/labels', ({ params }) => {
     console.log('[MSW] 라벨 목록 조회 호출됨:', params.projectUrl)

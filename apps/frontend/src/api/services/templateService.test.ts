@@ -379,6 +379,51 @@ describe('issueTemplateService', () => {
       templateData
     )
   })
+
+  it('should call templateService.getTemplateDetail with issues type', async () => {
+    const mockDetail: TemplateDetail = {
+      title: 'Issue Detail',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.get).mockResolvedValue({ data: mockDetail })
+
+    await issueTemplateService.getTemplateDetail('test-project', 1)
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/issues/templates/1'
+    )
+  })
+
+  it('should call templateService.updateTemplate with issues type', async () => {
+    const templateData = {
+      templateId: 1,
+      title: 'Updated Issue',
+      description: 'Updated',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.put).mockResolvedValue({ data: undefined })
+
+    await issueTemplateService.updateTemplate('test-project', templateData)
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/issues/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.deleteTemplate with issues type', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined })
+
+    await issueTemplateService.deleteTemplate('test-project', { templateId: 1 })
+
+    expect(apiClient.delete).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/issues/templates',
+      { data: { templateId: 1 } }
+    )
+  })
 })
 
 describe('meetingTemplateService', () => {
@@ -398,6 +443,70 @@ describe('meetingTemplateService', () => {
 
     expect(apiClient.get).toHaveBeenCalledWith(
       '/api/v1/projects/test-project/meetings/templates'
+    )
+  })
+
+  it('should call templateService.getTemplateDetail with meetings type', async () => {
+    const mockDetail: TemplateDetail = {
+      title: 'Meeting Detail',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.get).mockResolvedValue({ data: mockDetail })
+
+    await meetingTemplateService.getTemplateDetail('test-project', 2)
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/meetings/templates/2'
+    )
+  })
+
+  it('should call templateService.createTemplate with meetings type', async () => {
+    const templateData: TemplateDetail = {
+      title: 'Meeting Template',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.post).mockResolvedValue({ data: undefined })
+
+    await meetingTemplateService.createTemplate('test-project', templateData)
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/meetings/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.updateTemplate with meetings type', async () => {
+    const templateData = {
+      templateId: 2,
+      title: 'Updated Meeting',
+      description: 'Updated',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.put).mockResolvedValue({ data: undefined })
+
+    await meetingTemplateService.updateTemplate('test-project', templateData)
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/meetings/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.deleteTemplate with meetings type', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined })
+
+    await meetingTemplateService.deleteTemplate('test-project', {
+      templateId: 2,
+    })
+
+    expect(apiClient.delete).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/meetings/templates',
+      { data: { templateId: 2 } }
     )
   })
 })
@@ -421,6 +530,68 @@ describe('retroTemplateService', () => {
       '/api/v1/projects/test-project/retros/templates'
     )
   })
+
+  it('should call templateService.getTemplateDetail with retros type', async () => {
+    const mockDetail: TemplateDetail = {
+      title: 'Retro Detail',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.get).mockResolvedValue({ data: mockDetail })
+
+    await retroTemplateService.getTemplateDetail('test-project', 3)
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/retros/templates/3'
+    )
+  })
+
+  it('should call templateService.createTemplate with retros type', async () => {
+    const templateData: TemplateDetail = {
+      title: 'Retro Template',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.post).mockResolvedValue({ data: undefined })
+
+    await retroTemplateService.createTemplate('test-project', templateData)
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/retros/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.updateTemplate with retros type', async () => {
+    const templateData = {
+      templateId: 3,
+      title: 'Updated Retro',
+      description: 'Updated',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.put).mockResolvedValue({ data: undefined })
+
+    await retroTemplateService.updateTemplate('test-project', templateData)
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/retros/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.deleteTemplate with retros type', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined })
+
+    await retroTemplateService.deleteTemplate('test-project', { templateId: 3 })
+
+    expect(apiClient.delete).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/retros/templates',
+      { data: { templateId: 3 } }
+    )
+  })
 })
 
 describe('scrumTemplateService', () => {
@@ -440,6 +611,68 @@ describe('scrumTemplateService', () => {
 
     expect(apiClient.get).toHaveBeenCalledWith(
       '/api/v1/projects/test-project/scrums/templates'
+    )
+  })
+
+  it('should call templateService.getTemplateDetail with scrums type', async () => {
+    const mockDetail: TemplateDetail = {
+      title: 'Scrum Detail',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.get).mockResolvedValue({ data: mockDetail })
+
+    await scrumTemplateService.getTemplateDetail('test-project', 4)
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/scrums/templates/4'
+    )
+  })
+
+  it('should call templateService.createTemplate with scrums type', async () => {
+    const templateData: TemplateDetail = {
+      title: 'Scrum Template',
+      description: 'Description',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.post).mockResolvedValue({ data: undefined })
+
+    await scrumTemplateService.createTemplate('test-project', templateData)
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/scrums/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.updateTemplate with scrums type', async () => {
+    const templateData = {
+      templateId: 4,
+      title: 'Updated Scrum',
+      description: 'Updated',
+      contents: 'Content',
+    }
+
+    vi.mocked(apiClient.put).mockResolvedValue({ data: undefined })
+
+    await scrumTemplateService.updateTemplate('test-project', templateData)
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/scrums/templates',
+      templateData
+    )
+  })
+
+  it('should call templateService.deleteTemplate with scrums type', async () => {
+    vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined })
+
+    await scrumTemplateService.deleteTemplate('test-project', { templateId: 4 })
+
+    expect(apiClient.delete).toHaveBeenCalledWith(
+      '/api/v1/projects/test-project/scrums/templates',
+      { data: { templateId: 4 } }
     )
   })
 })
