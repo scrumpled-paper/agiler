@@ -51,7 +51,7 @@ public class ProfileService {
 
 		Page<ProfileResDto> page = profileRepository.findByProjectId(project.getId(), pageable)
 			.map(profile -> {
-				String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+				String imageUrl = Optional.ofNullable(profile.getImageId())
 					.map(imageService::getImageUrlById)
 					.orElse("");
 
@@ -68,7 +68,7 @@ public class ProfileService {
 		Project project = context.project();
 		Profile targetProfile = getProfileByProfileIdAndProjectId(targetProfileId, project.getId());
 
-		String imageUrl = Optional.ofNullable(targetProfile.getUser().getImageId())
+		String imageUrl = Optional.ofNullable(targetProfile.getImageId())
 			.map(imageService::getImageUrlById)
 			.orElse("");
 
@@ -80,7 +80,7 @@ public class ProfileService {
 		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
 		Profile profile = context.profile();
 
-		String imageUrl = Optional.ofNullable(profile.getUser().getImageId())
+		String imageUrl = Optional.ofNullable(profile.getImageId())
 			.map(imageService::getImageUrlById)
 			.orElse("");
 
