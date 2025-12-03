@@ -13,4 +13,6 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 	List<Issue> findByProjectIdAndCreatedAtBetween(Long projectId, LocalDateTime dayStart, LocalDateTime dayEnd);
 
 	Optional<Issue> findFirstByProjectIdOrderByCreatedAtDesc(Long projectId);
+
+	List<Issue> findAllByProjectId(Long id);
 }
