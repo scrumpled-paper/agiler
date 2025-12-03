@@ -46,7 +46,7 @@ describe('Dashboard - 통합 테스트', () => {
       render(<DashBoard />, { wrapper: createWrapper() })
 
       // Then: 로딩 상태가 먼저 표시됨
-      expect(screen.getByText('로딩 중...')).toBeInTheDocument()
+      expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument()
 
       // Then: 프로젝트 목록이 표시됨 (MSW mock data)
       await waitFor(() => {
@@ -168,7 +168,7 @@ describe('Dashboard - 통합 테스트', () => {
       render(<DashBoard />, { wrapper: createWrapper() })
 
       // Then: 로딩 표시가 먼저 나타남
-      expect(screen.getByText('로딩 중...')).toBeInTheDocument()
+      expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument()
 
       // Then: 로딩이 끝나고 에러 메시지가 표시됨
       await waitFor(
@@ -179,7 +179,7 @@ describe('Dashboard - 통합 테스트', () => {
       )
 
       // 로딩 메시지는 사라져야 함
-      expect(screen.queryByText('로딩 중...')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('skeleton-loader')).not.toBeInTheDocument()
     })
   })
 

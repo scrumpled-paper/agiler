@@ -10,11 +10,15 @@ import { useParams } from 'react-router-dom'
 
 export default function ProjectSummaryCard() {
   const { projectUrl } = useParams<{ projectUrl: string }>()
-  const { data, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['projectSummary', projectUrl],
     queryFn: () => projectService.getProjectSummery(projectUrl!),
     enabled: !!projectUrl,
   })
+
+  if (isLoading) {
+    return <div className="w-full"></div>
+  }
 
   if (isError || !data) {
     return (

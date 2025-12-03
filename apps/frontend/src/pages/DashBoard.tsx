@@ -19,9 +19,7 @@ export default function DashBoard() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-96">로딩 중...</div>
-    )
+    return <div className="container p-4 " data-testid="skeleton-loader"></div>
   }
 
   if (isError || !data) {
@@ -31,9 +29,6 @@ export default function DashBoard() {
   return (
     <div className="container p-8 flex flex-col justify-center items-center ">
       <div className="flex flex-col justify-center max-w-xl">
-        {/* <p className="text-black text-4xl font-bold font-['Roboto'] text-center pb-10 max-w-3xl">
-          User Profile
-        </p> */}
         <UserProfileBox context="dashboard" />
       </div>
       {/* todo 구현 후 사용할 태그 */}
