@@ -133,4 +133,25 @@ export const projectService = {
     // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
     await apiClient.patch(roleUrl, payload)
   },
+
+  async updateUserImage(projectUrl: string, objectKey: string) {
+    console.log('updateUserImage')
+    const imageUrl = `${this.apiUrl}/${projectUrl}/profiles/image`
+    await apiClient.patch(imageUrl, { objectKey })
+  },
+
+  async deleteUserImage(projectUrl: string) {
+    const imageUrl = `${this.apiUrl}/${projectUrl}/profiles/image`
+    await apiClient.delete(imageUrl)
+  },
+
+  async updateMainImage(projectUrl: string, objectKey: string) {
+    const imageUrl = `${this.apiUrl}/${projectUrl}/image`
+    await apiClient.patch(imageUrl, { objectKey })
+  },
+
+  async deleteMainImage(projectUrl: string) {
+    const imageUrl = `${this.apiUrl}/${projectUrl}/image`
+    await apiClient.delete(imageUrl)
+  },
 }

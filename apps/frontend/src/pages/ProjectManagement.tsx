@@ -1,5 +1,6 @@
 import { projectService } from '@/api/services/projectService'
 import ProjectForm from '@/components/project/projectForm'
+import ProjectFormImageBox from '@/components/project/ProjectFormImageBox'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -21,6 +22,8 @@ export default function ProjectManagement() {
       }
     : null
 
+  const projectImageUrl = data?.imageUrl
+
   const handleCreateSuccess = (newProjectUrl: string) => {
     navigate(`/projects/${newProjectUrl}`) // 변경된 URL로 리다이렉트
   }
@@ -31,25 +34,22 @@ export default function ProjectManagement() {
   }
 
   return (
-    <div className="container p-4">
-      <div>
-        <div className=" p-0">
-          <div className="flex flex-col">
-            <div>
-              <div className="text-center text-[40px] font-bold leading-[48px] font-['Roboto']">
-                Project Management
-              </div>
-            </div>
-
-            <ProjectForm
-              projectUrl={projectUrl}
-              initialData={initialDataForForm}
-              onCreateSuccess={handleCreateSuccess}
-              onCancel={handleCancel}
-              submitButtonLabel="Save"
-            />
-          </div>
-        </div>
+    <div className="container flex flex-col justify-center items-center gap-5  p-10">
+      <h1 className="text-center text-[40px] font-bold leading-[48px] font-['Roboto'] pb-10">
+        Project Management
+      </h1>
+      <div className="flex flex-col justify-center gap-10 max-w-3xl">
+        <ProjectFormImageBox
+          projectUrl={projectUrl || ''}
+          projectImageUrl={projectImageUrl || ''}
+        />
+        <ProjectForm
+          projectUrl={projectUrl}
+          initialData={initialDataForForm}
+          onCreateSuccess={handleCreateSuccess}
+          onCancel={handleCancel}
+          submitButtonLabel="Save"
+        />
       </div>
     </div>
   )

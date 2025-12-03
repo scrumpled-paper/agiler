@@ -1,5 +1,6 @@
 import { projectService } from '@/api/services/projectService'
 import { userService } from '@/api/services/userService'
+import { s3Service } from '@/api/services/s3Service'
 import type {
   UserInfo,
   UserUpdateParams,
@@ -76,6 +77,80 @@ export const useProjectProfileMutation = (projectUrl: string) => {
     },
     onError: error => {
       console.error('Failed to update project profile:', error)
+    },
+  })
+}
+
+// 대시보드 이미지 업로드 뮤테이션 훅
+export const useDashboardImageUploadMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, File>({
+    mutationFn: async file => {
+      const objectKey = await s3Service.uploadProfileImage(file)
+      await userService.updateUserImage(objectKey)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userInfo', 'dashboard'] })
+    },
+    onError: error => {
+      console.error('Failed to upload dashboard image:', error)
+    },
+  })
+}
+
+// 프로젝트 이미지 업로드 뮤테이션 훅
+export const useProjectImageUploadMutation = (projectUrl: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, File>({
+    mutationFn: async file => {
+      const objectKey = await s3Service.uploadProfileImage(file)
+      await projectService.updateUserImage(projectUrl, objectKey)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['userInfo', 'project', projectUrl],
+      })
+    },
+    onError: error => {
+      console.error('Failed to upload project image:', error)
+    },
+  })
+}
+
+// 대시보드 이미지 삭제 뮤테이션 훅
+export const useDashboardImageDeleteMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {
+      await userService.deleteUserImage()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userInfo', 'dashboard'] })
+    },
+    onError: error => {
+      console.error('Failed to delete dashboard image:', error)
+    },
+  })
+}
+
+// 프로젝트 이미지 삭제 뮤테이션 훅
+export const useProjectImageDeleteMutation = (projectUrl: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {
+      await projectService.deleteUserImage(projectUrl)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['userInfo', 'project', projectUrl],
+      })
+    },
+    onError: error => {
+      console.error('Failed to delete project image:', error)
     },
   })
 }

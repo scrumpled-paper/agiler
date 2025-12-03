@@ -14,14 +14,8 @@ export function MemberList({
   canEdit = true,
 }: MemberListProps) {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-6">
-        <h1 className="text-center text-[40px] font-bold leading-tight text-black">
-          Current Members
-        </h1>
-      </div>
-
-      <div className="flex flex-col gap-7">
+    <div className="flex flex-col justify-center items-center w-full">
+      <div className="flex w-full flex-col gap-5 max-w-3xl ">
         {members.map((member, index) => (
           <MemberListItem
             key={index}

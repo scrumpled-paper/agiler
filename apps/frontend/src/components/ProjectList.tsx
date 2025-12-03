@@ -21,7 +21,7 @@ export default function ProjectList({
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
 
   return (
-    <div className="border flex flex-col justify-center items-center">
+    <div className=" flex flex-col justify-center items-center">
       <div className="relative flex justify-center items-center w-full p-10 pt-20">
         <p className="text-black text-4xl font-bold font-['Roboto']">
           Project List

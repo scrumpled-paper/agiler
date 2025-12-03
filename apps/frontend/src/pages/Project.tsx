@@ -77,8 +77,19 @@ export default function Project() {
 
   if (isLoading) {
     return (
-      <div className="container p-4">
-        <div className="flex justify-center items-center h-96">로딩 중...</div>
+      <div className="container p-4 ">
+        <div className="bg-card rounded-lg border shadow-sm p-6"></div>
+        <div className="bg-card rounded-lg border shadow-sm p-6">
+          <div className="h-8 bg-gray-200 rounded animate-pulse mb-4"></div>
+          <div className="flex gap-6">
+            <div className="w-1/2 h-64 bg-gray-200 rounded animate-pulse"></div>
+            <div className="w-1/2 space-y-2">
+              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-4/6"></div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -87,7 +98,7 @@ export default function Project() {
 
   return (
     <div className="container p-4">
-      <ProjectSummaryCard></ProjectSummaryCard>
+      <ProjectSummaryCard />
 
       {isError && (
         <Alert className="flex flex-row gap-2 items-center my-5">

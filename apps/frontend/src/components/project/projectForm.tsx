@@ -154,7 +154,7 @@ export default function ProjectForm({
   }
 
   return (
-    <div className="flex flex-col gap-[40px] px-[60px]">
+    <div className="flex flex-col gap-[40px] ">
       {/* Project Title */}
       <div className="flex flex-col gap-1 w-full">
         <label className="text-sm font-medium text-black">Project Title</label>
@@ -216,15 +216,17 @@ export default function ProjectForm({
       </div>
 
       {/* Buttons */}
-      <div className="flex gap-3 sm:gap-3">
-        <Button
-          variant="outline"
-          onClick={handleCancel}
-          disabled={isCreating}
-          className="w-[240px] h-12 border-black text-black hover:bg-gray-50"
-        >
-          {cancelButtonLabel}
-        </Button>
+      <div className="flex justify-center gap-3 sm:gap-3 ">
+        {!projectUrl && (
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isCreating}
+            className="w-[240px] h-12 border-black text-black hover:bg-gray-50"
+          >
+            {cancelButtonLabel}
+          </Button>
+        )}
         <Button
           onClick={handleCreate}
           disabled={isCreating}

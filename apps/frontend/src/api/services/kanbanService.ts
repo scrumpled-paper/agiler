@@ -16,7 +16,7 @@ export const kanbanService = {
     //   contents: mockIssues,
     //   size: mockIssues.length,
     // }
-    // console.log(projectUrl, date)
+    // console.log('kanban : ', projectUrl, date)
     // return response
   },
   updateIssue: async (projectUrl: string, issueId: string, data: Issue[]) => {

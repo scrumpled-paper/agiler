@@ -6,6 +6,7 @@ vi.mock('../client', () => ({
   apiClient: {
     get: vi.fn(),
     patch: vi.fn(),
+    delete: vi.fn(),
   },
 }))
 
@@ -155,6 +156,76 @@ describe('userService', () => {
         emptyNickname
       )
       expect(result).toBe('')
+    })
+  })
+
+  describe('updateUserImage', () => {
+    it('should update user image successfully', async () => {
+      const objectKey = 'users/avatar123.jpg'
+
+      vi.mocked(apiClient.patch).mockResolvedValue({ data: undefined })
+
+      await userService.updateUserImage(objectKey)
+
+      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users/image', {
+        objectKey,
+      })
+    })
+
+    it('should handle error when updating user image fails', async () => {
+      const error = new Error('Image upload failed')
+      vi.mocked(apiClient.patch).mockRejectedValue(error)
+
+      await expect(userService.updateUserImage('invalid-key')).rejects.toThrow(
+        'Image upload failed'
+      )
+      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users/image', {
+        objectKey: 'invalid-key',
+      })
+    })
+
+    it('should update user image with S3 object key', async () => {
+      const s3ObjectKey = 'profiles/12345/profile.png'
+
+      vi.mocked(apiClient.patch).mockResolvedValue({ data: undefined })
+
+      await userService.updateUserImage(s3ObjectKey)
+
+      expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users/image', {
+        objectKey: s3ObjectKey,
+      })
+    })
+  })
+
+  describe('deleteUserImage', () => {
+    it('should delete user image successfully', async () => {
+      vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined })
+
+      await userService.deleteUserImage()
+
+      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/users/image')
+    })
+
+    it('should handle error when deleting user image fails', async () => {
+      const error = new Error('Delete failed')
+      vi.mocked(apiClient.delete).mockRejectedValue(error)
+
+      await expect(userService.deleteUserImage()).rejects.toThrow(
+        'Delete failed'
+      )
+      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/users/image')
+    })
+
+    it('should handle 404 error when image does not exist', async () => {
+      const error = {
+        response: {
+          status: 404,
+          data: { message: 'Image not found' },
+        },
+      }
+      vi.mocked(apiClient.delete).mockRejectedValue(error)
+
+      await expect(userService.deleteUserImage()).rejects.toEqual(error)
     })
   })
 })

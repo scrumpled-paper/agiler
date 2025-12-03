@@ -149,8 +149,8 @@ describe('AppSidebar - 통합 테스트', () => {
       renderWithRouter('/')
 
       // 로딩 인디케이터가 있다면 확인
-      // const loadingIndicator = screen.queryByTestId('loading')
-      // expect(loadingIndicator).toBeInTheDocument()
+      const loadingIndicator = screen.queryByTestId('skeleton-loader')
+      expect(loadingIndicator).toBeInTheDocument()
     })
   })
 

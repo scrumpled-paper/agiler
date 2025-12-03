@@ -30,17 +30,40 @@ vi.mock('@/hooks/use-user', () => ({
   })),
   useDashboardProfileMutation: vi.fn(() => ({
     mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
   })),
   useProjectProfileMutation: vi.fn(() => ({
     mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
   })),
-}))
-
-// Mock s3Service
-vi.mock('@/api/services/s3Service', () => ({
-  s3Service: {
-    uploadProfileImage: vi.fn(),
-  },
+  useDashboardImageUploadMutation: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+  })),
+  useProjectImageUploadMutation: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+  })),
+  useDashboardImageDeleteMutation: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+  })),
+  useProjectImageDeleteMutation: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+  })),
 }))
 
 const createWrapper = () => {
@@ -101,5 +124,52 @@ describe('UserProfileBox', () => {
     fireEvent.change(input, { target: { value: 'newUserName' } })
 
     expect(screen.getByDisplayValue('newUserName')).toBeInTheDocument()
+  })
+
+  it('should render project description field when context is project', () => {
+    render(<UserProfileBox context="project" projectUrl="test-project" />, {
+      wrapper: createWrapper(),
+    })
+
+    expect(screen.getByText('Description')).toBeInTheDocument()
+  })
+
+  it('should not render project description field when context is dashboard', () => {
+    render(<UserProfileBox context="dashboard" />, { wrapper: createWrapper() })
+
+    expect(screen.queryByText('Description')).not.toBeInTheDocument()
+  })
+
+  it('should display Cancel button when in edit mode', () => {
+    render(<UserProfileBox context="dashboard" />, { wrapper: createWrapper() })
+
+    // Initially no Cancel button
+    expect(screen.queryByText('Cancel')).not.toBeInTheDocument()
+
+    // Enable edit mode
+    const editButton = screen.getByText('Edit')
+    fireEvent.click(editButton)
+
+    // Cancel button should appear
+    expect(screen.getByText('Cancel')).toBeInTheDocument()
+  })
+
+  it('should exit edit mode when Cancel button is clicked', () => {
+    render(<UserProfileBox context="dashboard" />, { wrapper: createWrapper() })
+
+    // Enable edit mode
+    const editButton = screen.getByText('Edit')
+    fireEvent.click(editButton)
+
+    const input = screen.getByDisplayValue('userName') as HTMLInputElement
+    expect(input.disabled).toBe(false)
+
+    // Click Cancel
+    const cancelButton = screen.getByText('Cancel')
+    fireEvent.click(cancelButton)
+
+    // Should exit edit mode
+    expect(input.disabled).toBe(true)
+    expect(screen.queryByText('Cancel')).not.toBeInTheDocument()
   })
 })
