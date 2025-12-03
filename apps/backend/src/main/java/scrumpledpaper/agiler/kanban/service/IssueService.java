@@ -17,6 +17,7 @@ import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
@@ -182,5 +183,41 @@ public class IssueService {
 			.minusNanos(1);
 
 		return findByProjectIdCreatedAtBetween(projectId, dayStart, dayEnd);
+	}
+
+	@Transactional
+	public void updateKanbanConfig(long userId, String projectUrl, KanbanConfigUpdateReqDto kanbanConfigUpdateReqDto) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		List<KanbanConfig> existingConfigs = kanbanConfigService.findAllByProject(project);
+		int version = existingConfigs.getFirst().getVersion() + 1;
+		List<KanbanConfig> updatedConfigs = kanbanConfigService.updateKanbanConfigList(project, version, kanbanConfigUpdateReqDto);
+
+		KanbanConfig backlogConfig = null, defaultConfig = null, doneConfig = null;
+		for (KanbanConfig config : updatedConfigs) {
+			if (config.isBacklog()) {
+				backlogConfig = config;
+			} else if (config.isDefaultStatus()) {
+				defaultConfig = config;
+			} else if (config.getIsDone()) {
+				doneConfig = config;
+			}
+		}
+
+		List<Issue> issues = issueRepository.findAllByProjectId(project.getId());
+		for (Issue issue : issues) {
+			KanbanConfig newConfig;
+			if (issue.getKanbanConfig().isDefaultStatus()) {
+				newConfig = defaultConfig;
+			} else if (issue.getKanbanConfig().getIsDone()) {
+				newConfig = doneConfig;
+			} else {
+				newConfig = backlogConfig;
+			}
+			issue.updateKanbanConfig(newConfig);
+		}
+		issueRepository.saveAll(issues);
+		kanbanConfigService.deleteAllKanbanConfigs(existingConfigs);
 	}
 }

@@ -12,7 +12,7 @@ public enum DefaultKanbanConfig {
 	DONE("Done", "Completed tasks", 4, false, false, true);
 
 
-	private final String name;
+	private final String statusName;
 	private final String description;
 	private final int priority;
 	private final boolean backlog;
