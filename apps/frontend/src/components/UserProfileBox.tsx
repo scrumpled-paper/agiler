@@ -1,14 +1,15 @@
 import { useRef, useState } from 'react'
 import { Button } from './ui/button'
 import { Camera, Trash2, UserIcon } from 'lucide-react'
-import { s3Service } from '@/api/services/s3Service'
 import {
   useUserInfo,
   useDashboardProfileMutation,
   useProjectProfileMutation,
+  useDashboardImageUploadMutation,
+  useProjectImageUploadMutation,
+  useDashboardImageDeleteMutation,
+  useProjectImageDeleteMutation,
 } from '@/hooks/use-user'
-import { userService } from '@/api/services/userService'
-import { projectService } from '@/api/services/projectService'
 
 type UserProfileBoxProps = {
   context: 'dashboard' | 'project'
@@ -19,17 +20,23 @@ export default function UserProfileBox({
   context,
   projectUrl,
 }: UserProfileBoxProps) {
-  const [userInfo, setUserInfo] = useState(useUserInfo(context, projectUrl))
-  // 1. useUserInfo를 사용하여 데이터 조회
-  // const userInfo = useUserInfo(context, projectUrl)
+  // useUserInfo를 사용하여 데이터 조회
+  const userInfo = useUserInfo(context, projectUrl)
 
-  // 2. context에 따라 적절한 mutation 훅 사용
-  const dashboardMutation = useDashboardProfileMutation()
-  const projectMutation = useProjectProfileMutation(projectUrl || '')
+  // context에 따라 적절한 mutation 훅 사용
+  const dashboardProfileMutation = useDashboardProfileMutation()
+  const projectProfileMutation = useProjectProfileMutation(projectUrl || '')
+  const dashboardImageUploadMutation = useDashboardImageUploadMutation()
+  const projectImageUploadMutation = useProjectImageUploadMutation(
+    projectUrl || ''
+  )
+  const dashboardImageDeleteMutation = useDashboardImageDeleteMutation()
+  const projectImageDeleteMutation = useProjectImageDeleteMutation(
+    projectUrl || ''
+  )
 
   // 로컬 상태 (편집 모드에서만 사용)
   const [isEditing, setIsEditing] = useState<boolean>(false)
-  const [isUploading, setIsUploading] = useState(false)
   const [isImageHovered, setIsImageHovered] = useState(false)
   const [editedName, setEditedName] = useState<string>('')
   const [editedEmail, setEditedEmail] = useState<string>('')
@@ -43,10 +50,8 @@ export default function UserProfileBox({
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    if (!file) return
 
-    if (!file || isUploading) {
-      return
-    }
     // 이미지 미리보기 로직 (로컬 파일)
     const reader = new FileReader()
     reader.onloadend = () => {
@@ -54,42 +59,43 @@ export default function UserProfileBox({
     }
     reader.readAsDataURL(file)
 
-    // API 전송 로직
-    setIsUploading(true)
+    // context에 따라 적절한 mutation 선택
+    const uploadMutation = projectUrl
+      ? projectImageUploadMutation
+      : dashboardImageUploadMutation
 
-    try {
-      //  S3 업로드 서비스 호출
-      const objectKey = await s3Service.uploadProfileImage(file)
-      if (projectUrl) {
-        // project 유저 이미지 수정
-        await projectService.updateUserImage(projectUrl, objectKey)
-        setUserInfo(projectService.getUserInfo(projectUrl))
-        console.log(userInfo)
-      } else {
-        // dashboard 유저 이미지 수정
-        await userService.updateUserImage(objectKey)
-      }
-      // 업로드 성공 후 데이터 새로고침
-      setPreview(null)
-    } catch (error) {
-      console.error('Error uploading image or updating profile:', error)
-      setPreview(null)
-    } finally {
-      setIsUploading(false)
-      // 파일 입력 필드 초기화
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
+    // mutation 실행
+    uploadMutation.mutate(file, {
+      onSuccess: () => {
+        setPreview(null)
+        // 파일 입력 필드 초기화
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      },
+      onError: () => {
+        setPreview(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      },
+    })
   }
 
   const handleImageClick = () => {
+    const isUploading =
+      dashboardImageUploadMutation.isPending ||
+      projectImageUploadMutation.isPending
     if (fileInputRef.current && !isUploading) {
       fileInputRef.current.click()
     }
   }
 
   const handleImageDelete = async () => {
+    const isUploading =
+      dashboardImageDeleteMutation.isPending ||
+      projectImageDeleteMutation.isPending
+
     if (isUploading || !userInfo?.imageUrl) {
       return
     }
@@ -98,21 +104,16 @@ export default function UserProfileBox({
       return
     }
 
-    setIsUploading(true)
+    // context에 따라 적절한 mutation 선택
+    const deleteMutation = projectUrl
+      ? projectImageDeleteMutation
+      : dashboardImageDeleteMutation
 
-    try {
-      // 빈 문자열로 이미지 삭제
-      if (projectUrl) {
-        await projectService.deleteUserImage(projectUrl)
-      } else {
-        await userService.deleteUserImage()
-      }
-      setPreview(null)
-    } catch (error) {
-      console.error('Error deleting image:', error)
-    } finally {
-      setIsUploading(false)
-    }
+    deleteMutation.mutate(undefined, {
+      onSuccess: () => {
+        setPreview(null)
+      },
+    })
   }
 
   // 편집 시작
@@ -139,10 +140,13 @@ export default function UserProfileBox({
     // context에 따라 다른 필드 저장
     if (context === 'dashboard') {
       // dashboard: name과 email만
-      dashboardMutation.mutate({ nickname: editedName, email: editedEmail })
+      dashboardProfileMutation.mutate({
+        nickname: editedName,
+        email: editedEmail,
+      })
     } else {
       // project: name, email, description 모두
-      projectMutation.mutate({
+      projectProfileMutation.mutate({
         nickname: editedName,
         email: editedEmail,
         description: editedDescription,
@@ -166,8 +170,13 @@ export default function UserProfileBox({
     }
   }
 
-  // 데이터 로딩 중인지 확인
+  // 데이터 로딩 및 업로드 중인지 확인
   const isLoadingData = !userInfo
+  const isUploading =
+    dashboardImageUploadMutation.isPending ||
+    projectImageUploadMutation.isPending ||
+    dashboardImageDeleteMutation.isPending ||
+    projectImageDeleteMutation.isPending
 
   return (
     <div className="flex flex-row gap-4 justify-center w-full">
