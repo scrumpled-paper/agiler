@@ -86,10 +86,10 @@ public class IssueService {
 	public void deleteIssue(long userId, String projectUrl, Long issueId) {
 		projectValidator.validateAccess(userId, projectUrl);
 
-		List<IssueLabel> issueLabels = issueLabelRepository.findByIssueId(issueId);
+		List<IssueLabel> issueLabels = issueLabelRepository.findAllByIssueId(issueId);
 		issueLabelRepository.deleteAll(issueLabels);
 
-		List<IssueProfile> issueProfiles = issueProfileRepository.findByIssueId(issueId);
+		List<IssueProfile> issueProfiles = issueProfileRepository.findAllByIssueId(issueId);
 		issueProfileRepository.deleteAll(issueProfiles);
 
 		Issue issue = findIssueById(issueId);
@@ -102,7 +102,7 @@ public class IssueService {
 
 		Issue issue = findIssueById(issueId);
 
-		List<IssueProfile> existingIssueProfiles = issueProfileRepository.findByIssueId(issueId);
+		List<IssueProfile> existingIssueProfiles = issueProfileRepository.findAllByIssueId(issueId);
 		issueProfileRepository.deleteAll(existingIssueProfiles);
 
 		List<Profile> assignees = projectValidator.projectMembersByIds(issue.getProject(), issueAssigneesReqDto.assignees());
@@ -118,7 +118,7 @@ public class IssueService {
 
 		Issue issue = findIssueById(issueId);
 
-		List<IssueLabel> existingIssueLabels = issueLabelRepository.findByIssueId(issueId);
+		List<IssueLabel> existingIssueLabels = issueLabelRepository.findAllByIssueId(issueId);
 		issueLabelRepository.deleteAll(existingIssueLabels);
 
 		List<Label> labels = labelService.getLabelsByIds(issueLabelsReqDto.labels());
@@ -153,15 +153,27 @@ public class IssueService {
 		return issueRepository.findByProjectIdAndCreatedAtBetween(projectId, dayStart, dayEnd);
 	}
 
-	public void copyToBacklogIssuesAndDeleteOriginalIssues(Long projectId, List<Issue> issues) {
-		KanbanConfig backlogConfig = kanbanConfigService.getBacklogKanbanConfig(projectId);
+	public void copyToBacklogIssues(Project project, List<Issue> issues) {
+		KanbanConfig backlogConfig = kanbanConfigService.getBacklogKanbanConfig(project.getId());
 
-		List<Issue> newBacklogIssues = issues.stream()
+		List<Issue> copyIssues = issues.stream()
 			.filter(issue -> Boolean.FALSE.equals(issue.getIsDone()))
-			.map(issue -> issueMapper.toEntity(issue, backlogConfig))
+			.map(issue -> {
+				Issue copyIssue = issueRepository.save(issueMapper.toEntity(project, issue, backlogConfig));
+				List<IssueLabel> issueLabels = issueLabelRepository.findAllByIssueId(issue.getId());
+				issueLabels.forEach(issueLabel -> {
+					IssueLabel copyIssueLabel = issueMapper.toIssueLabel(copyIssue, issueLabel);
+					issueLabelRepository.save(copyIssueLabel);
+				});
+
+				List<IssueProfile> issueProfiles = issueProfileRepository.findAllByIssueId(issue.getId());
+				issueProfiles.forEach(issueProfile -> {
+					IssueProfile copyIssueProfile = issueMapper.toIssueProfile(copyIssue, issueProfile);
+					issueProfileRepository.save(copyIssueProfile);
+				});
+				return copyIssue;
+			})
 			.toList();
-		issueRepository.saveAll(newBacklogIssues);
-		issueRepository.deleteAll(issues);
 	}
 
 	public List<Issue> findIssuesForLatestCreationDay(Long projectId, int issueSnapshotStartHour) {

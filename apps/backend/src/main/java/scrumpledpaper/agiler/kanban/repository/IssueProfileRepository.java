@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
 
 public interface IssueProfileRepository extends JpaRepository<IssueProfile, Long> {
-	List<IssueProfile> findByIssueId(Long id);
+	List<IssueProfile> findAllByIssueId(Long id);
 }

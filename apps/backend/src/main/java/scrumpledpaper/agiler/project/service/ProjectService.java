@@ -1,10 +1,13 @@
 package scrumpledpaper.agiler.project.service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
@@ -33,8 +36,6 @@ import scrumpledpaper.agiler.template.service.ScrumTemplateService;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.service.UserService;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
@@ -45,9 +46,9 @@ public class ProjectService {
 	private final ProfileService profileService;
 	private final KanbanConfigService kanbanConfigService;
 	private final IssueTemplateService issueTemplateService;
-	private final MeetingTemplateService meetingTemplateService;
 	private final RetroTemplateService retroTemplateService;
 	private final ScrumTemplateService scrumTemplateService;
+	private final MeetingTemplateService meetingTemplateService;
 	private final ProjectRepository projectRepository;
 	private final ProjectValidator projectValidator;
 
@@ -81,7 +82,6 @@ public class ProjectService {
 	private boolean alreadyExistProjectUrl(String url) {
 		return projectRepository.existsByUrl(url);
 	}
-
 
 	@Transactional(readOnly = true)
 	public PageResDto<ProjectInfoResDto> getProjectInfo(long userId, Pageable pageable) {

@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.kanban.mapper;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +12,6 @@ import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
-import scrumpledpaper.agiler.kanban.entity.IssueSnapshot;
 import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
@@ -27,8 +27,6 @@ public interface IssueMapper {
 	@Mapping(target = "contents", source = "issueCreateReqDto.contents")
 	@Mapping(target = "isDone", defaultValue = "false")
 	Issue toEntity(Project project, KanbanConfig kanbanConfig, IssueCreateReqDto issueCreateReqDto);
-
-	IssueSnapshot toIssueSnapshot(Issue issue);
 
 	default List<IssueLabel> toIssueLabel(Issue issue, List<Label> labels) {
 		if (labels.isEmpty()) {
@@ -58,8 +56,21 @@ public interface IssueMapper {
 
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "kanbanConfig", source = "kanbanConfig")
-	Issue toEntity(Issue issue, KanbanConfig kanbanConfig);
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "title", source = "issue.title")
+	@Mapping(target = "isDone", source = "issue.isDone")
+	Issue toEntity(Project project, Issue issue, KanbanConfig kanbanConfig);
 
 	@Mapping(target = "id", ignore = true)
-	IssueSnapshotDateMapping toIssueSnapshotDateMapping(Project project, int count);
+	@Mapping(target = "snapshotDate", source = "snapshotDate")
+	@Mapping(target = "project", source = "project")
+	IssueSnapshotDateMapping toIssueSnapshotDateMapping(Project project, LocalDate snapshotDate, int issueCount);
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "issue", source = "issue")
+	IssueLabel toIssueLabel(Issue issue, IssueLabel issueLabel);
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "issue", source = "issue")
+	IssueProfile toIssueProfile(Issue issue, IssueProfile issueProfile);
 }
