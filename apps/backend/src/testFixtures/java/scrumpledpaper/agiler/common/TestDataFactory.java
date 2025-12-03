@@ -1,8 +1,16 @@
 package scrumpledpaper.agiler.common;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
@@ -24,14 +32,14 @@ import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
+import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
-import scrumpledpaper.agiler.kanban.entity.KanbanConfigSnapshot;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
+import scrumpledpaper.agiler.kanban.repository.IssueSnapshotDateMappingRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
-import scrumpledpaper.agiler.kanban.repository.KanbanConfigSnapshotRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
@@ -56,12 +64,6 @@ import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class TestDataFactory {
@@ -79,8 +81,8 @@ public class TestDataFactory {
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
 	private final MeetingTemplateRepository meetingTemplateRepository;
-	private final KanbanConfigSnapshotRepository kanbanConfigSnapshotRepository;
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
+	private final IssueSnapshotDateMappingRepository issueSnapshotDateMappingRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
 	private final EntityManager entityManager;
@@ -320,7 +322,7 @@ public class TestDataFactory {
 	}
 
 	public List<IssueLabel> findIssueLabelsByIssueId(Long issueId) {
-		return issueLabelRepository.findByIssueId(issueId);
+		return issueLabelRepository.findAllByIssueId(issueId);
 	}
 
 	public Issue createIssue(Project project, KanbanConfig kanbanConfig, List<Profile> assignees, List<Label> labels, Boolean isDone, LocalDateTime startedAt, LocalDateTime dueAt) {
@@ -347,7 +349,7 @@ public class TestDataFactory {
 	}
 
 	public List<IssueProfile> findIssueProfilesByIssueId(Long id) {
-		return issueProfileRepository.findByIssueId(id);
+		return issueProfileRepository.findAllByIssueId(id);
 	}
 
 	public List<ProfileNotificationChannel> getAllProfileNotificationChannels(long profileId) {
@@ -383,7 +385,7 @@ public class TestDataFactory {
 	}
 
 	public List<KanbanConfig> getKanbanConfigsByProject(Project project) {
-		return kanbanConfigRepository.findByProjectId(project.getId());
+		return kanbanConfigRepository.findAllByProjectId(project.getId());
 	}
 
 	public List<KanbanConfig> createKanbanConfigs(Project project, int count) {
@@ -407,26 +409,44 @@ public class TestDataFactory {
 		return kanbanConfigRepository.saveAll(kanbanConfigs);
 	}
 
-	public List<KanbanConfigSnapshot> findKanbanConfigSnapshotsByProjectId(Long projectId) {
-		return kanbanConfigSnapshotRepository.findByProjectId(projectId);
-	}
-
-	public void defaultKanbanConfigSet(Project project) {
+	public List<KanbanConfig> defaultKanbanConfigSet(Project project) {
 		DefaultKanbanConfig[] defaults = DefaultKanbanConfig.values();
+		List<KanbanConfig> kanbanConfigs = new ArrayList<>();
 		for (DefaultKanbanConfig def : defaults) {
 			KanbanConfig kanbanConfig = KanbanConfigFixture.create(
 				project,
-				def.getName(),
+				def.getStatusName(),
 				def.getPriority(),
 				def.isDefaultStatus(),
 				def.isBacklog(),
 				def.isDone()
 			);
-			kanbanConfigRepository.save(kanbanConfig);
+			kanbanConfigs.add(kanbanConfig);
 		}
+		kanbanConfigs = kanbanConfigRepository.saveAllAndFlush(kanbanConfigs);
+		return kanbanConfigs;
 	}
 
 	public List<KanbanConfig> findKanbanConfigsByProjectId(Long id) {
-		return kanbanConfigRepository.findByProjectId(id);
+		return kanbanConfigRepository.findAllByProjectId(id);
+	}
+
+	public IssueSnapshotDateMapping createIssueSnapshotDateMapping(Project project, int issueCount,
+		LocalDate snapshotDate, LocalDateTime createdAt) {
+		IssueSnapshotDateMapping mapping = IssueSnapshotDateMapping.builder()
+			.project(project)
+			.issueCount(issueCount)
+			.snapshotDate(snapshotDate)
+			.createdAt(createdAt)
+			.updatedAt(createdAt)
+			.build();
+		return issueSnapshotDateMappingRepository.save(mapping);
+	}
+
+	public IssueSnapshotDateMapping findIssueSnapshotDateMapping(Project project, LocalDate snapshotDate) {
+		return issueSnapshotDateMappingRepository.findByProjectIdAndSnapshotDate(project.getId(), snapshotDate).orElse(null);
+	}
+	public List<Issue> findIssuesByProjectId(Long id) {
+		return issueRepository.findAllByProjectId(id);
 	}
 }

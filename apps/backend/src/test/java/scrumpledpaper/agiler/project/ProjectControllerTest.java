@@ -127,7 +127,6 @@ public class ProjectControllerTest {
 			List<KanbanConfig> kanbanConfigs = testDataFactory.findKanbanConfigsByProjectId(createdProject.getId());
 			DefaultKanbanConfig[] defaultKanbanConfigs = DefaultKanbanConfig.values();
 			assertThat(kanbanConfigs).hasSize(defaultKanbanConfigs.length);
-
 		}
 
 		@Test
