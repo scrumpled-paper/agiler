@@ -110,6 +110,10 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
             label: 'Template Setting',
             route: ':projectUrl/settings/project-template',
           },
+          {
+            label: 'Notifications Setting',
+            route: ':projectUrl/settings/notifications',
+          },
         ],
       },
     ],
