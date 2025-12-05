@@ -24,3 +24,12 @@ export interface getIssueSubscriptionsResponse {
     },
   ]
 }
+
+export interface NotificationChannel {
+  id: number
+  channelType: string
+}
+
+export interface GetRegisteredChannelsResponse {
+  channels: NotificationChannel[]
+}
