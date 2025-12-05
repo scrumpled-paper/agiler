@@ -1,4 +1,5 @@
 import type {
+  getIssueSubscriptionsResponse,
   GetRegisteredChannelsResponse,
   setScheduleNotificationPayload,
   subscribeIssueNotificationPayload,
@@ -10,7 +11,9 @@ export const notificationService = {
   projectApiUrl: `/api/v1/projects`,
 
   // 구독중인 이슈 조회
-  async getIssueSubscriptions(projectUrl: string) {
+  async getIssueSubscriptions(
+    projectUrl: string
+  ): Promise<getIssueSubscriptionsResponse> {
     const url = `${this.projectApiUrl}/${projectUrl}/notifications/subscriptions`
     const response = await apiClient.get(url)
     return response.data

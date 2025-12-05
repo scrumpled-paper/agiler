@@ -73,7 +73,7 @@ export default function ProjectNotificationsSetting() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <CardTitle>Slack</CardTitle>
-              {/* <Badge variant="outline">{slackChannels.length}개 연동됨</Badge> */}
+              <Badge variant="outline">{slackChannels.length}개 연동됨</Badge>
             </div>
             <Button
               onClick={() => startSlackIntegration()}
