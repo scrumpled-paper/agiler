@@ -13,6 +13,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.IssueFixture;
+import scrumpledpaper.agiler.fixture.IssueSnapshotDateMappingFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.fixture.LabelFixture;
@@ -88,6 +89,7 @@ public class TestDataFactory {
 	private final EntityManager entityManager;
 
 	public static final long DEFAULT_IMAGE_ID = 1L;
+	public static final int ISSUE_SNAPSHOT_START_HOUR = 6;
 
 	public static String randomString(int length) {
 		StringBuilder sb = new StringBuilder();
@@ -207,12 +209,15 @@ public class TestDataFactory {
 		return projectRepository.findById(savedProject.getId()).orElseThrow();
 	}
 
-	private void updateTimestamps(String tableName, Long id, LocalDateTime createdAt) {
+	public void updateTimestamps(String tableName, Long id, LocalDateTime createdAt) {
 		entityManager.createNativeQuery(
 						String.format("UPDATE %s SET created_at = :createdAt, updated_at = :createdAt WHERE id = :id", tableName))
 				.setParameter("createdAt", createdAt)
 				.setParameter("id", id)
 				.executeUpdate();
+
+		entityManager.flush();
+		entityManager.clear();
 	}
 
 	public Project findProjectById(Long id) {
@@ -432,14 +437,12 @@ public class TestDataFactory {
 	}
 
 	public IssueSnapshotDateMapping createIssueSnapshotDateMapping(Project project, int issueCount,
-		LocalDate snapshotDate, LocalDateTime createdAt) {
-		IssueSnapshotDateMapping mapping = IssueSnapshotDateMapping.builder()
-			.project(project)
-			.issueCount(issueCount)
-			.snapshotDate(snapshotDate)
-			.createdAt(createdAt)
-			.updatedAt(createdAt)
-			.build();
+		LocalDate snapshotDate) {
+		IssueSnapshotDateMapping mapping = IssueSnapshotDateMappingFixture.createIssueSnapshotDateMapping(
+			project,
+			issueCount,
+			snapshotDate
+		);
 		return issueSnapshotDateMappingRepository.save(mapping);
 	}
 
