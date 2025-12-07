@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.kanban.service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
+import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.mapper.IssueMapper;
@@ -38,12 +40,15 @@ import scrumpledpaper.agiler.project.service.ProjectValidator;
 public class IssueService {
 	private final ProjectValidator projectValidator;
 	private final LabelService labelService;
+	private final SnapshotService snapshotService;
 	private final KanbanConfigService kanbanConfigService;
 	private final IssueRepository issueRepository;
 	private final IssueLabelRepository issueLabelRepository;
 	private final IssueProfileRepository issueProfileRepository;
 	private final IssueMapper issueMapper;
 	private final ApplicationEventPublisher eventPublisher;
+
+	private static final int ISSUE_SNAPSHOT_START_HOUR = 6;
 
 	@Transactional
 	public long createIssue(long userId, String projectUrl, IssueCreateReqDto issueCreateReqDto) {
@@ -84,7 +89,10 @@ public class IssueService {
 
 	@Transactional
 	public void deleteIssue(long userId, String projectUrl, Long issueId) {
-		projectValidator.validateAccess(userId, projectUrl);
+		ProjectAccessContext accessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = accessContext.project();
+
+		Issue issue = findIssueById(issueId);
 
 		List<IssueLabel> issueLabels = issueLabelRepository.findAllByIssueId(issueId);
 		issueLabelRepository.deleteAll(issueLabels);
@@ -92,7 +100,7 @@ public class IssueService {
 		List<IssueProfile> issueProfiles = issueProfileRepository.findAllByIssueId(issueId);
 		issueProfileRepository.deleteAll(issueProfiles);
 
-		Issue issue = findIssueById(issueId);
+		snapshotService.countDownIssueSnapshotMappingAndDeleteIfZero(project, issue.getCreatedAt(), ISSUE_SNAPSHOT_START_HOUR);
 		issueRepository.delete(issue);
 	}
 
@@ -185,6 +193,7 @@ public class IssueService {
 		LocalDateTime lastCreatedAt = lastCreatedIssue.get().getCreatedAt();
 		LocalDate lastCreatedDate = lastCreatedAt.toLocalDate();
 
+		// ISSUE_SNAPSHOT_START_HOUR 이전에 생성된 이슈인 경우, 검색 시작 시간을 하루 전으로 설정
 		if (lastCreatedAt.getHour() < issueSnapshotStartHour) {
 			lastCreatedDate = lastCreatedDate.minusDays(1);
 		}
@@ -231,5 +240,44 @@ public class IssueService {
 		}
 		issueRepository.saveAll(issues);
 		kanbanConfigService.deleteAllKanbanConfigs(existingConfigs);
+	}
+
+	@Transactional
+	public long issueSnapshotAndResetForToday(long userId, String projectUrl) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		LocalDate today = LocalDate.now();
+		LocalDateTime targetTime;
+		if (LocalDateTime.now().getHour() < ISSUE_SNAPSHOT_START_HOUR) {
+			targetTime = today
+				.atTime(ISSUE_SNAPSHOT_START_HOUR, 0)
+				.minusSeconds(1);
+		} else {
+			targetTime = today
+				.plusDays(1)
+				.atTime(ISSUE_SNAPSHOT_START_HOUR, 0)
+				.minusSeconds(1);
+		}
+		long timeUntilTarget = Duration.between(LocalDateTime.now(), targetTime).toMillis();
+
+		LocalDate snapshotDate = snapshotService.getSnapshotDateForToday(LocalDateTime.now(), ISSUE_SNAPSHOT_START_HOUR);
+
+		Optional<IssueSnapshotDateMapping> alreadySnapshot = snapshotService.findByProjectIdAndSnapshotDate(project.getId(), snapshotDate);
+		if (alreadySnapshot.isPresent()) {
+			return timeUntilTarget;
+		}
+
+		List<Issue> issues = findIssuesForLatestCreationDay(project.getId(), ISSUE_SNAPSHOT_START_HOUR);
+		if (issues.isEmpty()) {
+			return timeUntilTarget;
+		}
+
+		copyToBacklogIssues(project, issues);
+
+		int count = issues.size();
+		snapshotService.saveSnapshotMapping(project, snapshotDate, count);
+
+		return timeUntilTarget;
 	}
 }

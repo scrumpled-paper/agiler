@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
+import scrumpledpaper.agiler.common.BaseEntity;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
@@ -13,7 +14,7 @@ import scrumpledpaper.agiler.project.entity.Project;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class IssueSnapshotDateMapping {
+public class IssueSnapshotDateMapping extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -29,16 +30,7 @@ public class IssueSnapshotDateMapping {
 	@Column(name = "snapshot_date", nullable = false)
 	private LocalDate snapshotDate;
 
-	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
-
-	@Column(name = "updated_at", nullable = false)
-	private LocalDateTime updatedAt;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
-	public void decrementIssueSnapshotMappingCount(IssueSnapshotDateMapping mapping) {
+	public void decrementIssueSnapshotMappingCount() {
 		this.issueCount -= 1;
 	}
 }

@@ -9,7 +9,5 @@ import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.project.entity.Project;
 
 public interface IssueSnapshotDateMappingRepository extends JpaRepository<IssueSnapshotDateMapping, Long> {
-	void deleteByProjectAndSnapshotDate(Project project, LocalDate snapshotDate);
-
 	Optional<IssueSnapshotDateMapping> findByProjectIdAndSnapshotDate(Long id, LocalDate snapshotDate);
 }
