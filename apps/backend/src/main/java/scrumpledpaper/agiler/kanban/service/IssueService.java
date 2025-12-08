@@ -3,6 +3,7 @@ package scrumpledpaper.agiler.kanban.service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.SnapshotAvailableResDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
@@ -279,5 +281,22 @@ public class IssueService {
 		snapshotService.saveSnapshotMapping(project, snapshotDate, count);
 
 		return timeUntilTarget;
+	}
+
+	@Transactional(readOnly = true)
+	public SnapshotAvailableResDto getAvailableSnapshotDates(long userId, String projectUrl, int year, int month) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		YearMonth yearMonth = YearMonth.of(year, month);
+		LocalDate startDate = yearMonth.atDay(1);
+		LocalDate endDate = yearMonth.atEndOfMonth();
+
+		List<LocalDate> availableDates = snapshotService.issueSnapshotDateMappingsByProjectIdAndBetween(
+			project.getId(),
+			startDate,
+			endDate
+		);
+		return new SnapshotAvailableResDto(availableDates);
 	}
 }

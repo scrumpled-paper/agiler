@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.kanban.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -60,5 +61,13 @@ public class SnapshotService {
 		if (mapping.get().getIssueCount() <= 0) {
 			issueSnapshotDateMappingRepository.delete(mapping.get());
 		}
+	}
+
+	public List<LocalDate> issueSnapshotDateMappingsByProjectIdAndBetween(Long projectId, LocalDate startDate, LocalDate endDate) {
+		return issueSnapshotDateMappingRepository
+			.findByProjectIdAndSnapshotDateBetweenOrderBySnapshotDateDesc(projectId, startDate, endDate)
+			.stream()
+			.map(IssueSnapshotDateMapping::getSnapshotDate)
+			.toList();
 	}
 }
