@@ -51,7 +51,7 @@ public class SnapshotService {
 			.toList();
 	}
 
-	public void countUpIssueSnapshotMapping(Project project, LocalDateTime createdAt) {
+	public void countUpOrCreateIssueSnapshotMapping(Project project, LocalDateTime createdAt) {
 		LocalDate issueSnapshotDate = createdAt.toLocalDate();
 
 		Optional<IssueSnapshotDateMapping> mapping = issueSnapshotDateMappingRepository

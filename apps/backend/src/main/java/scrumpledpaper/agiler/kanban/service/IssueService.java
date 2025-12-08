@@ -66,7 +66,7 @@ public class IssueService {
 		List<IssueProfile> issueProfiles = issueMapper.toIssueProfile(newIssue, assignees);
 		issueProfileRepository.saveAll(issueProfiles);
 
-		snapshotService.countUpIssueSnapshotMapping(project, newIssue.getCreatedAt());
+		snapshotService.countUpOrCreateIssueSnapshotMapping(project, newIssue.getCreatedAt());
 
 		return newIssue.getId();
 	}
