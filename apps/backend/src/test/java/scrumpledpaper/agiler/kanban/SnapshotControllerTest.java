@@ -7,10 +7,10 @@ import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -135,7 +135,7 @@ public class SnapshotControllerTest {
 
 			// when
 			mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/snapshots/today", url)
+					post("/api/v1/projects/{projectUrl}/snapshots", url)
 						.cookie(new Cookie("accessToken", auth.getToken())))
 				.andExpect(status().isOk());
 
@@ -227,7 +227,7 @@ public class SnapshotControllerTest {
 
 			// when
 			mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/snapshots/today", url)
+					post("/api/v1/projects/{projectUrl}/snapshots", url)
 						.cookie(new Cookie("accessToken", auth.getToken())))
 				.andExpect(status().isOk());
 
@@ -247,7 +247,7 @@ public class SnapshotControllerTest {
 
 			// when
 			mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/snapshots/today", url)
+					post("/api/v1/projects/{projectUrl}/snapshots", url)
 						.cookie(new Cookie("accessToken", auth.getToken())))
 				.andExpect(status().isOk());
 
@@ -268,7 +268,7 @@ public class SnapshotControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/snapshots/today", "not_exist_url")
+					post("/api/v1/projects/{projectUrl}/snapshots", "not_exist_url")
 						.cookie(new Cookie("accessToken", auth.getToken())))
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
@@ -288,7 +288,7 @@ public class SnapshotControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/snapshots/today", url)
+					post("/api/v1/projects/{projectUrl}/snapshots", url)
 						.cookie(new Cookie("accessToken", auth.getToken())))
 				.andExpect(status().isForbidden())
 				.andReturn().getResponse().getContentAsString();
@@ -481,6 +481,93 @@ public class SnapshotControllerTest {
 
 			// then
 			// 스냅샷 매핑이 없으므로 리턴
+		}
+	}
+
+	@Nested
+	@DisplayName("Get Available Snapshot Dates Test")
+	class GetAvailableSnapshotDatesTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 스냅샷 날짜 목록 조회 성공")
+		public void getAvailableSnapshotDatesSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+
+			YearMonth currentYearMonth = YearMonth.now();
+			LocalDate firstDay = currentYearMonth.atDay(1);
+			LocalDate fifteenthDay = currentYearMonth.atDay(15);
+			LocalDate twentyEighthDay = currentYearMonth.atDay(28);
+
+			testDataFactory.createIssueSnapshotDateMapping(project, 3, firstDay);
+			testDataFactory.createIssueSnapshotDateMapping(project, 5, fifteenthDay);
+			testDataFactory.createIssueSnapshotDateMapping(project, 2, twentyEighthDay);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/snapshots", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.param("year", String.valueOf(currentYearMonth.getYear()))
+						.param("month", String.valueOf(currentYearMonth.getMonthValue())))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(firstDay.toString());
+			assertThat(response).contains(fifteenthDay.toString());
+			assertThat(response).contains(twentyEighthDay.toString());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트의 스냅샷 날짜 목록 조회 요청")
+		public void getAvailableSnapshotDatesNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			YearMonth currentYearMonth = YearMonth.now();
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/snapshots", "not_exist_url")
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.param("year", String.valueOf(currentYearMonth.getYear()))
+						.param("month", String.valueOf(currentYearMonth.getMonthValue())))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자의 스냅샷 날짜 목록 조회 요청")
+		public void getAvailableSnapshotDatesForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			YearMonth currentYearMonth = YearMonth.now();
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/snapshots", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.param("year", String.valueOf(currentYearMonth.getYear()))
+						.param("month", String.valueOf(currentYearMonth.getMonthValue())))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
 		}
 	}
 }
