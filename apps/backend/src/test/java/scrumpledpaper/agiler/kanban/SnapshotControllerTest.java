@@ -268,6 +268,32 @@ public class SnapshotControllerTest {
 		}
 
 		@Test
+		@DisplayName("200 - 이미 오늘 스냅샷이 존재하는 경우")
+		public void createSnapshotForTodayAlreadyExists() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+
+			testDataFactory.createIssueSnapshotDateMapping(
+				project,
+				5,
+				LocalDate.now()
+			);
+
+			// when
+			mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/snapshots", url)
+						.cookie(new Cookie("accessToken", auth.getToken())))
+				.andExpect(status().isOk());
+
+			// then
+			IssueSnapshotDateMapping mapping = testDataFactory.findIssueSnapshotDateMapping(project, LocalDate.now());
+			assertThat(mapping).isNotNull();
+			assertThat(mapping.getIssueCount()).isEqualTo(5);
+		}
+
+		@Test
 		@DisplayName("404 - 존재하지 않는 프로젝트에 스냅샷 생성 요청")
 		public void createSnapshotForTodayNotFoundProject() throws Exception {
 			// given
