@@ -10,9 +10,15 @@ import scrumpledpaper.agiler.kanban.entity.Issue;
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 	Optional<Issue> findByProjectId(Long projectId);
 
-	List<Issue> findByProjectIdAndCreatedAtBetween(Long projectId, LocalDateTime dayStart, LocalDateTime dayEnd);
+	List<Issue> findByProjectIdAndIsDoneFalseAndCreatedAtBetween(Long projectId, LocalDateTime dayStart, LocalDateTime dayEnd);
 
-	Optional<Issue> findFirstByProjectIdOrderByCreatedAtDesc(Long projectId);
+	Optional<Issue> findFirstByProjectIdAndIsDoneFalse(Long projectId);
 
 	List<Issue> findAllByProjectId(Long id);
+
+	List<Issue> findByProjectIdAndCreatedAtBetween(
+		Long projectId,
+		LocalDateTime startTime,
+		LocalDateTime endTime
+	);
 }

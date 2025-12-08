@@ -50,8 +50,6 @@ public class IssueService {
 	private final IssueMapper issueMapper;
 	private final ApplicationEventPublisher eventPublisher;
 
-	private static final int ISSUE_SNAPSHOT_START_HOUR = 6;
-
 	@Transactional
 	public long createIssue(long userId, String projectUrl, IssueCreateReqDto issueCreateReqDto) {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
@@ -67,6 +65,8 @@ public class IssueService {
 		List<Profile> assignees = projectValidator.projectMembersByIds(project, issueCreateReqDto.assignees());
 		List<IssueProfile> issueProfiles = issueMapper.toIssueProfile(newIssue, assignees);
 		issueProfileRepository.saveAll(issueProfiles);
+
+		snapshotService.countUpIssueSnapshotMapping(project, newIssue.getCreatedAt());
 
 		return newIssue.getId();
 	}
@@ -102,7 +102,7 @@ public class IssueService {
 		List<IssueProfile> issueProfiles = issueProfileRepository.findAllByIssueId(issueId);
 		issueProfileRepository.deleteAll(issueProfiles);
 
-		snapshotService.countDownIssueSnapshotMappingAndDeleteIfZero(project, issue.getCreatedAt(), ISSUE_SNAPSHOT_START_HOUR);
+		snapshotService.countDownIssueSnapshotMappingAndDeleteIfZero(project, issue.getCreatedAt());
 		issueRepository.delete(issue);
 	}
 
@@ -160,14 +160,13 @@ public class IssueService {
 	}
 
 	public List<Issue> findByProjectIdCreatedAtBetween(Long projectId, LocalDateTime dayStart, LocalDateTime dayEnd) {
-		return issueRepository.findByProjectIdAndCreatedAtBetween(projectId, dayStart, dayEnd);
+		return issueRepository.findByProjectIdAndIsDoneFalseAndCreatedAtBetween(projectId, dayStart, dayEnd);
 	}
 
 	public void copyToBacklogIssues(Project project, List<Issue> issues) {
 		KanbanConfig backlogConfig = kanbanConfigService.getBacklogKanbanConfig(project.getId());
 
 		List<Issue> copyIssues = issues.stream()
-			.filter(issue -> Boolean.FALSE.equals(issue.getIsDone()))
 			.map(issue -> {
 				Issue copyIssue = issueRepository.save(issueMapper.toEntity(project, issue, backlogConfig));
 				List<IssueLabel> issueLabels = issueLabelRepository.findAllByIssueId(issue.getId());
@@ -186,8 +185,9 @@ public class IssueService {
 			.toList();
 	}
 
-	public List<Issue> findIssuesForLatestCreationDay(Long projectId, int issueSnapshotStartHour) {
-		Optional<Issue> lastCreatedIssue = issueRepository.findFirstByProjectIdOrderByCreatedAtDesc(projectId);
+	public List<Issue> findIssuesForLatestCreationDay(Long projectId) {
+		Optional<Issue> lastCreatedIssue = issueRepository.findFirstByProjectIdAndIsDoneFalse(projectId);
+		// 마지막으로 생성된 IsDone되지 않은 이슈가 없는 경우 빈 리스트 반환
 		if (lastCreatedIssue.isEmpty()) {
 			return List.of();
 		}
@@ -195,15 +195,8 @@ public class IssueService {
 		LocalDateTime lastCreatedAt = lastCreatedIssue.get().getCreatedAt();
 		LocalDate lastCreatedDate = lastCreatedAt.toLocalDate();
 
-		// ISSUE_SNAPSHOT_START_HOUR 이전에 생성된 이슈인 경우, 검색 시작 시간을 하루 전으로 설정
-		if (lastCreatedAt.getHour() < issueSnapshotStartHour) {
-			lastCreatedDate = lastCreatedDate.minusDays(1);
-		}
-
-		LocalDateTime dayStart = lastCreatedDate.atTime(issueSnapshotStartHour, 0);
-		LocalDateTime dayEnd = lastCreatedDate.plusDays(1)
-			.atTime(issueSnapshotStartHour, 0)
-			.minusNanos(1);
+		LocalDateTime dayStart = lastCreatedAt.toLocalDate().atStartOfDay();
+		LocalDateTime dayEnd = lastCreatedDate.atTime(23, 59, 59);
 
 		return findByProjectIdCreatedAtBetween(projectId, dayStart, dayEnd);
 	}
@@ -228,7 +221,9 @@ public class IssueService {
 			}
 		}
 
-		List<Issue> issues = issueRepository.findAllByProjectId(project.getId());
+		LocalDateTime startTime = LocalDate.now().atStartOfDay();
+		LocalDateTime endTime = startTime.plusDays(1).minusMinutes(1);
+		List<Issue> issues = issueRepository.findByProjectIdAndCreatedAtBetween(project.getId(), startTime, endTime);
 		for (Issue issue : issues) {
 			KanbanConfig newConfig;
 			if (issue.getKanbanConfig().isDefaultStatus()) {
@@ -249,28 +244,16 @@ public class IssueService {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
 		Project project = projectAccessContext.project();
 
-		LocalDate today = LocalDate.now();
-		LocalDateTime targetTime;
-		if (LocalDateTime.now().getHour() < ISSUE_SNAPSHOT_START_HOUR) {
-			targetTime = today
-				.atTime(ISSUE_SNAPSHOT_START_HOUR, 0)
-				.minusSeconds(1);
-		} else {
-			targetTime = today
-				.plusDays(1)
-				.atTime(ISSUE_SNAPSHOT_START_HOUR, 0)
-				.minusSeconds(1);
-		}
-		long timeUntilTarget = Duration.between(LocalDateTime.now(), targetTime).toMillis();
+		LocalDateTime now = LocalDateTime.now();
+		LocalDate today = now.toLocalDate();
+		long timeUntilTarget = Duration.between(now, today.atTime(23, 59, 59)).toMillis();
 
-		LocalDate snapshotDate = snapshotService.getSnapshotDateForToday(LocalDateTime.now(), ISSUE_SNAPSHOT_START_HOUR);
-
-		Optional<IssueSnapshotDateMapping> alreadySnapshot = snapshotService.findByProjectIdAndSnapshotDate(project.getId(), snapshotDate);
+		Optional<IssueSnapshotDateMapping> alreadySnapshot = snapshotService.findByProjectIdAndSnapshotDate(project.getId(), today);
 		if (alreadySnapshot.isPresent()) {
 			return timeUntilTarget;
 		}
 
-		List<Issue> issues = findIssuesForLatestCreationDay(project.getId(), ISSUE_SNAPSHOT_START_HOUR);
+		List<Issue> issues = findIssuesForLatestCreationDay(project.getId());
 		if (issues.isEmpty()) {
 			return timeUntilTarget;
 		}
@@ -278,7 +261,7 @@ public class IssueService {
 		copyToBacklogIssues(project, issues);
 
 		int count = issues.size();
-		snapshotService.saveSnapshotMapping(project, snapshotDate, count);
+		snapshotService.saveSnapshotMapping(project, today, count);
 
 		return timeUntilTarget;
 	}

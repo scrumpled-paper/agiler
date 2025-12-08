@@ -33,4 +33,8 @@ public class IssueSnapshotDateMapping extends BaseEntity {
 	public void decrementIssueSnapshotMappingCount() {
 		this.issueCount -= 1;
 	}
+
+	public void incrementIssueSnapshotMappingCount() {
+		this.issueCount += 1;
+	}
 }
