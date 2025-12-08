@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
+import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.project.entity.Profile;
@@ -78,6 +80,12 @@ public class IssueControllerTest {
 				null,
 				null
 			);
+			int issueCount = 2;
+			IssueSnapshotDateMapping mapping = testDataFactory.createIssueSnapshotDateMapping(
+				project,
+				issueCount,
+				LocalDate.now()
+			);
 			String updateJson = objectMapper.writeValueAsString(createReqDto);
 
 			// when
@@ -120,6 +128,9 @@ public class IssueControllerTest {
 				.containsExactlyInAnyOrder(
 					tuple(createdIssue.getId(), assigneeProfile.getId())
 				);
+
+			IssueSnapshotDateMapping updatedMapping = testDataFactory.findIssueSnapshotDateMapping(project, LocalDate.now());
+			assertThat(updatedMapping.getIssueCount()).isEqualTo(issueCount + 1);
 		}
 
 		@Test

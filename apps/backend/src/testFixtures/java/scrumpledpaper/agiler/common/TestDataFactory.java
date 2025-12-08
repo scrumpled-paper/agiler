@@ -89,8 +89,6 @@ public class TestDataFactory {
 	private final EntityManager entityManager;
 
 	public static final long DEFAULT_IMAGE_ID = 1L;
-	public static final int ISSUE_SNAPSHOT_START_HOUR = 6;
-
 	public static String randomString(int length) {
 		StringBuilder sb = new StringBuilder();
 		while (sb.length() < length) {

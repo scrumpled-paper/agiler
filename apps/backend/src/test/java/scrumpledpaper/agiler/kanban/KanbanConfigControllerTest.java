@@ -178,6 +178,94 @@ public class KanbanConfigControllerTest {
 		}
 
 		@Test
+		@DisplayName("400 - 우선순위 순서 오류로 인한 Kanban Config 수정 실패 (backlog > default)")
+		public void updateKanbanConfigFail_InvalidPriorityOrder_BacklogGreaterThanDefault() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			List<KanbanConfig> configs = testDataFactory.defaultKanbanConfigSet(project);
+
+			KanbanConfig backlogConfig = configs.stream()
+				.filter(KanbanConfig::isBacklog)
+				.findFirst()
+				.orElseThrow();
+			KanbanConfig defaultConfig = configs.stream()
+				.filter(KanbanConfig::isDefaultStatus)
+				.findFirst()
+				.orElseThrow();
+
+			List<KanbanConfigUpdateReqDto.KanbanConfigReqDto> updateConfigs = configs.stream()
+				.map(config -> new KanbanConfigUpdateReqDto.KanbanConfigReqDto(
+					config.getStatusName(),
+					config.getId().equals(backlogConfig.getId()) ?
+						defaultConfig.getPriority() + 10 : config.getPriority(), // backlog > default
+					config.isDefaultStatus(),
+					config.isBacklog(),
+					config.getIsDone()
+				))
+				.toList();
+
+			KanbanConfigUpdateReqDto updateReqDto = new KanbanConfigUpdateReqDto(updateConfigs);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/kanban-config", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.INVALID_KANBAN_CONFIG_PRIORITY_ORDER.getMessage());
+		}
+
+		@Test
+		@DisplayName("400 - 우선순위 순서 오류로 인한 Kanban Config 수정 실패 (default > done)")
+		public void updateKanbanConfigFail_InvalidPriorityOrder_DefaultGreaterThanDone() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			List<KanbanConfig> configs = testDataFactory.defaultKanbanConfigSet(project);
+
+			KanbanConfig defaultConfig = configs.stream()
+				.filter(KanbanConfig::isDefaultStatus)
+				.findFirst()
+				.orElseThrow();
+			KanbanConfig doneConfig = configs.stream()
+				.filter(KanbanConfig::getIsDone)
+				.findFirst()
+				.orElseThrow();
+
+			List<KanbanConfigUpdateReqDto.KanbanConfigReqDto> updateConfigs = configs.stream()
+				.map(config -> new KanbanConfigUpdateReqDto.KanbanConfigReqDto(
+					config.getStatusName(),
+					config.getId().equals(defaultConfig.getId()) ?
+						doneConfig.getPriority() + 1 : config.getPriority(), // default > done
+					config.isDefaultStatus(),
+					config.isBacklog(),
+					config.getIsDone()
+				))
+				.toList();
+
+			KanbanConfigUpdateReqDto updateReqDto = new KanbanConfigUpdateReqDto(updateConfigs);
+
+			// when
+			String response = mockMvc.perform(
+					put("/api/v1/projects/{projectUrl}/kanban-config", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.INVALID_KANBAN_CONFIG_PRIORITY_ORDER.getMessage());
+		}
+
+		@Test
 		@DisplayName("400 - 우선순위 중복으로 인한 Kanban Config 수정 실패 ")
 		public void updateKanbanConfigFail_DuplicatePriority() throws Exception {
 			// given

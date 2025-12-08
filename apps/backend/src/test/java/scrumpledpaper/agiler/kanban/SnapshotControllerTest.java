@@ -3,7 +3,6 @@ package scrumpledpaper.agiler.kanban;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,8 +58,8 @@ public class SnapshotControllerTest {
 		}
 
 		@Test
-		@DisplayName("200 - 스냅샷 생성 성공")
-		public void createSnapshotForTodaySuccess() throws Exception {
+		@DisplayName("200 - 전날 생성된 이슈들로 오늘 스냅샷 생성 성공")
+		public void createSnapshotForTodaySuccess_AfterSixAM() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
@@ -70,6 +69,7 @@ public class SnapshotControllerTest {
 			List<KanbanConfig> kanbanConfigs = testDataFactory.defaultKanbanConfigSet(project);
 			Label label1 = testDataFactory.createLabel(project, "name", "des", "#FFFFFF");
 			Label label2 = testDataFactory.createLabel(project, "name2", "des2", "#000000");
+
 			KanbanConfig defaultConfig = kanbanConfigs.stream()
 				.filter(KanbanConfig::isDefaultStatus)
 				.findFirst()
@@ -86,52 +86,25 @@ public class SnapshotControllerTest {
 				.orElseThrow();
 
 			Issue defaultConfigIssue = testDataFactory.createIssue(
-				project,
-				defaultConfig,
-				List.of(ownerProfile),
-				List.of(label1, label2),
-				false,
-				null,
-				null
-			);
+				project, defaultConfig, List.of(ownerProfile), List.of(label1, label2), false, null, null);
 			Issue backlogConfigIssue = testDataFactory.createIssue(
-				project,
-				backlogConfig,
-				Collections.emptyList(),
-				Collections.emptyList(),
-				false,
-				null,
-				null
-			);
+				project, backlogConfig, Collections.emptyList(), Collections.emptyList(), false, null, null);
 			Issue doneConfigIssue = testDataFactory.createIssue(
-				project,
-				doneConfig,
-				List.of(ownerProfile),
-				List.of(label2),
-				true,
-				null,
-				null
-			);
+				project, doneConfig, List.of(ownerProfile), List.of(label2), true, null, null);
 
-			LocalDateTime issueCreatedAt;
-			LocalDate snapshotDate;
+			// 전날 생성 된 이슈
+			LocalDateTime issueCreatedAt = LocalDateTime.now()
+				.minusDays(1)
+				.withMinute(0)
+				.withSecond(0)
+				.withNano(0);
+			// 스냅샷은 오늘로 생성되어야 함
+			LocalDate snapshotDate = LocalDate.now();
 
-			if (LocalDateTime.now().getHour() < ISSUE_SNAPSHOT_START_HOUR) {
-				// ISSUE_SNAPSHOT_START_HOUR 이전에 테스트가 실행된 경우
-				// 전전날 ISSUE_SNAPSHOT_START_HOUR 이후부터 전날 ISSUE_SNAPSHOT_START_HOUR 이전까지의 이슈를 조회하므로
-				issueCreatedAt = LocalDate.now().minusDays(1).atTime(ISSUE_SNAPSHOT_START_HOUR - 1, 0);
-				snapshotDate = LocalDate.now().minusDays(1); // 스냅샷 날짜는 1일 전
-			} else {
-				// ISSUE_SNAPSHOT_START_HOUR 이후에 테스트가 실행된 경우
-				// 전날 ISSUE_SNAPSHOT_START_HOUR 이후부터 오늘 ISSUE_SNAPSHOT_START_HOUR 이전까지의 이슈를 조회하므로
-				issueCreatedAt = LocalDate.now().atTime(ISSUE_SNAPSHOT_START_HOUR, 0);
-				snapshotDate = LocalDate.now().minusDays(0); // 스냅샷 날짜는 당일
-			}
-
-			// 모든 이슈의 생성 시간 업데이트
 			testDataFactory.updateTimestamps("issue", defaultConfigIssue.getId(), issueCreatedAt);
 			testDataFactory.updateTimestamps("issue", backlogConfigIssue.getId(), issueCreatedAt);
 			testDataFactory.updateTimestamps("issue", doneConfigIssue.getId(), issueCreatedAt);
+			List<Issue> allIssues = testDataFactory.findIssuesByProjectId(project.getId());
 
 			// when
 			mockMvc.perform(
@@ -140,15 +113,85 @@ public class SnapshotControllerTest {
 				.andExpect(status().isOk());
 
 			// then
+			verifySnapshotCreation(project, allIssues, snapshotDate, defaultConfigIssue, backlogConfigIssue,
+				doneConfigIssue, backlogConfig);
+		}
 
+		@Test
+		@DisplayName("200 - 어제가 아닌 이슈들로 오늘 스냅샷 생성 성공")
+		public void createSnapshotForTodaySuccess_notYesterdayIssues() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile ownerProfile = testDataFactory.findProfileByUserIdAndProjectId(
+				auth.getUser().getId(), project.getId());
+			List<KanbanConfig> kanbanConfigs = testDataFactory.defaultKanbanConfigSet(project);
+			Label label1 = testDataFactory.createLabel(project, "name", "des", "#FFFFFF");
+			Label label2 = testDataFactory.createLabel(project, "name2", "des2", "#000000");
+
+			KanbanConfig defaultConfig = kanbanConfigs.stream()
+				.filter(KanbanConfig::isDefaultStatus)
+				.findFirst()
+				.orElseThrow();
+
+			KanbanConfig backlogConfig = kanbanConfigs.stream()
+				.filter(KanbanConfig::isBacklog)
+				.findFirst()
+				.orElseThrow();
+
+			KanbanConfig doneConfig = kanbanConfigs.stream()
+				.filter(KanbanConfig::getIsDone)
+				.findFirst()
+				.orElseThrow();
+
+			Issue defaultConfigIssue = testDataFactory.createIssue(
+				project, defaultConfig, List.of(ownerProfile), List.of(label1, label2), false, null, null);
+			Issue backlogConfigIssue = testDataFactory.createIssue(
+				project, backlogConfig, Collections.emptyList(), Collections.emptyList(), false, null, null);
+			Issue doneConfigIssue = testDataFactory.createIssue(
+				project, doneConfig, List.of(ownerProfile), List.of(label2), true, null, null);
+
+			// 2일 전 기준 시간 전에 생성 된 이슈
+			LocalDateTime issueCreatedAt = LocalDateTime.now()
+				.minusDays(2)
+				.withMinute(0)
+				.withSecond(0)
+				.withNano(0);
+			// 스냅샷은 오늘로 생성되어야 함
+			LocalDate snapshotDate = LocalDate.now();
+
+			testDataFactory.updateTimestamps("issue", defaultConfigIssue.getId(), issueCreatedAt);
+			testDataFactory.updateTimestamps("issue", backlogConfigIssue.getId(), issueCreatedAt);
+			testDataFactory.updateTimestamps("issue", doneConfigIssue.getId(), issueCreatedAt);
+			List<Issue> allIssues = testDataFactory.findIssuesByProjectId(project.getId());
+
+			// when
+			mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/snapshots", url)
+						.cookie(new Cookie("accessToken", auth.getToken())))
+				.andExpect(status().isOk());
+
+			// then
+			verifySnapshotCreation(project, allIssues, snapshotDate, defaultConfigIssue, backlogConfigIssue,
+				doneConfigIssue, backlogConfig);
+		}
+
+		// 검증 로직 공통 메서드
+		private void verifySnapshotCreation(Project project, List<Issue> issues, LocalDate snapshotDate,
+			Issue defaultConfigIssue, Issue backlogConfigIssue,
+			Issue doneConfigIssue, KanbanConfig backlogConfig) {
 			// 1. IssueSnapshotDateMapping 검증
 			IssueSnapshotDateMapping mapping = testDataFactory.findIssueSnapshotDateMapping(project, snapshotDate);
 			assertThat(mapping).isNotNull();
-			assertThat(mapping.getIssueCount()).isEqualTo(3); // 원본 이슈 3개
+			long count = issues.stream()
+				.filter(issue -> !issue.getIsDone())
+					.count();
+			assertThat(mapping.getIssueCount()).isEqualTo(count);
 
-			// 2. 전체 이슈 개수 검증 (원본 3개, 복사된 backlog 2개 추가 = 총 5개)
-			List<Issue> issues = testDataFactory.findIssuesByProjectId(project.getId());
-			assertThat(issues).hasSize(5);
+			// 2. 전체 이슈 개수 검증
+			List<Issue> allIssues = testDataFactory.findIssuesByProjectId(project.getId());
+			assertThat(allIssues.size()).isEqualTo(issues.size() + count);
 
 			// 3. 원본 이슈 ID 목록
 			List<Long> originalIssueIds = List.of(
@@ -157,14 +200,14 @@ public class SnapshotControllerTest {
 				doneConfigIssue.getId()
 			);
 
-			// 4. 복사된 backlog 이슈들 검증 (isDone = false인 이슈 2개만 복사됨)
-			List<Issue> copiedBacklogIssues = issues.stream()
+			// 4. 복사된 backlog 이슈들 검증
+			List<Issue> copiedBacklogIssues = allIssues.stream()
 				.filter(issue -> issue.getKanbanConfig().isBacklog())
 				.filter(issue -> !originalIssueIds.contains(issue.getId()))
 				.toList();
 			assertThat(copiedBacklogIssues).hasSize(2);
 
-			// 5. 원본 이슈 매핑 (복사 대상인 isDone = false 이슈만)
+			// 5. 원본 이슈 매핑
 			Map<String, Issue> originalIssuesMap = Map.of(
 				defaultConfigIssue.getTitle(), defaultConfigIssue,
 				backlogConfigIssue.getTitle(), backlogConfigIssue
@@ -175,7 +218,6 @@ public class SnapshotControllerTest {
 				Issue originalIssue = originalIssuesMap.get(copiedIssue.getTitle());
 				assertThat(originalIssue).isNotNull();
 
-				// 기본 필드 검증
 				assertThat(copiedIssue.getTitle()).isEqualTo(originalIssue.getTitle());
 				assertThat(copiedIssue.getContents()).isEqualTo(originalIssue.getContents());
 				assertThat(copiedIssue.getIsDone()).isEqualTo(originalIssue.getIsDone());
@@ -188,13 +230,9 @@ public class SnapshotControllerTest {
 				assertThat(copiedProfiles).hasSameSizeAs(originalProfiles);
 
 				List<Long> originalProfileIds = originalProfiles.stream()
-					.map(ip -> ip.getProfile().getId())
-					.sorted()
-					.toList();
+					.map(ip -> ip.getProfile().getId()).sorted().toList();
 				List<Long> copiedProfileIds = copiedProfiles.stream()
-					.map(ip -> ip.getProfile().getId())
-					.sorted()
-					.toList();
+					.map(ip -> ip.getProfile().getId()).sorted().toList();
 				assertThat(copiedProfileIds).isEqualTo(originalProfileIds);
 
 				// IssueLabel 복사 검증
@@ -203,38 +241,11 @@ public class SnapshotControllerTest {
 				assertThat(copiedLabels).hasSameSizeAs(originalLabels);
 
 				List<Long> originalLabelIds = originalLabels.stream()
-					.map(il -> il.getLabel().getId())
-					.sorted()
-					.toList();
+					.map(il -> il.getLabel().getId()).sorted().toList();
 				List<Long> copiedLabelIds = copiedLabels.stream()
-					.map(il -> il.getLabel().getId())
-					.sorted()
-					.toList();
+					.map(il -> il.getLabel().getId()).sorted().toList();
 				assertThat(copiedLabelIds).isEqualTo(originalLabelIds);
 			}
-		}
-
-		@Test
-		@DisplayName("200 - 이미 스냅샷이 있는 경우")
-		public void createSnapshotForTodayAlreadyExists() throws Exception {
-			// given
-			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			String url = "test-url";
-			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-
-			LocalDate today = LocalDate.now();
-			testDataFactory.createIssueSnapshotDateMapping(project, 5, today);
-
-			// when
-			mockMvc.perform(
-					post("/api/v1/projects/{projectUrl}/snapshots", url)
-						.cookie(new Cookie("accessToken", auth.getToken())))
-				.andExpect(status().isOk());
-
-			// then
-			IssueSnapshotDateMapping mapping = testDataFactory.findIssueSnapshotDateMapping(project, today);
-			assertThat(mapping).isNotNull();
-			assertThat(mapping.getIssueCount()).isEqualTo(5);
 		}
 
 		@Test
@@ -252,11 +263,7 @@ public class SnapshotControllerTest {
 				.andExpect(status().isOk());
 
 			// then
-			LocalDate today = LocalDate.now();
-			if (LocalDateTime.now().getHour() < ISSUE_SNAPSHOT_START_HOUR) {
-				today = today.minusDays(1);
-			}
-			IssueSnapshotDateMapping mapping = testDataFactory.findIssueSnapshotDateMapping(project, today);
+			IssueSnapshotDateMapping mapping = testDataFactory.findIssueSnapshotDateMapping(project, LocalDate.now());
 			assertThat(mapping).isNull();
 		}
 
@@ -306,17 +313,8 @@ public class SnapshotControllerTest {
 			defaultImage = testDataFactory.createDefaultImage();
 		}
 
-		// 스냅샷 날짜 계산 메서드 (서비스 로직과 동일)
-		private LocalDate calculateSnapshotDate(LocalDateTime issueCreatedAt) {
-			LocalDate snapshotDate = issueCreatedAt.toLocalDate();
-			if (issueCreatedAt.getHour() < ISSUE_SNAPSHOT_START_HOUR) {
-				snapshotDate = snapshotDate.minusDays(1);
-			}
-			return snapshotDate;
-		}
-
 		@Test
-		@DisplayName("204 - 이슈 삭제로 인한 스냅샷 카운트 다운으로 인한 삭제 성공 (과거 이슈)")
+		@DisplayName("204 - 이슈 삭제로 인한 당일 스냅샷 카운트 다운으로 인한 삭제 성공")
 		public void issueDeleteSnapshotCountDownSuccessPastIssue() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -341,15 +339,7 @@ public class SnapshotControllerTest {
 				null
 			);
 
-			// 과거 이슈 (2일 전 7시)
-			LocalDateTime issueCreatedAt = LocalDate.now()
-				.minusDays(2)
-				.atTime(ISSUE_SNAPSHOT_START_HOUR + 1, 0);
-			testDataFactory.updateTimestamps("issue", issue.getId(), issueCreatedAt);
-			Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
-
-			LocalDate snapshotDate = calculateSnapshotDate(issueCreatedAt);
-
+			LocalDate snapshotDate = LocalDate.now();
 			testDataFactory.createIssueSnapshotDateMapping(
 				project,
 				1,
@@ -372,7 +362,7 @@ public class SnapshotControllerTest {
 		}
 
 		@Test
-		@DisplayName("204 - 이슈 삭제로 인한 스냅샷 카운트 다운 성공 (삭제 안됨, 과거 이슈)")
+		@DisplayName("204 - 이슈 삭제로 인한 오늘의 스냅샷 카운트 다운 성공")
 		public void issueDeleteSnapshotCountDownSuccessNotDeletePastIssue() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -406,14 +396,7 @@ public class SnapshotControllerTest {
 				null
 			);
 
-			// 과거 이슈 (2일 전 7시)
-			LocalDateTime issueCreatedAt = LocalDate.now()
-				.minusDays(2)
-				.atTime(ISSUE_SNAPSHOT_START_HOUR + 1, 0);
-			testDataFactory.updateTimestamps("issue", issue1.getId(), issueCreatedAt);
-			testDataFactory.updateTimestamps("issue", issue2.getId(), issueCreatedAt);
-
-			LocalDate snapshotDate = calculateSnapshotDate(issueCreatedAt);
+			LocalDate snapshotDate = LocalDate.now();
 
 			testDataFactory.createIssueSnapshotDateMapping(
 				project,
@@ -438,7 +421,7 @@ public class SnapshotControllerTest {
 		}
 
 		@Test
-		@DisplayName("204 - 어제 이슈 삭제 시 스냅샷 카운트 다운하지 않음 (당일 스냅샷)")
+		@DisplayName("204 - 어제 이슈 삭제 시 어제의 스냅샷 카운트 다운")
 		public void issueDeleteYesterdayIssueNoCountDown() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
@@ -462,12 +445,19 @@ public class SnapshotControllerTest {
 				null,
 				null
 			);
-
-			// 오늘 스냅샷은 생성되지 않은채로 오늘 이슈 생성
-			LocalDateTime issueCreatedAt = LocalDate.now()
-				.minusDays(1)
-				.atTime(ISSUE_SNAPSHOT_START_HOUR + 1, 0);
+			LocalDateTime issueCreatedAt = LocalDateTime.now().minusDays(1);
 			testDataFactory.updateTimestamps("issue", yesterdayIssue.getId(), issueCreatedAt);
+			IssueSnapshotDateMapping yesterdayMapping = testDataFactory.createIssueSnapshotDateMapping(
+				project,
+				2,
+				LocalDate.now().minusDays(1)
+			);
+			IssueSnapshotDateMapping todayMapping = testDataFactory.createIssueSnapshotDateMapping(
+				project,
+				2,
+				LocalDate.now()
+			);
+
 
 			IssueDeleteReqDto deleteReqDto = new IssueDeleteReqDto(yesterdayIssue.getId());
 
@@ -480,7 +470,13 @@ public class SnapshotControllerTest {
 				.andExpect(status().isNoContent());
 
 			// then
-			// 스냅샷 매핑이 없으므로 리턴
+			IssueSnapshotDateMapping fetchedYesterdayMapping = testDataFactory.findIssueSnapshotDateMapping(
+				project, yesterdayMapping.getSnapshotDate());
+			assertThat(fetchedYesterdayMapping).isNotNull();
+			assertThat(fetchedYesterdayMapping.getIssueCount()).isEqualTo(1);
+			IssueSnapshotDateMapping fetchedTodayMapping = testDataFactory.findIssueSnapshotDateMapping(
+				project, todayMapping.getSnapshotDate());
+			assertThat(fetchedTodayMapping).isNotNull();
 		}
 	}
 
