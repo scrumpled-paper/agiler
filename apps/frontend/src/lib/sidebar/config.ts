@@ -38,13 +38,22 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
     header: { type: 'user-info' },
     sections: [
       {
-        type: 'list',
-        title: 'Project List',
-        icon: '📂',
-        dataKey: 'projects',
-        hasShowMore: true,
-        showMoreRoute: '/dashboard/projects',
+        type: 'action',
+        title: 'Notification',
+        action: {
+          label: 'Notification',
+          onClick: 'notification',
+        },
       },
+      // [ ] UI 개선을 위해 남겨둠
+      // {
+      //   type: 'list',
+      //   title: 'Project List',
+      //   icon: '📂',
+      //   dataKey: 'projects',
+      //   hasShowMore: true,
+      //   showMoreRoute: '/dashboard/projects',
+      // },
       {
         type: 'navigation',
         title: 'navigation list',

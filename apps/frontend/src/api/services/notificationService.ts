@@ -12,7 +12,7 @@ export const notificationService = {
 
   // 구독중인 이슈 조회
   async getIssueSubscriptions(
-    projectUrl: string
+    projectUrl: string | undefined
   ): Promise<getIssueSubscriptionsResponse> {
     const url = `${this.projectApiUrl}/${projectUrl}/notifications/subscriptions`
     const response = await apiClient.get(url)
@@ -20,7 +20,7 @@ export const notificationService = {
   },
   //이슈 구독 취소
   async unsubscribeIssueNotification(
-    projectUrl: string,
+    projectUrl: string | undefined,
     subscriptionId: string
   ) {
     const url = `${this.projectApiUrl}/${projectUrl}/notifications/subscriptions/${subscriptionId}`

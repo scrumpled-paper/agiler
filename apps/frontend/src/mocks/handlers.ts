@@ -807,6 +807,28 @@ export const handlers = [
             fromKanbanConfigId: 1,
             toKanbanConfigId: 2,
           },
+          {
+            createdAt: new Date('2024-01-01'),
+            updatedAt: new Date('2024-01-02'),
+            deletedAt: new Date('1970-01-01'),
+            id: 2,
+            userId: 1,
+            profileId: 1,
+            issueId: 102,
+            fromKanbanConfigId: 1,
+            toKanbanConfigId: 2,
+          },
+          {
+            createdAt: new Date('2024-01-01'),
+            updatedAt: new Date('2024-01-02'),
+            deletedAt: new Date('1970-01-01'),
+            id: 3,
+            userId: 1,
+            profileId: 1,
+            issueId: 103,
+            fromKanbanConfigId: 1,
+            toKanbanConfigId: 2,
+          },
         ],
       }
       return HttpResponse.json(response)

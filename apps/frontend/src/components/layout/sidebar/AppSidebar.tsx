@@ -1,5 +1,3 @@
-// components/layout/sidebar/AppSidebar.tsx
-
 import * as React from 'react'
 import {
   Sidebar,
