@@ -10,6 +10,12 @@ import type {
   RetroTemplateListResponse,
   ScrumTemplateListResponse,
 } from '@/types/template'
+import type {
+  GetRegisteredChannelsResponse,
+  GetScheduleNotificationResponse,
+  NotificationChannel,
+  getIssueSubscriptionsResponse,
+} from '@/types/notification'
 import {
   MOCK_MEMBER_PROFILES,
   mockIssues,
@@ -111,6 +117,23 @@ let meetingTemplatesStore: TemplateListItem[] = [...MOCK_MEETING_TEMPLATES]
 let retroTemplatesStore: TemplateListItem[] = [...MOCK_RETRO_TEMPLATES]
 let scrumTemplatesStore: TemplateListItem[] = [...MOCK_SCRUM_TEMPLATES]
 let nextTemplateId = 6
+
+// Mock notification channels data
+export const MOCK_NOTIFICATION_CHANNELS: NotificationChannel[] = [
+  {
+    id: 1,
+    channelType: 'slack',
+  },
+  {
+    id: 2,
+    channelType: 'discord',
+  },
+]
+
+// In-memory storage for notification channels during tests
+let notificationChannelsStore: NotificationChannel[] = [
+  ...MOCK_NOTIFICATION_CHANNELS,
+]
 
 // Template details storage (for full content)
 const templateDetailsStore: Record<number, TemplateDetail> = {
@@ -764,6 +787,177 @@ export const handlers = [
       return HttpResponse.json(undefined)
     }
   ),
+
+  // ==================== Notification Handlers ====================
+
+  // 구독중인 이슈 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/notifications/subscriptions',
+    ({ params }) => {
+      console.log('[MSW] 이슈 구독 목록 조회 호출됨:', params.projectUrl)
+      const response: getIssueSubscriptionsResponse = {
+        subscriptions: [
+          {
+            issueTitle: '로그인 페이지 UX 개선',
+            targetUser: '김개발',
+            statusName: 'In Progress',
+            id: 101,
+            issueId: 23,
+            fromKanbanConfigId: 1,
+            toKanbanConfigId: 2,
+          },
+          {
+            issueTitle: 'API 게이트웨이 성능 테스트',
+            targetUser: '박운영',
+            statusName: 'Done',
+            id: 102,
+            issueId: 45,
+            fromKanbanConfigId: 2,
+            toKanbanConfigId: 3,
+          },
+          {
+            issueTitle: '2026년도 신규 기능 계획 수립',
+            targetUser: '최기획',
+            statusName: 'To Do',
+            id: 103,
+            issueId: 67,
+            fromKanbanConfigId: 3,
+            toKanbanConfigId: 1,
+          },
+        ],
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+  // 스케줄 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/notifications/schedule',
+    ({ params }) => {
+      console.log('[MSW] 이슈 구독 목록 조회 호출됨:', params.projectUrl)
+      const response: GetScheduleNotificationResponse = {
+        schedules: [
+          {
+            id: 201,
+            issueId: 15,
+            issueTitle: '디자인 시스템 V2 적용',
+            notificationTime: '2025-12-10T09:00:00Z',
+          },
+          {
+            id: 202,
+            issueId: 28,
+            issueTitle: '주간 회의 자료 준비',
+            notificationTime: '2025-12-12T14:30:00Z',
+          },
+          {
+            id: 203,
+            issueId: 33,
+            issueTitle: '서버 모니터링 경고 임계치 조정',
+            notificationTime: '2025-12-15T11:45:00Z',
+          },
+          {
+            id: 204,
+            issueId: 41,
+            issueTitle: '새로운 결제 모듈 연동 테스트',
+            notificationTime: '2025-12-18T16:00:00Z',
+          },
+        ],
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+
+  // 이슈 구독 요청
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/notifications/subscriptions',
+    async ({ params, request }) => {
+      const body = await request.json()
+      console.log('[MSW] 이슈 구독 요청:', params.projectUrl, body)
+      return HttpResponse.json({ subscriptionId: 123 })
+    }
+  ),
+
+  // 이슈 구독 취소
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/notifications/subscriptions/:subscriptionId',
+    ({ params }) => {
+      console.log(
+        '[MSW] 이슈 구독 취소:',
+        params.projectUrl,
+        params.subscriptionId
+      )
+      return HttpResponse.json({ success: true })
+    }
+  ),
+
+  // 시간 알림 설정
+  ...createPostHandlers(
+    '/api/v1/projects/:projectUrl/notifications/schedule',
+    async ({ params, request }) => {
+      const body = await request.json()
+      console.log('[MSW] 시간 알림 설정:', params.projectUrl, body)
+      return HttpResponse.json({ scheduleId: 56 })
+    }
+  ),
+
+  // 시간 알림 취소
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/notifications/schedule/:scheduleId',
+    ({ params }) => {
+      console.log(
+        '[MSW] 이슈 구독 취소:',
+        params.projectUrl,
+        params.subscriptionId
+      )
+      return HttpResponse.json({ success: true })
+    }
+  ),
+
+  // 알림 채널 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/notifications/channels',
+    ({ params }) => {
+      console.log('[MSW] 알림 채널 목록 조회 호출됨:', params.projectUrl)
+      const response: GetRegisteredChannelsResponse = {
+        channels: notificationChannelsStore,
+      }
+      return HttpResponse.json(response)
+    }
+  ),
+
+  // 채널 삭제
+  ...createDeleteHandlers(
+    '/api/v1/projects/:projectUrl/notifications/channels/:channelId',
+    ({ params }) => {
+      const channelId = Number(params.channelId)
+      console.log('[MSW] 알림 채널 삭제:', params.projectUrl, channelId)
+      notificationChannelsStore = notificationChannelsStore.filter(
+        channel => channel.id !== channelId
+      )
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
+
+  // Slack 연동 요청
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/notifications/slack/connect',
+    ({ params }) => {
+      console.log('[MSW] Slack 연동 요청:', params.projectUrl)
+      return HttpResponse.json({
+        authUrl: 'https://slack.com/oauth/authorize?client_id=mock',
+      })
+    }
+  ),
+
+  // Discord 연동 요청
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/notifications/discord/connect',
+    ({ params }) => {
+      console.log('[MSW] Discord 연동 요청:', params.projectUrl)
+      return HttpResponse.json({
+        authUrl: 'https://discord.com/api/oauth2/authorize?client_id=mock',
+      })
+    }
+  ),
 ]
 
 // Helper function to reset labels store for tests
@@ -779,4 +973,9 @@ export const resetTemplatesStore = () => {
   retroTemplatesStore = [...MOCK_RETRO_TEMPLATES]
   scrumTemplatesStore = [...MOCK_SCRUM_TEMPLATES]
   nextTemplateId = 6
+}
+
+// Helper function to reset notification channels store for tests
+export const resetNotificationChannelsStore = () => {
+  notificationChannelsStore = [...MOCK_NOTIFICATION_CHANNELS]
 }

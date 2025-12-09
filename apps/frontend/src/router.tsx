@@ -6,13 +6,14 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import DashBoard from './pages/DashBoard'
 import Project from './pages/Project'
-import ProjectSetting from './pages/ProjectSetting'
-import ProjectUserSetting from './pages/ProjectUserSetting'
+import ProjectSetting from './pages/projectSettings/ProjectSetting'
+import ProjectUserSetting from './pages/projectSettings/ProjectUserSetting'
 import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
-import ProjectManagement from './pages/ProjectManagement'
-import ProjectLabelSetting from './pages/ProjectLabelSetting'
-import ProjectTemplateSetting from './pages/ProjectTemplateSetting'
+import ProjectManagement from './pages/projectSettings/ProjectManagement'
+import ProjectLabelSetting from './pages/projectSettings/ProjectLabelSetting'
+import ProjectTemplateSetting from './pages/projectSettings/ProjectTemplateSetting'
+import ProjectNotificationsSetting from './pages/projectSettings/ProjectNotificationsSetting'
 
 export const routers = createBrowserRouter([
   {
@@ -102,6 +103,14 @@ export const routers = createBrowserRouter([
                 element: (
                   <ProtectedRoute>
                     <ProjectTemplateSetting />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'notifications',
+                element: (
+                  <ProtectedRoute>
+                    <ProjectNotificationsSetting />
                   </ProtectedRoute>
                 ),
               },

@@ -22,7 +22,7 @@ describe('getBreadcrumbs', () => {
 
     expect(breadcrumbs).toHaveLength(2)
     expect(breadcrumbs[0]).toEqual({ label: 'Dashboard', href: '/dashboard' })
-    expect(breadcrumbs[1]).toEqual({ label: 'Project 1', href: '/projects/1' })
+    expect(breadcrumbs[1]).toEqual({ label: '1', href: '/projects/1' })
   })
 
   it('should return dashboard > project > settings', () => {
@@ -32,7 +32,7 @@ describe('getBreadcrumbs', () => {
 
     expect(breadcrumbs).toHaveLength(3)
     expect(breadcrumbs[0]).toEqual({ label: 'Dashboard', href: '/dashboard' })
-    expect(breadcrumbs[1]).toEqual({ label: 'Project 1', href: '/projects/1' })
+    expect(breadcrumbs[1]).toEqual({ label: '1', href: '/projects/1' })
     expect(breadcrumbs[2]).toEqual({ label: 'Settings' })
   })
 
@@ -43,7 +43,7 @@ describe('getBreadcrumbs', () => {
 
     expect(breadcrumbs).toHaveLength(3)
     expect(breadcrumbs[0]).toEqual({ label: 'Dashboard', href: '/dashboard' })
-    expect(breadcrumbs[1]).toEqual({ label: 'Project 1', href: '/projects/1' })
+    expect(breadcrumbs[1]).toEqual({ label: '1', href: '/projects/1' })
     expect(breadcrumbs[2]).toEqual({
       label: 'Daily Scrum',
       href: '/projects/1/daily-scrum',
@@ -58,7 +58,7 @@ describe('getBreadcrumbs', () => {
 
     expect(breadcrumbs).toHaveLength(4)
     expect(breadcrumbs[0]).toEqual({ label: 'Dashboard', href: '/dashboard' })
-    expect(breadcrumbs[1]).toEqual({ label: 'Project 1', href: '/projects/1' })
+    expect(breadcrumbs[1]).toEqual({ label: '1', href: '/projects/1' })
     expect(breadcrumbs[2]).toEqual({
       label: 'Daily Scrum',
       href: '/projects/1/daily-scrum',

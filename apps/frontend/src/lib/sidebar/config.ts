@@ -11,7 +11,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         title: 'Project List',
         icon: '😃',
         dataKey: 'projects',
-        hasShowMore: true,
+        hasShowMore: false, // [ ] UI 개선 후 로직 변경
         showMoreRoute: '/dashboard/projects',
       },
       {
@@ -38,13 +38,22 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
     header: { type: 'user-info' },
     sections: [
       {
-        type: 'list',
-        title: 'Project List',
-        icon: '📂',
-        dataKey: 'projects',
-        hasShowMore: true,
-        showMoreRoute: '/dashboard/projects',
+        type: 'action',
+        title: 'Notification',
+        action: {
+          label: 'Notification',
+          onClick: 'notification',
+        },
       },
+      // [ ] UI 개선을 위해 남겨둠
+      // {
+      //   type: 'list',
+      //   title: 'Project List',
+      //   icon: '📂',
+      //   dataKey: 'projects',
+      //   hasShowMore: true,
+      //   showMoreRoute: '/dashboard/projects',
+      // },
       {
         type: 'navigation',
         title: 'navigation list',
@@ -109,6 +118,10 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           {
             label: 'Template Setting',
             route: ':projectUrl/settings/project-template',
+          },
+          {
+            label: 'Notifications Setting',
+            route: ':projectUrl/settings/notifications',
           },
         ],
       },
