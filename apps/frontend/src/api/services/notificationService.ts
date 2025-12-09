@@ -1,6 +1,7 @@
 import type {
   getIssueSubscriptionsResponse,
   GetRegisteredChannelsResponse,
+  GetScheduleNotificationResponse,
   setScheduleNotificationPayload,
   subscribeIssueNotificationPayload,
 } from '@/types/notification'
@@ -21,7 +22,7 @@ export const notificationService = {
   //이슈 구독 취소
   async unsubscribeIssueNotification(
     projectUrl: string | undefined,
-    subscriptionId: string
+    subscriptionId: number
   ) {
     const url = `${this.projectApiUrl}/${projectUrl}/notifications/subscriptions/${subscriptionId}`
     const response = await apiClient.delete(url)
@@ -43,6 +44,24 @@ export const notificationService = {
   ) {
     const url = `${this.projectApiUrl}/${projectUrl}/notifications/schedule`
     const response = await apiClient.post(url, payload)
+    return response.data
+  },
+  // 시간 알림 삭제 요청
+  async deleteScheduleNotification(
+    projectUrl: string | undefined,
+    scheduleId: number
+  ) {
+    const url = `${this.projectApiUrl}/${projectUrl}/notifications/schedule/${scheduleId}`
+    await apiClient.delete(url)
+    // const url = `${this.projectApiUrl}/${projectUrl}/notifications/schedule`
+    // await apiClient.delete(url, { data: { id: scheduleId } })
+  },
+  // 시간 알림 조회
+  async getScheduleNotifications(
+    projectUrl: string | undefined
+  ): Promise<GetScheduleNotificationResponse> {
+    const url = `${this.projectApiUrl}/${projectUrl}/notifications/schedule`
+    const response = await apiClient.get(url)
     return response.data
   },
 

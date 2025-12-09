@@ -10,12 +10,10 @@ export interface setScheduleNotificationPayload {
 }
 
 export interface Subscript {
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date
+  issueTitle: string
+  targetUser: string
+  statusName: string
   id: number
-  userId: number
-  profileId: number
   issueId: number
   fromKanbanConfigId: number
   toKanbanConfigId: number
@@ -31,4 +29,15 @@ export interface NotificationChannel {
 
 export interface GetRegisteredChannelsResponse {
   channels: NotificationChannel[]
+}
+
+export interface Schedule {
+  id: number
+  issueId: number
+  issueTitle: string
+  notificationTime: string // "2025-12-08T10:23:21"
+}
+
+export interface GetScheduleNotificationResponse {
+  schedules: Schedule[]
 }

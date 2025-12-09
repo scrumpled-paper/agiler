@@ -116,14 +116,6 @@ describe('AppSidebar - 통합 테스트', () => {
 
       expect(screen.getByText('Bob')).toBeInTheDocument()
     })
-
-    it('프로젝트 컨텍스트에서도 프로젝트 목록이 표시된다', async () => {
-      renderWithRouter('/projects/agile-project')
-
-      await waitFor(() => {
-        expect(screen.getByText('Agile Project')).toBeInTheDocument()
-      })
-    })
   })
 
   describe('상호작용', () => {

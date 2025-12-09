@@ -220,6 +220,26 @@ export default function KanbanView({
                       )}
                     </div>
 
+                    {/* Labels */}
+                    {task.labels && task.labels.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {task.labels.map(label => (
+                          <Badge
+                            key={label.name}
+                            variant="outline"
+                            style={{
+                              backgroundColor: label.color,
+                              borderColor: label.color,
+                              color: '#fff',
+                            }}
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {label.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Owner and Date */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       {/* task.owner는 Issue['owner'] (UserInfo) 타입입니다. */}
@@ -240,26 +260,6 @@ export default function KanbanView({
                         })}
                       </span>
                     </div>
-
-                    {/* Labels */}
-                    {task.labels && task.labels.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {task.labels.map(label => (
-                          <Badge
-                            key={label.name}
-                            variant="outline"
-                            style={{
-                              backgroundColor: label.color,
-                              borderColor: label.color,
-                              color: '#fff',
-                            }}
-                            className="text-[10px] px-1.5 py-0"
-                          >
-                            {label.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </KanbanCard>
               )}

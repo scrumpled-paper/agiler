@@ -11,7 +11,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         title: 'Project List',
         icon: '😃',
         dataKey: 'projects',
-        hasShowMore: true,
+        hasShowMore: false, // [ ] UI 개선 후 로직 변경
         showMoreRoute: '/dashboard/projects',
       },
       {

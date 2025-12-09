@@ -23,7 +23,7 @@ export function getBreadcrumbs(
   // Projects 경로
   if (pathname.startsWith('/projects/') && params.projectUrl) {
     breadcrumbs.push({
-      label: `Project ${params.projectUrl}`,
+      label: `${params.projectUrl}`,
       href: `/projects/${params.projectUrl}`,
     })
 
