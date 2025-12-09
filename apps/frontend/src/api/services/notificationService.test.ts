@@ -27,12 +27,10 @@ describe('notificationService', () => {
       const mockResponse: getIssueSubscriptionsResponse = {
         subscriptions: [
           {
-            createdAt: new Date('2024-01-01'),
-            updatedAt: new Date('2024-01-01'),
-            deletedAt: new Date('2024-01-01'),
+            issueTitle: 'issue 1',
+            targetUser: 'user 1',
+            statusName: 'done',
             id: 1,
-            userId: 10,
-            profileId: 5,
             issueId: 100,
             fromKanbanConfigId: 1,
             toKanbanConfigId: 2,
@@ -70,11 +68,11 @@ describe('notificationService', () => {
 
       const result = await notificationService.unsubscribeIssueNotification(
         'test-project',
-        'sub-123'
+        123
       )
 
       expect(apiClient.delete).toHaveBeenCalledWith(
-        '/api/v1/projects/test-project/notifications/subscriptions/sub-123'
+        '/api/v1/projects/test-project/notifications/subscriptions/123'
       )
       expect(result).toEqual(mockResponse)
     })
@@ -85,10 +83,7 @@ describe('notificationService', () => {
       vi.mocked(apiClient.delete).mockRejectedValue(axiosError)
 
       await expect(
-        notificationService.unsubscribeIssueNotification(
-          'test-project',
-          'sub-123'
-        )
+        notificationService.unsubscribeIssueNotification('test-project', 1234)
       ).rejects.toThrow('Unsubscribe failed')
     })
   })
