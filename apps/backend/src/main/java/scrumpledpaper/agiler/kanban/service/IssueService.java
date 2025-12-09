@@ -266,13 +266,12 @@ public class IssueService {
 	}
 
 	@Transactional(readOnly = true)
-	public SnapshotAvailableResDto getAvailableSnapshotDates(long userId, String projectUrl, int year, int month) {
+	public SnapshotAvailableResDto getAvailableSnapshotDates(long userId, String projectUrl, LocalDate date) {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
 		Project project = projectAccessContext.project();
 
-		YearMonth yearMonth = YearMonth.of(year, month);
-		LocalDate startDate = yearMonth.atDay(1);
-		LocalDate endDate = yearMonth.atEndOfMonth();
+		LocalDate startDate = date.withDayOfMonth(1);
+		LocalDate endDate = YearMonth.from(date).atEndOfMonth();
 
 		List<LocalDate> availableDates = snapshotService.issueSnapshotDateMappingsByProjectIdAndBetween(
 			project.getId(),
