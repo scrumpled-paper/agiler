@@ -61,12 +61,16 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         items: [
           { label: 'Settings', icon: '🔧', route: ':projectUrl/settings' },
           {
-            label: 'Daily Scrum',
+            label: 'Daily Scrums',
             icon: '📆',
-            route: ':projectUrl/daily-scrum',
+            route: ':projectUrl/dailyscrums',
           },
-          { label: 'Retrospect', icon: '📒', route: ':projectUrl/retrospect' },
-          { label: 'Meeting', icon: '📝', route: ':projectUrl/meeting' },
+          {
+            label: 'Retrospectives',
+            icon: '📒',
+            route: ':projectUrl/retrospectives',
+          },
+          { label: 'Meetings', icon: '📝', route: ':projectUrl/meetings' },
         ],
       },
       // 프로젝트 참가 링크 ui 개선될 수 있어서 남겨두었습니다.
