@@ -1,5 +1,3 @@
-// components/layout/sidebar/sections/ProjectListSection.tsx
-
 import { useParams } from 'react-router-dom'
 import {
   SidebarGroup,
@@ -37,10 +35,7 @@ export function ProjectListSection({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>
-        {section.icon && <span className="mr-2">{section.icon}</span>}
-        {section.title}
-      </SidebarGroupLabel>
+      <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {displayedProjects.map(project => (

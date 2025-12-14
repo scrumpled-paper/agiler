@@ -14,12 +14,12 @@ export type SectionType =
 export interface NavigationItem {
   label: string
   route: string
-  icon?: string
+  icon?: React.ElementType
 }
 
 export interface BaseSection {
   title: string
-  icon?: string
+  icon?: React.ElementType
 }
 
 export interface NavigationSection extends BaseSection {
