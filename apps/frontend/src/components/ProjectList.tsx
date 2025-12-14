@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ProjectCard from './ProjectCard'
-import PaginationDemo from './Pagination'
+import DynamicPagination from './Pagination'
 import type { ProjectInfo } from '@/types/index'
 import { Button } from './ui/button'
 import JoinProjectModal from './JoinProjectModal'
@@ -38,11 +38,11 @@ export default function ProjectList({
           <ProjectCard props={item} key={item.url} />
         ))}
       </div>
-      <PaginationDemo
+      <DynamicPagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={onPageChange}
-      ></PaginationDemo>
+      ></DynamicPagination>
 
       <JoinProjectModal
         open={isJoinModalOpen}

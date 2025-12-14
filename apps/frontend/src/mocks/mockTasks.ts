@@ -1,4 +1,5 @@
 import type { Issue, IssueColumn, UserInfo, Label, ProjectInfo } from '@/types'
+import type { PagedResponse } from '@/types/list'
 
 // Mock Users
 // UserInfo 타입은 이미 정의된 mockUsers 배열과 호환됩니다.
@@ -174,3 +175,65 @@ export const mockProjectList: ProjectInfo[] = [
     summary: 'Company-wide design system3',
   },
 ]
+
+// 예제 데이터
+export const mockListData: PagedResponse<{
+  id: number
+  title: string
+  createdAt: string
+  participants: Array<{
+    id: number
+    nickname: string
+    imageUrl: string
+  }>
+}> = {
+  contents: [
+    {
+      id: 1,
+      title: '스프린트 1 회고',
+      createdAt: '2024-01-15T10:00:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+        {
+          id: 2,
+          nickname: '이영희',
+          imageUrl: 'https://github.com/vercel.png',
+        },
+      ],
+    },
+    {
+      id: 2,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+        {
+          id: 2,
+          nickname: '이영희',
+          imageUrl: 'https://github.com/vercel.png',
+        },
+        {
+          id: 3,
+          nickname: '박민수',
+          imageUrl: 'https://github.com/react.png',
+        },
+        {
+          id: 4,
+          nickname: '최지민',
+          imageUrl: 'https://github.com/facebook.png',
+        },
+      ],
+    },
+  ],
+  size: 10,
+  number: 1,
+  totalPages: 1,
+}
