@@ -2,6 +2,7 @@ import { useState } from 'react'
 import PagedTable from '@/components/PagedTable'
 import type { PagedResponse } from '@/types/list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { formatDate } from '@/utils/date-formatter'
 
 // ListContentItem을 상속받는 실제 타입 (예: 데일리스크럼, 회고, 회의록 등)
 interface ContentItem {
@@ -29,15 +30,6 @@ export default function ContentListTable({
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
     onPageChange(page)
-  }
-
-  const formatDate = (date: Date | string) => {
-    const d = typeof date === 'string' ? new Date(date) : date
-    return d.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
   }
 
   const columns = [

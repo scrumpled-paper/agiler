@@ -62,9 +62,8 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         displayTitle: false,
         items: [
           {
-            label: 'Settings',
-            // icon: Settings,
-            route: ':projectUrl/settings',
+            label: 'Home',
+            route: ':projectUrl',
           },
           {
             label: 'Daily Scrums',
@@ -77,6 +76,11 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
           {
             label: 'Meetings',
             route: ':projectUrl/meetings',
+          },
+          {
+            label: 'Settings',
+            // icon: Settings,
+            route: ':projectUrl/settings',
           },
         ],
       },
@@ -115,7 +119,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         type: 'navigation',
         title: 'Project Settings',
         displayTitle: true,
-        icon: User,
+        // icon: User,
         items: [
           { label: 'User Profile', route: ':projectUrl/settings/users' },
           {

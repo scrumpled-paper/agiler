@@ -14,8 +14,8 @@ export interface ListContentItem {
 }
 
 // 제네릭 T를 사용하여 어떤 타입의 리스트 아이템이든 포함할 수 있는 공통 응답 인터페이스
-// T는 ListContentItem 인터페이스를 상속받거나, 적어도 그와 유사한 구조를 가질 것으로 가정합니다.
-export interface PagedResponse<T extends ListContentItem> {
+// T는 최소한 id 속성을 가져야 합니다 (테이블 렌더링의 key로 사용)
+export interface PagedResponse<T = unknown> {
   contents: T[]
   size: number
   number: number

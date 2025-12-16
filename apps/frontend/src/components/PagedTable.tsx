@@ -9,6 +9,11 @@ import {
 import DynamicPagination from '@/components/Pagination'
 import type { PagedResponse } from '@/types/list'
 
+// Base type constraint - only requires id for keying
+interface TableItem {
+  id: number | string
+}
+
 interface Column<T> {
   key: string
   header: string
@@ -16,7 +21,7 @@ interface Column<T> {
   className?: string
 }
 
-interface PagedTableProps<T> {
+interface PagedTableProps<T extends TableItem> {
   data: PagedResponse<T>
   columns: Column<T>[]
   currentPage: number
@@ -24,7 +29,7 @@ interface PagedTableProps<T> {
   emptyMessage?: string
 }
 
-export default function PagedTable<T extends { id: number | string }>({
+export default function PagedTable<T extends TableItem>({
   data,
   columns,
   currentPage,
