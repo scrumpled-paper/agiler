@@ -5,15 +5,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
+import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
 import scrumpledpaper.agiler.notification.dto.*;
 import scrumpledpaper.agiler.notification.repository.NotificationSubscriptionRepository;
 import scrumpledpaper.agiler.notification.repository.ProfileNotificationChannelRepository;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
+import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -90,5 +95,25 @@ public class NotificationManagementService {
 			throw new CustomException(ErrorCode.NOTIFICATION_UNAUTHORIZED);
 		}
 		notificationSubscriptionRepository.delete(subscription);
+	}
+
+	public Map<Long, List<KanbanBoardResDto.IssueNoti>> getIssueNotisMapAsKanbanDto(List<Issue> issues) {
+		List<Long> issueIds = issues.stream()
+			.map(Issue::getId)
+			.toList();
+
+		List<NotificationSubscription> notis = notificationSubscriptionRepository.findIssueNotisByIssueIdIn(issueIds);
+
+		return notis.stream()
+			.collect(Collectors.groupingBy(
+				NotificationSubscription::getIssueId,
+				Collectors.mapping(
+					noti -> new KanbanBoardResDto.IssueNoti(
+						noti.getId(),
+						noti.getProfileId()
+					),
+					Collectors.toList()
+				)
+			));
 	}
 }

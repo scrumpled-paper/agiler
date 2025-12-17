@@ -1,13 +1,18 @@
 package scrumpledpaper.agiler.kanban.controller;
 
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,6 +26,7 @@ import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.service.IssueService;
 
 @RestController
@@ -91,5 +97,15 @@ public class IssueController {
 		long updatedIssueId = issueService.updateIssueKanbanConfig(customUserDetails.getUserId(), projectUrl, issueId,
 			request);
 		return ResponseEntity.ok(new IssueIdResDto(updatedIssueId));
+	}
+
+	@GetMapping("/{projectUrl}/issues")
+	public ResponseEntity<KanbanBoardResDto> getIssues(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+		KanbanBoardResDto kanbanBoardResDto = issueService.getKanbanBoard(customUserDetails.getUserId(), projectUrl, date);
+		return ResponseEntity.ok(kanbanBoardResDto);
 	}
 }

@@ -3,6 +3,7 @@ package scrumpledpaper.agiler.project.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -22,4 +23,15 @@ public interface ProfileMapper {
 	@Mapping(target = "email", source = "profile.email")
 	@Mapping(target = "description", source = "profile.description")
 	ProfileResDto toProfileResDto(Profile profile, String imageUrl);
+
+	default KanbanBoardResDto.ProfileDto toKanbanProfileDto(Profile profile, String imageUrl) {
+		return new KanbanBoardResDto.ProfileDto(
+			profile.getId(),
+			profile.getNickname(),
+			profile.getEmail(),
+			imageUrl,
+			profile.getRole().name(),
+			profile.getDescription()
+		);
+	}
 }

@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import scrumpledpaper.agiler.kanban.entity.Issue;
 
 public interface IssueRepository extends JpaRepository<Issue, Long> {
@@ -16,9 +19,19 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
 	List<Issue> findAllByProjectId(Long id);
 
+	@Query("""
+	SELECT DISTINCT i FROM Issue i
+		LEFT JOIN FETCH i.assignees ia
+		LEFT JOIN FETCH ia.profile
+		LEFT JOIN FETCH i.kanbanConfig
+	WHERE i.project.id = :projectId
+	""")
+	List<Issue> findAllByProjectIdWithRelations(@Param("projectId") Long projectId);
+
 	List<Issue> findByProjectIdAndCreatedAtBetween(
 		Long projectId,
 		LocalDateTime startTime,
 		LocalDateTime endTime
 	);
 }
+

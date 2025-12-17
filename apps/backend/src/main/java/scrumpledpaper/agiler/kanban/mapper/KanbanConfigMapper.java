@@ -5,6 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
@@ -24,4 +25,8 @@ public interface KanbanConfigMapper {
 	@Mapping(target = "project", source = "savedProject")
 	@Mapping(target = "isDone", source = "defaultKanbanConfig.done")
 	KanbanConfig toEntity(Project savedProject, DefaultKanbanConfig defaultKanbanConfig, int version);
+
+	@Mapping(target = "kanbanConfigId", source = "kanbanConfig.id")
+	@Mapping(target = "isDefault", source = "kanbanConfig.defaultStatus")
+	KanbanBoardResDto.KanbanConfigDto toKanbanBoardDto(KanbanConfig kanbanConfig);
 }

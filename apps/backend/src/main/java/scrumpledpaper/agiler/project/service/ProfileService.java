@@ -10,6 +10,8 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
+import scrumpledpaper.agiler.kanban.mapper.KanbanMapper;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
@@ -20,6 +22,9 @@ import scrumpledpaper.agiler.project.mapper.ProfileMapper;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.entity.User;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -138,4 +143,24 @@ public class ProfileService {
 		imageService.deleteImage(profile::getImageId, profile::updateImageId);
 	}
 
+	public List<KanbanBoardResDto.ProfileDto> getProjectProfilesAsKanbanDto(Project project) {
+		List<Profile> profiles = profileRepository.findAllByProjectId(project.getId());
+
+		List<Long> imageIds = profiles.stream()
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrlMap = imageService.getImageUrlsByIds(imageIds);
+
+		return profiles.stream()
+			.map(profile -> {
+				String imageUrl = Optional.ofNullable(profile.getImageId())
+					.map(imageUrlMap::get)
+					.orElse("");
+
+				return profileMapper.toKanbanProfileDto(profile, imageUrl);
+			})
+			.toList();
+	}
 }
