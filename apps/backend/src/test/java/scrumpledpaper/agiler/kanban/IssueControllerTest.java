@@ -33,12 +33,14 @@ import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
 import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
+import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
@@ -1102,6 +1104,100 @@ public class IssueControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.KANBAN_CONFIG_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Get Kanban Board And Issues Test")
+	class GetKanbanBoardAndIssuesTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 칸반 보드 및 이슈 조회 성공")
+		public void getKanbanBoardAndIssuesSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Label label = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
+			Label label2 = testDataFactory.createLabel(project, "label2", "label2 description", "#00FF00");
+			KanbanConfig kanbanConfig1 = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			KanbanConfig kanbanConfig2 = testDataFactory.createKanbanConfig(
+				project,
+				2,
+				false,
+				false,
+				false
+			);
+			Issue issue1 = testDataFactory.createIssue(
+				project,
+				kanbanConfig1,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			Issue issue2 = testDataFactory.createIssue(
+				project,
+				kanbanConfig2,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			NotificationSubscription subscription = testDataFactory.createNotificationSubscription(
+				auth.getUser(),
+				profile,
+				issue1,
+				kanbanConfig1.getId(),
+				kanbanConfig2.getId()
+			);
+
+			LocalDate now = LocalDate.now();
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.param("date", now.toString()))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			KanbanBoardResDto result = objectMapper.readValue(response, KanbanBoardResDto.class);
+
+			assertThat(result.kanbanConfigs()).isNotEmpty();
+			assertThat(result.kanbanConfigs().get(0).statusName()).isEqualTo(kanbanConfig1.getStatusName());
+			assertThat(result.kanbanConfigs().get(0).priority()).isEqualTo((kanbanConfig1.getPriority()));
+			assertThat(result.kanbanConfigs().get(0).isDefault()).isEqualTo((kanbanConfig1.isDefaultStatus()));
+
+			assertThat(result.profiles()).isNotEmpty();
+			assertThat(result.profiles().get(0).profileId()).isNotNull();
+			assertThat(result.profiles().get(0).nickname()).isEqualTo(profile.getNickname());
+
+			assertThat(result.labels()).isNotEmpty();
+			assertThat(result.labels().get(0).labelId()).isNotNull();
+			assertThat(result.labels().get(0).name()).isEqualTo(label.getName());
+			assertThat(result.labels().get(1).labelId()).isNotNull();
+			assertThat(result.labels().get(1).name()).isEqualTo(label2.getName());
+
+			assertThat(result.issues()).isNotEmpty();
+			assertThat(result.issues().get(0).issueId()).isEqualTo((issue1.getId()));
+			assertThat(result.issues().get(1).issueId()).isEqualTo((issue2.getId()));
+			assertThat(result.issues().get(0).notis().get(0).notiId()).isEqualTo((subscription.getId()));
+			assertThat(result.issues().get(0).notis().get(0).profileId()).isNotNull();
 		}
 	}
 }

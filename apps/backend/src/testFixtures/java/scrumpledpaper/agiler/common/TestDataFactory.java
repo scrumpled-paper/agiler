@@ -236,7 +236,7 @@ public class TestDataFactory {
 	}
 
 	public List<Label> findLabelsByProjectId(Long projectId) {
-		return labelRepository.findByProjectId(projectId);
+		return labelRepository.findAllByProjectId(projectId);
 	}
 
 	public Label createLabel(Project project, String name, String description, String color) {
