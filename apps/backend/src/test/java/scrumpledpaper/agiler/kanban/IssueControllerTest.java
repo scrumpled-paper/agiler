@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -1157,6 +1158,16 @@ public class IssueControllerTest {
 				null,
 				null
 			);
+			Issue historyIssue = testDataFactory.createIssue(
+				project,
+				kanbanConfig1,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				true,
+				null,
+				null
+			);
+			testDataFactory.updateTimestamps("issue", historyIssue.getId(), LocalDateTime.now().minusDays(10));
 			NotificationSubscription subscription = testDataFactory.createNotificationSubscription(
 				auth.getUser(),
 				profile,
@@ -1178,26 +1189,74 @@ public class IssueControllerTest {
 			// then
 			KanbanBoardResDto result = objectMapper.readValue(response, KanbanBoardResDto.class);
 
-			assertThat(result.kanbanConfigs()).isNotEmpty();
-			assertThat(result.kanbanConfigs().get(0).statusName()).isEqualTo(kanbanConfig1.getStatusName());
-			assertThat(result.kanbanConfigs().get(0).priority()).isEqualTo((kanbanConfig1.getPriority()));
-			assertThat(result.kanbanConfigs().get(0).isDefault()).isEqualTo((kanbanConfig1.isDefaultStatus()));
+			assertThat(result.kanbanConfigs())
+				.hasSize(2)
+				.anySatisfy(config -> {
+					assertThat(config.kanbanConfigId()).isEqualTo(kanbanConfig1.getId());
+					assertThat(config.statusName()).isEqualTo(kanbanConfig1.getStatusName());
+					assertThat(config.priority()).isEqualTo(kanbanConfig1.getPriority());
+					assertThat(config.isDefault()).isEqualTo(kanbanConfig1.isDefaultStatus());
+				})
+				.anySatisfy(config -> {
+					assertThat(config.kanbanConfigId()).isEqualTo(kanbanConfig2.getId());
+					assertThat(config.statusName()).isEqualTo(kanbanConfig2.getStatusName());
+					assertThat(config.priority()).isEqualTo(kanbanConfig2.getPriority());
+				});
 
-			assertThat(result.profiles()).isNotEmpty();
-			assertThat(result.profiles().get(0).profileId()).isNotNull();
-			assertThat(result.profiles().get(0).nickname()).isEqualTo(profile.getNickname());
+			assertThat(result.profiles())
+				.hasSize(1)
+				.first()
+				.satisfies(p -> {
+					assertThat(p.profileId()).isEqualTo(profile.getId());
+					assertThat(p.nickname()).isEqualTo(profile.getNickname());
+					assertThat(p.email()).isEqualTo(profile.getEmail());
+				});
 
-			assertThat(result.labels()).isNotEmpty();
-			assertThat(result.labels().get(0).labelId()).isNotNull();
-			assertThat(result.labels().get(0).name()).isEqualTo(label.getName());
-			assertThat(result.labels().get(1).labelId()).isNotNull();
-			assertThat(result.labels().get(1).name()).isEqualTo(label2.getName());
+			assertThat(result.labels())
+				.hasSize(2)
+				.extracting("name")
+				.containsExactlyInAnyOrder(label.getName(), label2.getName());
 
-			assertThat(result.issues()).isNotEmpty();
-			assertThat(result.issues().get(0).issueId()).isEqualTo((issue1.getId()));
-			assertThat(result.issues().get(1).issueId()).isEqualTo((issue2.getId()));
-			assertThat(result.issues().get(0).notis().get(0).notiId()).isEqualTo((subscription.getId()));
-			assertThat(result.issues().get(0).notis().get(0).profileId()).isNotNull();
+			assertThat(result.labels())
+				.anySatisfy(l -> {
+					assertThat(l.labelId()).isEqualTo(label.getId());
+					assertThat(l.name()).isEqualTo(label.getName());
+					assertThat(l.color()).isEqualTo(label.getColor());
+				})
+				.anySatisfy(l -> {
+					assertThat(l.labelId()).isEqualTo(label2.getId());
+					assertThat(l.name()).isEqualTo(label2.getName());
+					assertThat(l.color()).isEqualTo(label2.getColor());
+				});
+
+			assertThat(result.issues()).hasSize(2);
+
+			assertThat(result.issues())
+				.filteredOn(issue -> issue.issueId().equals(issue1.getId()))
+				.first()
+				.satisfies(issue -> {
+					assertThat(issue.title()).isEqualTo(issue1.getTitle());
+					assertThat(issue.kanbanConfigId()).isEqualTo(kanbanConfig1.getId());
+					assertThat(issue.isDone()).isFalse();
+
+					assertThat(issue.notis())
+						.hasSize(1)
+						.first()
+						.satisfies(noti -> {
+							assertThat(noti.notiId()).isEqualTo(subscription.getId());
+							assertThat(noti.profileId()).isEqualTo(profile.getId());
+						});
+				});
+
+			assertThat(result.issues())
+				.filteredOn(issue -> issue.issueId().equals(issue2.getId()))
+				.first()
+				.satisfies(issue -> {
+					assertThat(issue.title()).isEqualTo(issue2.getTitle());
+					assertThat(issue.kanbanConfigId()).isEqualTo(kanbanConfig2.getId());
+					assertThat(issue.isDone()).isFalse();
+					assertThat(issue.notis()).isEmpty();
+				});
 		}
 	}
 }
