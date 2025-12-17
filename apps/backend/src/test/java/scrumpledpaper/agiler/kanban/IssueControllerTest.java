@@ -1258,5 +1258,44 @@ public class IssueControllerTest {
 					assertThat(issue.notis()).isEmpty();
 				});
 		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 칸반 보드 및 이슈 조회 요청")
+		public void getKanbanBoardAndIssuesForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig kanbanConfig1 = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			testDataFactory.createIssue(
+				project,
+				kanbanConfig1,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+			LocalDate now = LocalDate.now();
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.param("date", now.toString()))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
 	}
 }
