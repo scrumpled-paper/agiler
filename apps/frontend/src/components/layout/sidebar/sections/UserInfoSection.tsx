@@ -1,26 +1,24 @@
 // components/layout/sidebar/sections/UserInfoSection.tsx
 
 import { User } from 'lucide-react'
+import type { UserInfo } from '@/types'
 
 interface UserInfoSectionProps {
-  userName?: string
-  userRole?: string
-  userDescription?: string
-  avatarUrl?: string
+  userInfo?: UserInfo
+  context: string
 }
 
-export function UserInfoSection({
-  userName = 'John Doe',
-  userRole = 'Project Manager',
-  userDescription = 'Managing Projects with ease!',
-  avatarUrl,
-}: UserInfoSectionProps) {
+export function UserInfoSection({ userInfo, context }: UserInfoSectionProps) {
+  if (!userInfo) {
+    return <div>Loading user info...</div>
+  }
+  const userEmail = userInfo.email || '등록된 이메일이 없습니다.'
   return (
     <div className="flex items-center gap-4 border-b bg-background p-6">
-      {avatarUrl ? (
+      {userInfo.imageUrl ? (
         <img
-          src={avatarUrl}
-          alt={userName}
+          src={userInfo.imageUrl}
+          alt={userInfo.nickname}
           className="h-12 w-12 rounded-full object-cover"
         />
       ) : (
@@ -29,14 +27,12 @@ export function UserInfoSection({
         </div>
       )}
       <div className="flex flex-1 flex-col gap-1">
-        <p className="text-sm font-bold">{userName}</p>
-        {userRole && (
-          <div className="inline-flex items-center rounded-sm border bg-muted px-1.5 py-0.5">
-            <span className="text-xs text-muted-foreground">{userRole}</span>
-          </div>
-        )}
-        {userDescription && (
-          <p className="text-xs text-muted-foreground">{userDescription}</p>
+        <p className="text-sm font-bold">{userInfo.nickname}</p>
+
+        {context === 'dashboard' ? (
+          <p className="text-xs text-muted-foreground">{userEmail}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">{userInfo.role}</p>
         )}
       </div>
     </div>

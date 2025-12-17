@@ -7,7 +7,7 @@ import type { ProjectInfo } from '@/types'
 describe('ProjectCard', () => {
   const mockProject: ProjectInfo = {
     title: 'Test Project',
-    url: '/projects/test-project',
+    url: 'test_project',
     imageUrl: 'https://example.com/image.jpg',
     summary: 'This is a test project summary',
   }
@@ -34,6 +34,6 @@ describe('ProjectCard', () => {
   it('should have link to project URL', () => {
     renderWithRouter(<ProjectCard props={mockProject} />)
     const link = screen.getByRole('link')
-    expect(link).toHaveAttribute('href', '/projects/test-project')
+    expect(link).toHaveAttribute('href', '/projects/test_project')
   })
 })

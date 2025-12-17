@@ -1,7 +1,10 @@
 export interface UserInfo {
+  profileId?: number
   nickname: string
   email?: string
-  image?: string
+  imageUrl?: string
+  role?: string
+  description?: string
 }
 
 export interface ProjectInfo {
@@ -49,6 +52,12 @@ export interface GetProjectMembersParams {
   page: number
 }
 
+export interface GetProjectSummaryResponse {
+  title: string
+  summary: string
+  imageUrl: string
+}
+
 // Task 관련 타입
 
 export interface IssueColumn extends Record<string, unknown> {
@@ -72,4 +81,23 @@ export interface Label extends Record<string, unknown> {
   name: string
   description: string
   color: string // #FFFFFF 형태
+}
+
+//  대시보드 유저 프로필 수정 (전역)
+export interface UserUpdateParams {
+  nickname: string
+  email: string
+}
+
+//  프로젝트별 프로필 수정
+export interface ProjectProfileUpdateParams {
+  nickname: string
+  email: string
+  description: string
+}
+
+//  프로젝트 멤버 역할 수정
+export interface MemberRoleUpdateParams {
+  profileId: number
+  role: string
 }

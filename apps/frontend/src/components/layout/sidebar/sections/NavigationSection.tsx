@@ -29,7 +29,11 @@ export function NavigationSection({ section }: NavigationSectionProps) {
     <SidebarGroup>
       {section.displayTitle && (
         <SidebarGroupLabel>
-          {section.icon && <span className="mr-2">{section.icon}</span>}
+          {section.icon && (
+            <span className="mr-2">
+              <section.icon />
+            </span>
+          )}
           {section.title}
         </SidebarGroupLabel>
       )}

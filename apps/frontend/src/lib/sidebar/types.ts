@@ -1,6 +1,6 @@
 // lib/sidebar/types.ts
 
-import type { ProjectInfo, ProjectMember } from '@/types'
+import type { ProjectInfo, ProjectMember, UserInfo } from '@/types'
 
 export type SidebarContext = 'dashboard' | 'project' | 'project-settings'
 
@@ -14,12 +14,12 @@ export type SectionType =
 export interface NavigationItem {
   label: string
   route: string
-  icon?: string
+  icon?: React.ElementType
 }
 
 export interface BaseSection {
   title: string
-  icon?: string
+  icon?: React.ElementType
 }
 
 export interface NavigationSection extends BaseSection {
@@ -70,4 +70,5 @@ export interface SidebarConfig {
 export interface SidebarData {
   projects?: ProjectInfo[]
   members?: ProjectMember[]
+  userInfo?: UserInfo
 }

@@ -2,11 +2,12 @@
 
 import {
   ChevronRight,
-  Star,
-  MessageSquare,
-  Clock,
+  // Star,
+  // MessageSquare,
+  // Clock,
   MoreHorizontal,
   Share2,
+  Bell,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -26,11 +27,15 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { getBreadcrumbs } from '@/lib/breadcrumbs'
 import { useAuth } from '@/hooks/use-auth'
+import { SidebarSheet } from './sidebar/SidebarSheet'
+import { NotificationList } from '../notifications/NotificationList'
+import { useNotificationSheet } from '@/hooks/use-notification-sheet'
 
 export function AppHeader() {
   const location = useLocation()
   const params = useParams<{ projectUrl?: string; scrumId?: string }>()
   const { logout, isLoggingOut } = useAuth()
+  const { isOpen, open, close } = useNotificationSheet()
 
   // 경로에 따른 브레드크럼 생성
   const breadcrumbs = getBreadcrumbs(location.pathname, params)
@@ -38,6 +43,10 @@ export function AppHeader() {
   // 경로에 따른 액션 버튼 표시 여부
   const showProjectActions = location.pathname.startsWith('/projects/')
   const isDashboard = location.pathname.startsWith('/dashboard')
+
+  const handleClick = () => {
+    open()
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -84,8 +93,8 @@ export function AppHeader() {
                 <Share2 className="ml-2 h-4 w-4" />
               </Button>
               <Separator orientation="vertical" className="h-6" />
-
-              <Tooltip>
+              {/* [ ] 추후 UI 개선을 위해 주석처리 */}
+              {/* <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MessageSquare className="h-4 w-4" />
@@ -105,16 +114,22 @@ export function AppHeader() {
                 <TooltipContent>
                   <p>View updates</p>
                 </TooltipContent>
-              </Tooltip>
+              </Tooltip> */}
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Star className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleClick}
+                  >
+                    {/* <Star className="h-4 w-4" /> */}
+                    <Bell className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Favorite</p>
+                  <p>notifications</p>
                 </TooltipContent>
               </Tooltip>
             </>
@@ -147,6 +162,16 @@ export function AppHeader() {
           </DropdownMenu>
         </div>
       </header>
+
+      {/* Sheet는 TooltipProvider 밖에서 렌더링 */}
+      <SidebarSheet
+        open={isOpen}
+        onOpenChange={close}
+        title="Notifications"
+        description="Your active issue subscriptions"
+      >
+        <NotificationList />
+      </SidebarSheet>
     </TooltipProvider>
   )
 }

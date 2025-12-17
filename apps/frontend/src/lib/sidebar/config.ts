@@ -1,5 +1,4 @@
-// lib/sidebar/config.ts
-
+import { User } from 'lucide-react'
 import type { SidebarConfig, SidebarContext } from './types'
 
 export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
@@ -9,9 +8,9 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
       {
         type: 'list',
         title: 'Project List',
-        icon: '😃',
+        // icon: User,
         dataKey: 'projects',
-        hasShowMore: true,
+        hasShowMore: false, // [ ] UI 개선 후 로직 변경
         showMoreRoute: '/dashboard/projects',
       },
       {
@@ -19,8 +18,12 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         displayTitle: false,
         title: 'navigation list',
         items: [
-          { label: 'Settings', route: '/dashboard/settings' },
-          { label: 'Help', route: '/help' },
+          {
+            label: 'Settings',
+            // icon: Settings,
+            route: '/dashboard/settings',
+          },
+          // { label: 'Help', route: '/help' },
         ],
       },
       {
@@ -38,26 +41,47 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
     header: { type: 'user-info' },
     sections: [
       {
-        type: 'list',
-        title: 'Project List',
-        icon: '📂',
-        dataKey: 'projects',
-        hasShowMore: true,
-        showMoreRoute: '/dashboard/projects',
+        type: 'action',
+        title: 'Notification',
+        action: {
+          label: 'Notification',
+          onClick: 'notification',
+        },
       },
+      // [ ] UI 개선을 위해 남겨둠
+      // {
+      //   type: 'list',
+      //   title: 'Project List',
+      //   dataKey: 'projects',
+      //   hasShowMore: true,
+      //   showMoreRoute: '/dashboard/projects',
+      // },
       {
         type: 'navigation',
         title: 'navigation list',
         displayTitle: false,
         items: [
-          { label: 'Settings', icon: '🔧', route: ':projectUrl/settings' },
           {
-            label: 'Daily Scrum',
-            icon: '📆',
-            route: ':projectUrl/daily-scrum',
+            label: 'Home',
+            route: ':projectUrl',
           },
-          { label: 'Retrospect', icon: '📒', route: ':projectUrl/retrospect' },
-          { label: 'Meeting', icon: '📝', route: ':projectUrl/meeting' },
+          {
+            label: 'Daily Scrums',
+            route: ':projectUrl/dailyscrums',
+          },
+          {
+            label: 'Retrospectives',
+            route: ':projectUrl/retrospectives',
+          },
+          {
+            label: 'Meetings',
+            route: ':projectUrl/meetings',
+          },
+          {
+            label: 'Settings',
+            // icon: Settings,
+            route: ':projectUrl/settings',
+          },
         ],
       },
       // 프로젝트 참가 링크 ui 개선될 수 있어서 남겨두었습니다.
@@ -72,7 +96,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
       {
         type: 'display',
         title: 'Members',
-        icon: '👥',
+        icon: User,
         dataKey: 'members',
         hasShowMore: true,
         showMoreRoute: ':projectUrl/settings/members',
@@ -89,27 +113,30 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
   },
 
   'project-settings': {
-    header: { type: 'user-info' },
+    // header: { type: 'user-info' },
     sections: [
       {
         type: 'navigation',
         title: 'Project Settings',
         displayTitle: true,
-        icon: '👤',
+        // icon: User,
         items: [
-          { label: 'User Profile', route: ':projectUrl/settings/profile' },
+          { label: 'User Profile', route: ':projectUrl/settings/users' },
           {
             label: 'Project Management',
-            route: ':projectUrl/settings/project',
+            route: ':projectUrl/settings/project-management',
           },
           {
-            label: 'Database Management',
-            route: ':projectUrl/settings/database',
+            label: 'Label Setting',
+            route: ':projectUrl/settings/project-label',
           },
-          { label: 'API Settings', route: ':projectUrl/settings/api' },
           {
-            label: 'Additional Settings',
-            route: ':projectUrl/settings/additional',
+            label: 'Template Setting',
+            route: ':projectUrl/settings/project-template',
+          },
+          {
+            label: 'Notifications Setting',
+            route: ':projectUrl/settings/notifications',
           },
         ],
       },

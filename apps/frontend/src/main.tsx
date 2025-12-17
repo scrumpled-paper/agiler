@@ -18,7 +18,13 @@ async function enableMocking() {
   const { worker } = await import('./mocks/browser')
 
   return worker.start({
-    onUnhandledRequest: 'bypass', // 핸들러 없는 요청은 실제 API로 전달
+    onUnhandledRequest(request, print) {
+      // MSW가 처리하지 못한 요청 로깅
+      if (request.url.includes('/api/')) {
+        console.warn('[MSW] Unhandled request:', request.method, request.url)
+        print.warning()
+      }
+    },
   })
 }
 

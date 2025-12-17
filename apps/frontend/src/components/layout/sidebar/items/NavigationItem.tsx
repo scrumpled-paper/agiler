@@ -2,14 +2,9 @@
 
 import { Link, useLocation } from 'react-router-dom'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import type { NavigationItem } from '@/lib/sidebar/types'
 
-interface NavigationItemProps {
-  label: string
-  route: string
-  icon?: string
-}
-
-export function NavigationItem({ label, route, icon }: NavigationItemProps) {
+export function NavigationItem({ label, route, icon: Icon }: NavigationItem) {
   const location = useLocation()
   const isActive = location.pathname === route
 
@@ -17,7 +12,11 @@ export function NavigationItem({ label, route, icon }: NavigationItemProps) {
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
         <Link to={route}>
-          {icon && <span className="mr-2">{icon}</span>}
+          {Icon && (
+            <span className="">
+              <Icon className="h-5 w-5 " />
+            </span>
+          )}
           {label}
         </Link>
       </SidebarMenuButton>

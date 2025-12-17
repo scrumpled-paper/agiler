@@ -15,7 +15,10 @@ export function ProjectItem({ project }: ProjectItemProps) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link to={project.url} className="flex items-center gap-2">
+        <Link
+          to={`/projects/${project.url}`}
+          className="flex items-center gap-2"
+        >
           {project.imageUrl && (
             <img
               src={project.imageUrl}

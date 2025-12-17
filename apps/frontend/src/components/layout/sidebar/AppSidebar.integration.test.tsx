@@ -85,7 +85,7 @@ describe('AppSidebar - 통합 테스트', () => {
 
       await waitFor(() => {
         // UserInfoSection에서 렌더링되는 John Doe 확인
-        expect(screen.getByText('John Doe')).toBeInTheDocument()
+        expect(screen.getByText('AgileTester')).toBeInTheDocument()
       })
     })
 
@@ -116,14 +116,6 @@ describe('AppSidebar - 통합 테스트', () => {
 
       expect(screen.getByText('Bob')).toBeInTheDocument()
     })
-
-    it('프로젝트 컨텍스트에서도 프로젝트 목록이 표시된다', async () => {
-      renderWithRouter('/projects/agile-project')
-
-      await waitFor(() => {
-        expect(screen.getByText('Agile Project')).toBeInTheDocument()
-      })
-    })
   })
 
   describe('상호작용', () => {
@@ -149,8 +141,8 @@ describe('AppSidebar - 통합 테스트', () => {
       renderWithRouter('/')
 
       // 로딩 인디케이터가 있다면 확인
-      // const loadingIndicator = screen.queryByTestId('loading')
-      // expect(loadingIndicator).toBeInTheDocument()
+      const loadingIndicator = screen.queryByTestId('skeleton-loader')
+      expect(loadingIndicator).toBeInTheDocument()
     })
   })
 

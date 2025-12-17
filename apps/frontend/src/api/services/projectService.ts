@@ -4,6 +4,10 @@ import type {
   GetProjectMembersResponse,
   GetProjectMembersParams,
   ProjectInfo,
+  GetProjectSummaryResponse,
+  UserInfo,
+  ProjectProfileUpdateParams,
+  MemberRoleUpdateParams,
 } from '@/types'
 import { apiClient } from '../client'
 
@@ -35,29 +39,42 @@ export const projectService = {
     return response.data
   },
 
-  // 프로젝트 멤버 조회
-  async getProjectMember({
-    projectUrl,
-    size,
-    page,
-  }: GetProjectMembersParams): Promise<GetProjectMembersResponse> {
-    const memberUrl = `${this.apiUrl}/${projectUrl}/people`
-    const response = await apiClient.get<GetProjectMembersResponse>(memberUrl, {
-      params: {
-        size,
-        page,
-      },
+  // 프로젝트 상세내용 조회
+  async getProjectSummery(
+    projectUrl: string
+  ): Promise<GetProjectSummaryResponse> {
+    const infoUrl = `${this.apiUrl}/${projectUrl}`
+    const response = await apiClient.get<GetProjectSummaryResponse>(infoUrl)
+    return response.data
+  },
+  //프로젝트 상세내용 수정
+  async updateProjectSummery(
+    projectUrl: string,
+    { title, url, summary }: ProjectInfo
+  ): Promise<number> {
+    const infoUrl = `${this.apiUrl}/${projectUrl}`
+    const response = await apiClient.put<number>(infoUrl, {
+      title,
+      url,
+      summary,
     })
     return response.data
   },
 
   // 프로젝트 생성 URL 검증
+
   async getProjectUrlCheck(projectUrl: string): Promise<boolean> {
-    const checkUrl = `${this.apiUrl}/check/${projectUrl}`
-    const response = await apiClient.get(checkUrl)
+    const checkUrl = `${this.apiUrl}/check` // 경로에는 projectUrl이 없음
+
+    // Axios 기준으로 { params: { url: projectUrl } } 객체를 전달하여 쿼리 파라미터를 만듦
+    const response = await apiClient.get(checkUrl, {
+      params: {
+        url: projectUrl,
+      },
+    })
+
     return response.data
   },
-
   //  프로젝트 생성
   async createProject({ title, url, summary }: ProjectInfo): Promise<number> {
     const createUrl = this.apiUrl
@@ -67,5 +84,74 @@ export const projectService = {
       summary,
     })
     return response.data
+  },
+
+  // 프로젝트 멤버 조회
+  async getProjectMember({
+    projectUrl,
+    size,
+    page,
+  }: GetProjectMembersParams): Promise<GetProjectMembersResponse> {
+    const memberUrl = `${this.apiUrl}/${projectUrl}/profiles`
+    const response = await apiClient.get<GetProjectMembersResponse>(memberUrl, {
+      params: {
+        size,
+        page,
+      },
+    })
+    return response.data
+  },
+  async getUserInfo(projectUrl: string): Promise<UserInfo> {
+    const userUrl = `${this.apiUrl}/${projectUrl}/profiles/me`
+    const response = await apiClient.get(userUrl)
+    return response.data
+  },
+  async getMemberProfileById(
+    projectUrl: string,
+    profileId: number
+  ): Promise<UserInfo> {
+    const memberUrl = `${this.apiUrl}/${projectUrl}/profiles/${profileId}`
+
+    const response = await apiClient.get<UserInfo>(memberUrl)
+
+    return response.data
+  },
+
+  async updateMyProfile(
+    projectUrl: string,
+    payload: ProjectProfileUpdateParams
+  ): Promise<void> {
+    const updateUrl = `${this.apiUrl}/${projectUrl}/profiles`
+    // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
+    await apiClient.put(updateUrl, payload)
+  },
+  async updateMemberRole(
+    projectUrl: string,
+    payload: MemberRoleUpdateParams
+  ): Promise<void> {
+    const roleUrl = `${this.apiUrl}/${projectUrl}/profiles/role`
+    // 응답이 200 OK이고 본문이 비어있으므로 반환 타입은 void로 설정
+    await apiClient.patch(roleUrl, payload)
+  },
+
+  async updateUserImage(projectUrl: string, objectKey: string) {
+    console.log('updateUserImage')
+    const imageUrl = `${this.apiUrl}/${projectUrl}/profiles/image`
+    await apiClient.patch(imageUrl, { objectKey })
+  },
+
+  async deleteUserImage(projectUrl: string) {
+    const imageUrl = `${this.apiUrl}/${projectUrl}/profiles/image`
+    await apiClient.delete(imageUrl)
+  },
+
+  async updateMainImage(projectUrl: string, objectKey: string) {
+    const imageUrl = `${this.apiUrl}/${projectUrl}/image`
+    await apiClient.patch(imageUrl, { objectKey })
+  },
+
+  async deleteMainImage(projectUrl: string) {
+    const imageUrl = `${this.apiUrl}/${projectUrl}/image`
+    await apiClient.delete(imageUrl)
   },
 }
