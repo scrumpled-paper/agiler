@@ -58,5 +58,6 @@ public class Issue extends BaseEntity {
 
 	public void updateKanbanConfig(KanbanConfig kanbanConfig) {
 		this.kanbanConfig = kanbanConfig;
+		this.isDone = kanbanConfig.getIsDone();
 	}
 }

@@ -45,6 +45,7 @@ CREATE TABLE `kanban_config` (
     `default_status` TINYINT(1) NOT NULL,
     `backlog` TINYINT(1) NOT NULL,
     `is_done` TINYINT(1) NOT NULL,
+    `version` INT NOT NULL,
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NOT NULL,
     `deleted_at` DATETIME,
@@ -108,21 +109,6 @@ CREATE TABLE `issue_label` (
     `deleted_at` DATETIME,
     FOREIGN KEY (`issue_id`) REFERENCES `issue`(`id`),
     FOREIGN KEY (`label_id`) REFERENCES `label`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `issue_status_history` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-    `issue_id` BIGINT NOT NULL,
-    `profile_id` BIGINT NOT NULL,
-    `from_kanban_config` BIGINT NOT NULL,
-    `to_kanban_config` BIGINT NOT NULL,
-    `created_at` DATETIME NOT NULL,
-    `updated_at` DATETIME NOT NULL,
-    `deleted_at` DATETIME,
-    FOREIGN KEY (`issue_id`) REFERENCES `issue`(`id`),
-    FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`),
-    FOREIGN KEY (`from_kanban_config`) REFERENCES `kanban_config`(`id`),
-    FOREIGN KEY (`to_kanban_config`) REFERENCES `kanban_config`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `retro` (

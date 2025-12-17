@@ -18,12 +18,14 @@ import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigListResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
+import scrumpledpaper.agiler.kanban.service.IssueService;
 import scrumpledpaper.agiler.kanban.service.KanbanConfigService;
 
 @RestController
 @RequestMapping("/api/v1/projects")
 @RequiredArgsConstructor
 public class KanbanConfigController {
+	private final IssueService issueService;
 	private final KanbanConfigService kanbanConfigService;
 
 	@PutMapping("/{projectUrl}/kanban-config")
@@ -32,7 +34,7 @@ public class KanbanConfigController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		@RequestBody @Valid KanbanConfigUpdateReqDto kanbanConfigUpdateReqDto) {
-		kanbanConfigService.updateKanbanConfig(customUserDetails.getUserId(), projectUrl, kanbanConfigUpdateReqDto);
+		issueService.updateKanbanConfig(customUserDetails.getUserId(), projectUrl, kanbanConfigUpdateReqDto);
 		return ResponseEntity.noContent().build();
 	}
 

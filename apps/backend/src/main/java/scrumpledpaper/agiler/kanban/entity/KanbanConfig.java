@@ -43,4 +43,6 @@ public class KanbanConfig extends BaseEntity {
 	@Column(name = "is_done", nullable = false)
 	private Boolean isDone;
 
+	@Column(name = "version", nullable = false)
+	private int version;
 }

@@ -1,10 +1,19 @@
 package scrumpledpaper.agiler.common;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import scrumpledpaper.agiler.fixture.ImageFixture;
 import scrumpledpaper.agiler.fixture.IssueFixture;
+import scrumpledpaper.agiler.fixture.IssueSnapshotDateMappingFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.fixture.LabelFixture;
@@ -20,14 +29,17 @@ import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
+import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
+import scrumpledpaper.agiler.kanban.entity.IssueSnapshotDateMapping;
 import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
+import scrumpledpaper.agiler.kanban.repository.IssueSnapshotDateMappingRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
@@ -53,12 +65,6 @@ import scrumpledpaper.agiler.template.repository.ScrumTemplateRepository;
 import scrumpledpaper.agiler.user.entity.User;
 import scrumpledpaper.agiler.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class TestDataFactory {
@@ -77,12 +83,12 @@ public class TestDataFactory {
 	private final RetroTemplateRepository retroTemplateRepository;
 	private final MeetingTemplateRepository meetingTemplateRepository;
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
+	private final IssueSnapshotDateMappingRepository issueSnapshotDateMappingRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
 	private final EntityManager entityManager;
 
 	public static final long DEFAULT_IMAGE_ID = 1L;
-
 	public static String randomString(int length) {
 		StringBuilder sb = new StringBuilder();
 		while (sb.length() < length) {
@@ -201,12 +207,15 @@ public class TestDataFactory {
 		return projectRepository.findById(savedProject.getId()).orElseThrow();
 	}
 
-	private void updateTimestamps(String tableName, Long id, LocalDateTime createdAt) {
+	public void updateTimestamps(String tableName, Long id, LocalDateTime createdAt) {
 		entityManager.createNativeQuery(
 						String.format("UPDATE %s SET created_at = :createdAt, updated_at = :createdAt WHERE id = :id", tableName))
 				.setParameter("createdAt", createdAt)
 				.setParameter("id", id)
 				.executeUpdate();
+
+		entityManager.flush();
+		entityManager.clear();
 	}
 
 	public Project findProjectById(Long id) {
@@ -316,7 +325,7 @@ public class TestDataFactory {
 	}
 
 	public List<IssueLabel> findIssueLabelsByIssueId(Long issueId) {
-		return issueLabelRepository.findByIssueId(issueId);
+		return issueLabelRepository.findAllByIssueId(issueId);
 	}
 
 	public Issue createIssue(Project project, KanbanConfig kanbanConfig, List<Profile> assignees, List<Label> labels, Boolean isDone, LocalDateTime startedAt, LocalDateTime dueAt) {
@@ -343,7 +352,7 @@ public class TestDataFactory {
 	}
 
 	public List<IssueProfile> findIssueProfilesByIssueId(Long id) {
-		return issueProfileRepository.findByIssueId(id);
+		return issueProfileRepository.findAllByIssueId(id);
 	}
 
 	public List<ProfileNotificationChannel> getAllProfileNotificationChannels(long profileId) {
@@ -379,7 +388,7 @@ public class TestDataFactory {
 	}
 
 	public List<KanbanConfig> getKanbanConfigsByProject(Project project) {
-		return kanbanConfigRepository.findByProjectId(project.getId());
+		return kanbanConfigRepository.findAllByProjectId(project.getId());
 	}
 
 	public List<KanbanConfig> createKanbanConfigs(Project project, int count) {
@@ -401,5 +410,44 @@ public class TestDataFactory {
 			kanbanConfigs.add(kanbanConfig);
 		}
 		return kanbanConfigRepository.saveAll(kanbanConfigs);
+	}
+
+	public List<KanbanConfig> defaultKanbanConfigSet(Project project) {
+		DefaultKanbanConfig[] defaults = DefaultKanbanConfig.values();
+		List<KanbanConfig> kanbanConfigs = new ArrayList<>();
+		for (DefaultKanbanConfig def : defaults) {
+			KanbanConfig kanbanConfig = KanbanConfigFixture.create(
+				project,
+				def.getStatusName(),
+				def.getPriority(),
+				def.isDefaultStatus(),
+				def.isBacklog(),
+				def.isDone()
+			);
+			kanbanConfigs.add(kanbanConfig);
+		}
+		kanbanConfigs = kanbanConfigRepository.saveAllAndFlush(kanbanConfigs);
+		return kanbanConfigs;
+	}
+
+	public List<KanbanConfig> findKanbanConfigsByProjectId(Long id) {
+		return kanbanConfigRepository.findAllByProjectId(id);
+	}
+
+	public IssueSnapshotDateMapping createIssueSnapshotDateMapping(Project project, int issueCount,
+		LocalDate snapshotDate) {
+		IssueSnapshotDateMapping mapping = IssueSnapshotDateMappingFixture.createIssueSnapshotDateMapping(
+			project,
+			issueCount,
+			snapshotDate
+		);
+		return issueSnapshotDateMappingRepository.save(mapping);
+	}
+
+	public IssueSnapshotDateMapping findIssueSnapshotDateMapping(Project project, LocalDate snapshotDate) {
+		return issueSnapshotDateMappingRepository.findByProjectIdAndSnapshotDate(project.getId(), snapshotDate).orElse(null);
+	}
+	public List<Issue> findIssuesByProjectId(Long id) {
+		return issueRepository.findAllByProjectId(id);
 	}
 }
