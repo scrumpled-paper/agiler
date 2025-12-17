@@ -1,17 +1,21 @@
 package scrumpledpaper.agiler.project.service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
-import scrumpledpaper.agiler.kanban.mapper.KanbanMapper;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
@@ -21,11 +25,6 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProfileMapper;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.entity.User;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
