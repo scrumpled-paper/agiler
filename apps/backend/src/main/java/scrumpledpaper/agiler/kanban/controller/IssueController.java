@@ -22,6 +22,7 @@ import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
@@ -107,5 +108,15 @@ public class IssueController {
 		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 		KanbanBoardResDto kanbanBoardResDto = issueService.getKanbanBoard(customUserDetails.getUserId(), projectUrl, date);
 		return ResponseEntity.ok(kanbanBoardResDto);
+	}
+
+	@GetMapping("/{projectUrl}/issues/{issueId}")
+	public ResponseEntity<IssueDetailResDto> getIssueDetail(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long issueId) {
+		IssueDetailResDto issueDetailResDto = issueService.getIssueDetail(customUserDetails.getUserId(), projectUrl, issueId);
+		return ResponseEntity.ok(issueDetailResDto);
 	}
 }

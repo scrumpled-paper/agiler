@@ -9,13 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.LabelResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultLabel;
+import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.Label;
 import scrumpledpaper.agiler.kanban.mapper.LabelMapper;
+import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -26,6 +29,7 @@ import scrumpledpaper.agiler.project.service.ProjectValidator;
 public class LabelService {
 	private final LabelMapper labelMapper;
 	private final LabelRepository labelRepository;
+	private final IssueLabelRepository issueLabelRepository;
 	private final ProjectValidator projectValidator;
 
 	public void createDefaultLabels(Project project) {
@@ -83,6 +87,16 @@ public class LabelService {
 		List<Label> labels = labelRepository.findAllByProjectId(project.getId());
 		return labels.stream()
 			.map(labelMapper::toKanbanDto)
+			.toList();
+	}
+
+	public List<IssueDetailResDto.LabelDto> getIssueLabelsAsDetailDto(Long issueId) {
+		List<IssueLabel> issueLabels = issueLabelRepository.findAllByIssueIdWithRelationLabel(issueId);
+		List<Label> labels = issueLabels.stream()
+			.map(IssueLabel::getLabel)
+			.toList();
+		return labels.stream()
+			.map(labelMapper::toIssueDetailDto)
 			.toList();
 	}
 }

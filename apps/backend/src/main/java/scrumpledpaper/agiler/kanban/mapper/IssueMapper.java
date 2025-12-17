@@ -9,6 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
@@ -95,4 +96,15 @@ public interface IssueMapper {
 			issue.getDueAt()
 		);
 	}
+
+	@Mapping(target = "issueId", source = "issue.id")
+	@Mapping(target = "isDone", source = "issue.isDone")
+	@Mapping(target = "createdAt", source = "issue.createdAt")
+	@Mapping(target = "kanbanConfig.kanbanConfigId", source = "kanbanConfig.id")
+	@Mapping(target = "kanbanConfig.statusName", source = "kanbanConfig.statusName")
+	@Mapping(target = "kanbanConfig.priority", source = "kanbanConfig.priority")
+	@Mapping(target = "kanbanConfig.isDefault", source = "kanbanConfig.defaultStatus")
+	@Mapping(target = "kanbanConfig.backlog", source = "kanbanConfig.backlog")
+	@Mapping(target = "kanbanConfig.isDone", source = "kanbanConfig.isDone")
+	IssueDetailResDto toIssueDetailDto(Issue issue, List<IssueDetailResDto.LabelDto> labels, List<IssueDetailResDto.AssigneeDto> assignees, KanbanConfig kanbanConfig);
 }

@@ -3,6 +3,7 @@ package scrumpledpaper.agiler.kanban.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.LabelResDto;
@@ -22,4 +23,7 @@ public interface LabelMapper {
 
 	@Mapping(target = "labelId", source = "label.id")
 	KanbanBoardResDto.LabelDto toKanbanDto(Label label);
+
+	@Mapping(target = "labelId", source = "label.id")
+	IssueDetailResDto.LabelDto toIssueDetailDto(Label label);
 }

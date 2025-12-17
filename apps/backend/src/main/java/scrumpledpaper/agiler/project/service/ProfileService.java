@@ -15,7 +15,9 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
+import scrumpledpaper.agiler.kanban.entity.IssueProfile;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
@@ -159,6 +161,30 @@ public class ProfileService {
 					.orElse("");
 
 				return profileMapper.toKanbanProfileDto(profile, imageUrl);
+			})
+			.toList();
+	}
+
+	public List<IssueDetailResDto.AssigneeDto> getIssueAssigneesAsDetailDto(Long issueId) {
+		List<IssueProfile> issueProfiles = profileRepository.findIssueProfilesByIssueIdWithRelationProfile(issueId);
+		List<Profile> profiles = issueProfiles.stream()
+			.map(IssueProfile::getProfile)
+			.toList();
+
+		List<Long> imageIds = profiles.stream()
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrlMap = imageService.getImageUrlsByIds(imageIds);
+
+		return issueProfiles.stream()
+			.map(ip -> {
+				Profile profile = ip.getProfile();
+				String imageUrl = Optional.ofNullable(profile.getImageId())
+					.map(imageUrlMap::get)
+					.orElse("");
+				return profileMapper.toIssueAssigneeDto(profile, imageUrl);
 			})
 			.toList();
 	}

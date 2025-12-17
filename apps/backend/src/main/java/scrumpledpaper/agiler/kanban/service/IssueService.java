@@ -17,6 +17,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
@@ -308,5 +309,24 @@ public class IssueService {
 			.toList();
 
 		return new KanbanBoardResDto(kanbanConfigDtos, profileDtos, labelDtos, issueDtos);
+	}
+
+	@Transactional(readOnly = true)
+	public IssueDetailResDto getIssueDetail(long userId, String projectUrl, Long issueId) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		Issue issue = issueRepository.findByIssueIdWithRelationKanbanConfig(issueId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
+		List<IssueDetailResDto.LabelDto> labelDtos = labelService.getIssueLabelsAsDetailDto(issueId);
+		List<IssueDetailResDto.AssigneeDto> assigneeDtos = profileService.getIssueAssigneesAsDetailDto(issueId);
+
+
+		return issueMapper.toIssueDetailDto(
+			issue,
+			labelDtos,
+			assigneeDtos,
+			issue.getKanbanConfig()
+		);
 	}
 }
