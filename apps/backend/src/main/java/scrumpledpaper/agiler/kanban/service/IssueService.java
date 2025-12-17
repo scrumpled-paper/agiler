@@ -292,7 +292,10 @@ public class IssueService {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
 		Project project = projectAccessContext.project();
 
-		List<Issue> issues = issueRepository.findAllByProjectIdWithRelations(project.getId());
+		LocalDateTime dayStart = date.atStartOfDay();
+		LocalDateTime dayEnd = date.atTime(23, 59, 59);
+
+		List<Issue> issues = issueRepository.findAllByProjectIdAndCreatedAtBetweenWithRelations(project.getId(), dayStart, dayEnd);
 		List<KanbanBoardResDto.LabelDto> labelDtos = labelService.getProjectLabelsAsKanbanDto(project);
 		List<KanbanBoardResDto.ProfileDto> profileDtos = profileService.getProjectProfilesAsKanbanDto(project);
 		List<KanbanBoardResDto.KanbanConfigDto> kanbanConfigDtos = kanbanConfigService.getKanbanConfigsAsKanbanDto(project);

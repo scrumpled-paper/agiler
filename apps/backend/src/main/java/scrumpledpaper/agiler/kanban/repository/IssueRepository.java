@@ -20,13 +20,19 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 	List<Issue> findAllByProjectId(Long id);
 
 	@Query("""
-	SELECT DISTINCT i FROM Issue i
-		LEFT JOIN FETCH i.assignees ia
-		LEFT JOIN FETCH ia.profile
-		LEFT JOIN FETCH i.kanbanConfig
-	WHERE i.project.id = :projectId
-	""")
-	List<Issue> findAllByProjectIdWithRelations(@Param("projectId") Long projectId);
+    SELECT DISTINCT i FROM Issue i
+        LEFT JOIN FETCH i.assignees ia
+        LEFT JOIN FETCH ia.profile
+        LEFT JOIN FETCH i.kanbanConfig
+    WHERE i.project.id = :projectId
+        AND i.createdAt >= :startDateTime
+        AND i.createdAt < :endDateTime
+    """)
+	List<Issue> findAllByProjectIdAndCreatedAtBetweenWithRelations(
+		@Param("projectId") Long projectId,
+		@Param("startDateTime") LocalDateTime startDateTime,
+		@Param("endDateTime") LocalDateTime endDateTime
+	);
 
 	List<Issue> findByProjectIdAndCreatedAtBetween(
 		Long projectId,
