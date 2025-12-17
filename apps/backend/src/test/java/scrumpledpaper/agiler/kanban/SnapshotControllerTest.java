@@ -522,10 +522,11 @@ public class SnapshotControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 
-			YearMonth currentYearMonth = YearMonth.now();
+			LocalDate now = LocalDate.now();
+			YearMonth currentYearMonth = YearMonth.from(now);
 			LocalDate firstDay = currentYearMonth.atDay(1);
 			LocalDate fifteenthDay = currentYearMonth.atDay(15);
-			LocalDate twentyEighthDay = currentYearMonth.atDay(28);
+			LocalDate twentyEighthDay = currentYearMonth.atEndOfMonth();
 
 			testDataFactory.createIssueSnapshotDateMapping(project, 3, firstDay);
 			testDataFactory.createIssueSnapshotDateMapping(project, 5, fifteenthDay);
@@ -536,8 +537,7 @@ public class SnapshotControllerTest {
 					get("/api/v1/projects/{projectUrl}/snapshots", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
-						.param("year", String.valueOf(currentYearMonth.getYear()))
-						.param("month", String.valueOf(currentYearMonth.getMonthValue())))
+						.param("date", now.toString()))
 				.andExpect(status().isOk())
 				.andReturn().getResponse().getContentAsString();
 
@@ -552,15 +552,14 @@ public class SnapshotControllerTest {
 		public void getAvailableSnapshotDatesNotFoundProject() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
-			YearMonth currentYearMonth = YearMonth.now();
+			LocalDate now = LocalDate.now();
 
 			// when
 			String response = mockMvc.perform(
 					get("/api/v1/projects/{projectUrl}/snapshots", "not_exist_url")
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
-						.param("year", String.valueOf(currentYearMonth.getYear()))
-						.param("month", String.valueOf(currentYearMonth.getMonthValue())))
+						.param("date", now.toString()))
 				.andExpect(status().isNotFound())
 				.andReturn().getResponse().getContentAsString();
 
@@ -576,15 +575,14 @@ public class SnapshotControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
-			YearMonth currentYearMonth = YearMonth.now();
+			LocalDate now = LocalDate.now();
 
 			// when
 			String response = mockMvc.perform(
 					get("/api/v1/projects/{projectUrl}/snapshots", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType(MediaType.APPLICATION_JSON)
-						.param("year", String.valueOf(currentYearMonth.getYear()))
-						.param("month", String.valueOf(currentYearMonth.getMonthValue())))
+						.param("date", now.toString()))
 				.andExpect(status().isForbidden())
 				.andReturn().getResponse().getContentAsString();
 

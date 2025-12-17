@@ -1,19 +1,27 @@
 package scrumpledpaper.agiler.kanban.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.*;
-import scrumpledpaper.agiler.project.entity.Profile;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.common.BaseEntity;
-import scrumpledpaper.agiler.kanban.entity.KanbanConfig;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
@@ -35,6 +43,15 @@ public class Issue extends BaseEntity {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "kanban_config_id")
 	private KanbanConfig kanbanConfig;
+
+	@OneToMany(mappedBy = "issue", fetch = FetchType.LAZY)
+	@Builder.Default
+	private List<IssueProfile> assignees = new ArrayList<>();
+
+	@OneToMany(mappedBy = "issue", fetch = FetchType.LAZY)
+	@Builder.Default
+	@BatchSize(size = 100)
+	private List<IssueLabel> labels = new ArrayList<>();
 
 	@Column(name = "title", nullable = false)
 	private String title;

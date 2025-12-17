@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.LabelResDto;
 import scrumpledpaper.agiler.kanban.dto.LabelUpdateReqDto;
@@ -48,7 +49,7 @@ public class LabelService {
 		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
 		Project project = context.project();
 
-		List<Label> labels = labelRepository.findByProjectId(project.getId());
+		List<Label> labels = labelRepository.findAllByProjectId(project.getId());
 		return labels.stream()
 			.map(labelMapper::toDto)
 			.toList();
@@ -76,5 +77,12 @@ public class LabelService {
 
 	public List<Label> getLabelsByIds(List<Long> labels) {
 		return labelRepository.findAllById(labels);
+	}
+
+	public List<KanbanBoardResDto.LabelDto> getProjectLabelsAsKanbanDto(Project project) {
+		List<Label> labels = labelRepository.findAllByProjectId(project.getId());
+		return labels.stream()
+			.map(labelMapper::toKanbanDto)
+			.toList();
 	}
 }

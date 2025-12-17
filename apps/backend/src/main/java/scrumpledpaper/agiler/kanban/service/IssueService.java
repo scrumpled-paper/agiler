@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -19,6 +20,7 @@ import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.SnapshotAvailableResDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
@@ -32,9 +34,11 @@ import scrumpledpaper.agiler.kanban.repository.IssueLabelRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueProfileRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.notification.event.IssueStatusChangedEvent;
+import scrumpledpaper.agiler.notification.service.NotificationManagementService;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.project.service.ProfileService;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 
 @Service
@@ -42,8 +46,10 @@ import scrumpledpaper.agiler.project.service.ProjectValidator;
 public class IssueService {
 	private final ProjectValidator projectValidator;
 	private final LabelService labelService;
+	private final ProfileService profileService;
 	private final SnapshotService snapshotService;
 	private final KanbanConfigService kanbanConfigService;
+	private final NotificationManagementService notificationManagementService;
 	private final IssueRepository issueRepository;
 	private final IssueLabelRepository issueLabelRepository;
 	private final IssueProfileRepository issueProfileRepository;
@@ -266,13 +272,12 @@ public class IssueService {
 	}
 
 	@Transactional(readOnly = true)
-	public SnapshotAvailableResDto getAvailableSnapshotDates(long userId, String projectUrl, int year, int month) {
+	public SnapshotAvailableResDto getAvailableSnapshotDates(long userId, String projectUrl, LocalDate date) {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
 		Project project = projectAccessContext.project();
 
-		YearMonth yearMonth = YearMonth.of(year, month);
-		LocalDate startDate = yearMonth.atDay(1);
-		LocalDate endDate = yearMonth.atEndOfMonth();
+		LocalDate startDate = date.withDayOfMonth(1);
+		LocalDate endDate = YearMonth.from(date).atEndOfMonth();
 
 		List<LocalDate> availableDates = snapshotService.issueSnapshotDateMappingsByProjectIdAndBetween(
 			project.getId(),
@@ -280,5 +285,28 @@ public class IssueService {
 			endDate
 		);
 		return new SnapshotAvailableResDto(availableDates);
+	}
+
+	@Transactional(readOnly = true)
+	public KanbanBoardResDto getKanbanBoard(long userId, String projectUrl, LocalDate date) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		LocalDateTime dayStart = date.atStartOfDay();
+		LocalDateTime dayEnd = date.atTime(23, 59, 59);
+
+		List<Issue> issues = issueRepository.findAllByProjectIdAndCreatedAtBetweenWithRelations(project.getId(), dayStart, dayEnd);
+		List<KanbanBoardResDto.LabelDto> labelDtos = labelService.getProjectLabelsAsKanbanDto(project);
+		List<KanbanBoardResDto.ProfileDto> profileDtos = profileService.getProjectProfilesAsKanbanDto(project);
+		List<KanbanBoardResDto.KanbanConfigDto> kanbanConfigDtos = kanbanConfigService.getKanbanConfigsAsKanbanDto(project);
+
+		Map<Long, List<KanbanBoardResDto.IssueNoti>> issueNotisMap =
+			notificationManagementService.getIssueNotisMapAsKanbanDto(issues);
+
+		List<KanbanBoardResDto.IssueDto> issueDtos = issues.stream()
+			.map(issue -> issueMapper.toKanbanBoardIssueDto(issue, issueNotisMap.getOrDefault(issue.getId(), List.of())))
+			.toList();
+
+		return new KanbanBoardResDto(kanbanConfigDtos, profileDtos, labelDtos, issueDtos);
 	}
 }

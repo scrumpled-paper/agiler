@@ -1,5 +1,8 @@
 package scrumpledpaper.agiler.kanban.controller;
 
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.common.utils.CookieUtils;
@@ -42,9 +42,8 @@ public class SnapshotController {
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
-		@RequestParam @NotNull int year,
-		@RequestParam @NotNull @Min(1) @Max(12) int month) {
-		SnapshotAvailableResDto resDto = issueService.getAvailableSnapshotDates(customUserDetails.getUserId(), projectUrl, year, month);
+		@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+		SnapshotAvailableResDto resDto = issueService.getAvailableSnapshotDates(customUserDetails.getUserId(), projectUrl, date);
 		return ResponseEntity.ok(resDto);
 	}
 }

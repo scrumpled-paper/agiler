@@ -8,8 +8,11 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.image.repository.ImageRepository;
 
+import java.util.List;
+import java.util.Map;
 import java.util.function.LongConsumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -83,4 +86,14 @@ public class ImageService {
 				.build();
 	}
 
+	public Map<Long, String> getImageUrlsByIds(List<Long> imageIds) {
+		if (imageIds == null || imageIds.isEmpty()) {
+			return Map.of();
+		}
+
+		List<Image> images = imageRepository.findAllById(imageIds);
+
+		return images.stream()
+			.collect(Collectors.toMap(Image::getId, Image::getUrl));
+	}
 }

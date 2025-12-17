@@ -1,15 +1,21 @@
 package scrumpledpaper.agiler.project.service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.project.dto.ProfileResDto;
 import scrumpledpaper.agiler.project.dto.ProfileUpdateReqDto;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
@@ -19,8 +25,6 @@ import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.mapper.ProfileMapper;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.user.entity.User;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -138,4 +142,24 @@ public class ProfileService {
 		imageService.deleteImage(profile::getImageId, profile::updateImageId);
 	}
 
+	public List<KanbanBoardResDto.ProfileDto> getProjectProfilesAsKanbanDto(Project project) {
+		List<Profile> profiles = profileRepository.findAllByProjectId(project.getId());
+
+		List<Long> imageIds = profiles.stream()
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrlMap = imageService.getImageUrlsByIds(imageIds);
+
+		return profiles.stream()
+			.map(profile -> {
+				String imageUrl = Optional.ofNullable(profile.getImageId())
+					.map(imageUrlMap::get)
+					.orElse("");
+
+				return profileMapper.toKanbanProfileDto(profile, imageUrl);
+			})
+			.toList();
+	}
 }

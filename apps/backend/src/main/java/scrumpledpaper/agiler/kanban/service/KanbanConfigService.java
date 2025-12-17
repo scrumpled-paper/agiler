@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.entity.DefaultKanbanConfig;
@@ -122,5 +123,12 @@ public class KanbanConfigService {
 				.map(defaultKanbanConfig -> kanbanConfigMapper.toEntity(savedProject, defaultKanbanConfig, KANBAN_CONFIG_VERSION_START))
 				.toList()
 		);
+	}
+
+	public List<KanbanBoardResDto.KanbanConfigDto> getKanbanConfigsAsKanbanDto(Project project) {
+		List<KanbanConfig> kanbanConfigs = kanbanConfigRepository.findAllByProjectId(project.getId());
+		return kanbanConfigs.stream()
+			.map(kanbanConfigMapper::toKanbanBoardDto)
+			.toList();
 	}
 }

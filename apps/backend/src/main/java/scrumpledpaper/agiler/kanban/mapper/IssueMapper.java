@@ -9,6 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.entity.Issue;
 import scrumpledpaper.agiler.kanban.entity.IssueLabel;
 import scrumpledpaper.agiler.kanban.entity.IssueProfile;
@@ -23,6 +24,8 @@ public interface IssueMapper {
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "project", source = "project")
 	@Mapping(target = "kanbanConfig", source = "kanbanConfig")
+	@Mapping(target = "labels", ignore = true)
+	@Mapping(target = "assignees", ignore = true)
 	@Mapping(target = "title", source = "issueCreateReqDto.title")
 	@Mapping(target = "contents", source = "issueCreateReqDto.contents")
 	@Mapping(target = "isDone", defaultValue = "false")
@@ -73,4 +76,23 @@ public interface IssueMapper {
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "issue", source = "issue")
 	IssueProfile toIssueProfile(Issue issue, IssueProfile issueProfile);
+
+	default KanbanBoardResDto.IssueDto toKanbanBoardIssueDto(Issue issue, List<KanbanBoardResDto.IssueNoti> notis) {
+		return new KanbanBoardResDto.IssueDto(
+			issue.getId(),
+			issue.getTitle(),
+			issue.getKanbanConfig().getId(),
+			issue.getIsDone(),
+			issue.getCreatedAt(),
+			issue.getAssignees().stream()
+				.map(a -> a.getProfile().getId())
+				.toList(),
+			issue.getLabels().stream()
+				.map(l -> l.getLabel().getId())
+				.toList(),
+			notis,
+			issue.getStartedAt(),
+			issue.getDueAt()
+		);
+	}
 }
