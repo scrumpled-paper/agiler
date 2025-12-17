@@ -8,12 +8,14 @@ import DashBoard from './pages/DashBoard'
 import Project from './pages/Project'
 import ProjectSetting from './pages/projectSettings/ProjectSetting'
 import ProjectUserSetting from './pages/projectSettings/ProjectUserSetting'
-import DailyScrumList from './pages/DailyScrumList'
 import DailyScrum from './pages/DailyScrum'
 import ProjectManagement from './pages/projectSettings/ProjectManagement'
 import ProjectLabelSetting from './pages/projectSettings/ProjectLabelSetting'
 import ProjectTemplateSetting from './pages/projectSettings/ProjectTemplateSetting'
 import ProjectNotificationsSetting from './pages/projectSettings/ProjectNotificationsSetting'
+import DailyScrumsList from './pages/DailyScrumsList'
+import MeetingsList from './pages/MeetingsList'
+import RetrospectivesList from './pages/RetrospectList'
 
 export const routers = createBrowserRouter([
   {
@@ -117,18 +119,60 @@ export const routers = createBrowserRouter([
             ],
           },
           {
-            path: 'daily-scrum',
+            path: 'dailyscrums',
             children: [
               {
                 index: true,
                 element: (
                   <ProtectedRoute>
-                    <DailyScrumList />
+                    <DailyScrumsList />
                   </ProtectedRoute>
                 ),
               },
               {
                 path: ':scrumId',
+                element: (
+                  <ProtectedRoute>
+                    <DailyScrum />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
+          },
+          {
+            path: 'retrospectives',
+            children: [
+              {
+                index: true,
+                element: (
+                  <ProtectedRoute>
+                    <RetrospectivesList />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: ':retrospectiveId',
+                element: (
+                  <ProtectedRoute>
+                    <DailyScrum />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
+          },
+          {
+            path: 'meetings',
+            children: [
+              {
+                index: true,
+                element: (
+                  <ProtectedRoute>
+                    <MeetingsList />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: ':meetingId',
                 element: (
                   <ProtectedRoute>
                     <DailyScrum />

@@ -1,5 +1,4 @@
-// lib/sidebar/config.ts
-
+import { User } from 'lucide-react'
 import type { SidebarConfig, SidebarContext } from './types'
 
 export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
@@ -9,7 +8,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
       {
         type: 'list',
         title: 'Project List',
-        icon: '😃',
+        // icon: User,
         dataKey: 'projects',
         hasShowMore: false, // [ ] UI 개선 후 로직 변경
         showMoreRoute: '/dashboard/projects',
@@ -19,8 +18,12 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         displayTitle: false,
         title: 'navigation list',
         items: [
-          { label: 'Settings', route: '/dashboard/settings' },
-          { label: 'Help', route: '/help' },
+          {
+            label: 'Settings',
+            // icon: Settings,
+            route: '/dashboard/settings',
+          },
+          // { label: 'Help', route: '/help' },
         ],
       },
       {
@@ -49,7 +52,6 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
       // {
       //   type: 'list',
       //   title: 'Project List',
-      //   icon: '📂',
       //   dataKey: 'projects',
       //   hasShowMore: true,
       //   showMoreRoute: '/dashboard/projects',
@@ -59,14 +61,27 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         title: 'navigation list',
         displayTitle: false,
         items: [
-          { label: 'Settings', icon: '🔧', route: ':projectUrl/settings' },
           {
-            label: 'Daily Scrum',
-            icon: '📆',
-            route: ':projectUrl/daily-scrum',
+            label: 'Home',
+            route: ':projectUrl',
           },
-          { label: 'Retrospect', icon: '📒', route: ':projectUrl/retrospect' },
-          { label: 'Meeting', icon: '📝', route: ':projectUrl/meeting' },
+          {
+            label: 'Daily Scrums',
+            route: ':projectUrl/dailyscrums',
+          },
+          {
+            label: 'Retrospectives',
+            route: ':projectUrl/retrospectives',
+          },
+          {
+            label: 'Meetings',
+            route: ':projectUrl/meetings',
+          },
+          {
+            label: 'Settings',
+            // icon: Settings,
+            route: ':projectUrl/settings',
+          },
         ],
       },
       // 프로젝트 참가 링크 ui 개선될 수 있어서 남겨두었습니다.
@@ -81,7 +96,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
       {
         type: 'display',
         title: 'Members',
-        icon: '👥',
+        icon: User,
         dataKey: 'members',
         hasShowMore: true,
         showMoreRoute: ':projectUrl/settings/members',
@@ -104,7 +119,7 @@ export const sidebarConfigs: Record<SidebarContext, SidebarConfig> = {
         type: 'navigation',
         title: 'Project Settings',
         displayTitle: true,
-        icon: '👤',
+        // icon: User,
         items: [
           { label: 'User Profile', route: ':projectUrl/settings/users' },
           {

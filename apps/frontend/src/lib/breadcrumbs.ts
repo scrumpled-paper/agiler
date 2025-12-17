@@ -6,7 +6,7 @@ export interface BreadcrumbItem {
 
 export function getBreadcrumbs(
   pathname: string,
-  params: { projectUrl?: string; scrumId?: string }
+  params: { projectUrl?: string }
 ): BreadcrumbItem[] {
   const breadcrumbs: BreadcrumbItem[] = [
     { label: 'Dashboard', href: '/dashboard' },
@@ -29,15 +29,21 @@ export function getBreadcrumbs(
 
     if (pathname.includes('/settings')) {
       breadcrumbs.push({ label: 'Settings' })
-    } else if (pathname.includes('/daily-scrum')) {
+    } else if (pathname.includes('/dailyscrums')) {
       breadcrumbs.push({
         label: 'Daily Scrum',
-        href: `/projects/${params.projectUrl}/daily-scrum`,
+        href: `/projects/${params.projectUrl}/dailyscrums`,
       })
-
-      if (params.scrumId) {
-        breadcrumbs.push({ label: `Scrum #${params.scrumId}` })
-      }
+    } else if (pathname.includes('/retrospectives')) {
+      breadcrumbs.push({
+        label: 'Retrospectives',
+        href: `/projects/${params.projectUrl}/retrospectives`,
+      })
+    } else if (pathname.includes('/meetings')) {
+      breadcrumbs.push({
+        label: 'Meetings',
+        href: `/projects/${params.projectUrl}/meetings`,
+      })
     }
     return breadcrumbs
   }
