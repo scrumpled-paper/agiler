@@ -17,6 +17,8 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDateUpdateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
@@ -61,6 +63,7 @@ public class IssueService {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
 		Project project = projectAccessContext.project();
 
+		validateIssueDate(issueCreateReqDto.startedAt(), issueCreateReqDto.dueAt());
 		KanbanConfig defaultKanbanConfig = kanbanConfigService.getDefaultStatusKanbanConfig(project.getId());
 		Issue newIssue = issueRepository.save(issueMapper.toEntity(project, defaultKanbanConfig, issueCreateReqDto));
 
@@ -309,4 +312,52 @@ public class IssueService {
 
 		return new KanbanBoardResDto(kanbanConfigDtos, profileDtos, labelDtos, issueDtos);
 	}
+
+	@Transactional(readOnly = true)
+	public IssueDetailResDto getIssueDetail(long userId, String projectUrl, Long issueId) {
+		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
+		Project project = projectAccessContext.project();
+
+		Issue issue = issueRepository.findByIssueIdWithRelationKanbanConfig(issueId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
+		List<IssueDetailResDto.LabelDto> labelDtos = labelService.getIssueLabelsAsDetailDto(issueId);
+		List<IssueDetailResDto.AssigneeDto> assigneeDtos = profileService.getIssueAssigneesAsDetailDto(issueId);
+
+		return issueMapper.toIssueDetailDto(
+			issue,
+			labelDtos,
+			assigneeDtos,
+			issue.getKanbanConfig()
+		);
+	}
+
+	@Transactional
+	public long updateIssueDate(long userId, String projectUrl, Long issueId, IssueDateUpdateReqDto request) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Issue issue = findIssueById(issueId);
+		validateIssueDate(
+			request.startedAt().orElse(null),
+			request.dueAt().orElse(null)
+		);
+
+		issue.updateIssueDate(
+			request.startedAt().orElse(null),
+			request.dueAt().orElse(null)
+		);
+		return issue.getId();
+	}
+
+	private void validateIssueDate(LocalDateTime startedAt, LocalDateTime dueAt) {
+		if (startedAt != null && dueAt != null && startedAt.isAfter(dueAt)) {
+			throw new CustomException(ErrorCode.ISSUE_INVALID_DATE_RANGE);
+		}
+
+		LocalDate today = LocalDate.now();
+		if ((startedAt != null && !startedAt.toLocalDate().isEqual(today)) ||
+			(dueAt != null && !dueAt.toLocalDate().isEqual(today))) {
+			throw new CustomException(ErrorCode.ISSUE_DATE_MUST_TODAY);
+		}
+	}
 }
+

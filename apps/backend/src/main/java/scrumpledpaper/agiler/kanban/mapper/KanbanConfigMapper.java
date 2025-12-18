@@ -5,6 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanBoardResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigResDto;
 import scrumpledpaper.agiler.kanban.dto.KanbanConfigUpdateReqDto;
@@ -29,4 +30,8 @@ public interface KanbanConfigMapper {
 	@Mapping(target = "kanbanConfigId", source = "kanbanConfig.id")
 	@Mapping(target = "isDefault", source = "kanbanConfig.defaultStatus")
 	KanbanBoardResDto.KanbanConfigDto toKanbanBoardDto(KanbanConfig kanbanConfig);
+
+	@Mapping(target = "kanbanConfigId", source = "kanbanConfig.id")
+	@Mapping(target = "isDefault", source = "kanbanConfig.defaultStatus")
+	IssueDetailResDto.KanbanConfigDto toIssueDetailDto(KanbanConfig kanbanConfig);
 }

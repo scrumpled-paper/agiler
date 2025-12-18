@@ -39,5 +39,12 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 		LocalDateTime startTime,
 		LocalDateTime endTime
 	);
+
+	@Query("""
+	SELECT i FROM Issue i
+		LEFT JOIN FETCH i.kanbanConfig kc
+	WHERE i.id = :issueId
+	""")
+	Optional<Issue> findByIssueIdWithRelationKanbanConfig(Long issueId);
 }
 

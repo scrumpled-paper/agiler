@@ -6,7 +6,9 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import scrumpledpaper.agiler.kanban.entity.IssueProfile;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Role;
 
@@ -22,4 +24,12 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	long countByProjectIdAndRoleAndIdNot(Long projectId, Role role, Long excludeProfileId);
 	List<Profile> findByProjectIdAndIdIn(Long projectId, List<Long> profileIds);
 	List<Profile> findAllByProjectId(Long projectId);
+
+	@Query("""
+		SELECT ip
+		FROM IssueProfile ip
+		LEFT JOIN FETCH ip.profile
+		WHERE ip.issue.id = :issueId
+	""")
+	List<IssueProfile> findIssueProfilesByIssueIdWithRelationProfile(Long issueId);
 }

@@ -2,6 +2,7 @@ package scrumpledpaper.agiler.kanban;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static scrumpledpaper.agiler.common.TestDataFactory.*;
 
@@ -9,11 +10,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,7 +36,9 @@ import scrumpledpaper.agiler.fixture.IssueFixture;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDateUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueUpdateReqDto;
@@ -105,7 +113,8 @@ public class IssueControllerTest {
 			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
 
-			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(
+				createdIssue.getKanbanConfig().getId());
 			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
 
 			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
@@ -132,7 +141,8 @@ public class IssueControllerTest {
 					tuple(createdIssue.getId(), assigneeProfile.getId())
 				);
 
-			IssueSnapshotDateMapping updatedMapping = testDataFactory.findIssueSnapshotDateMapping(project, LocalDate.now());
+			IssueSnapshotDateMapping updatedMapping = testDataFactory.findIssueSnapshotDateMapping(project,
+				LocalDate.now());
 			assertThat(updatedMapping.getIssueCount()).isEqualTo(issueCount + 1);
 		}
 
@@ -167,7 +177,8 @@ public class IssueControllerTest {
 			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
 
-			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(
+				createdIssue.getKanbanConfig().getId());
 			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
 
 			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
@@ -176,7 +187,6 @@ public class IssueControllerTest {
 			List<IssueProfile> createdIssueProfiles = testDataFactory.findIssueProfilesByIssueId(createdIssue.getId());
 			assertThat(createdIssueProfiles).isEmpty();
 		}
-
 
 		@Test
 		@DisplayName("201 - 이슈 생성 성공 - Assignees가 여러명이며, 이 중 프로젝트 멤버가 아닌 사용자가 포함된 경우")
@@ -188,7 +198,8 @@ public class IssueControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile assigneeProfile = testDataFactory.createProfile(assigneeAuth.getUser(), project, Role.MEMBER);
-			Profile anotherMemberProfile = testDataFactory.createProfile(anotherMemberAuth.getUser(), project, Role.MEMBER);
+			Profile anotherMemberProfile = testDataFactory.createProfile(anotherMemberAuth.getUser(), project,
+				Role.MEMBER);
 			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(project, 1, true, false, false);
 			Label label1 = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
 			Label label2 = testDataFactory.createLabel(project, "label2", "label2 description", "#00FF00");
@@ -213,7 +224,8 @@ public class IssueControllerTest {
 			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
 
-			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(
+				createdIssue.getKanbanConfig().getId());
 			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
 
 			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
@@ -242,6 +254,110 @@ public class IssueControllerTest {
 				);
 
 			assertThat(response).contains(createdIssue.getId().toString());
+		}
+
+		@Test
+		@DisplayName("400 - 시작시간이 종료시간보다 이후인 이슈 생성 요청")
+		public void issueCreateBadRequestStartAfterDue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(9, 0, 0);
+
+			IssueCreateReqDto createReqDto = IssueFixture.createIssueCreateReqDto(
+				Collections.emptyList(),
+				Collections.emptyList(),
+				historical,
+				future
+			);
+			String updateJson = objectMapper.writeValueAsString(createReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_INVALID_DATE_RANGE.getMessage());
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideDateCreateInvalidCases")
+		@DisplayName("400 - 시작시간이나 종료시간이 당일이 아닌 경우")
+		public void issueUpdateDateBadRequestNotToday(
+			Optional<LocalDateTime> startedAt,
+			Optional<LocalDateTime> dueAt
+		) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+
+			IssueCreateReqDto createReqDto = IssueFixture.createIssueCreateReqDto(
+				Collections.emptyList(),
+				Collections.emptyList(),
+				startedAt.orElse(null),
+				dueAt.orElse(null)
+			);
+			String updateJson = objectMapper.writeValueAsString(createReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_DATE_MUST_TODAY.getMessage());
+		}
+
+		private static Stream<Arguments> provideDateCreateInvalidCases() {
+			LocalDate today = LocalDate.now();
+			LocalDate yesterday = today.minusDays(1);
+			LocalDate tomorrow = today.plusDays(1);
+
+			LocalDateTime todayMorning = today.atTime(10, 0, 0);
+			LocalDateTime todayEvening = today.atTime(18, 0, 0);
+			LocalDateTime yesterdayDateTime = yesterday.atTime(10, 0, 0);
+			LocalDateTime tomorrowDateTime = tomorrow.atTime(18, 0, 0);
+
+			return Stream.of(
+				// 과거 날짜
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(todayEvening), "시작일이 과거"),
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(yesterdayDateTime), "둘 다 과거"),
+
+				// 미래 날짜
+				Arguments.of(Optional.of(todayMorning), Optional.of(tomorrowDateTime), "종료일이 미래"),
+				Arguments.of(Optional.of(tomorrowDateTime), Optional.of(tomorrowDateTime), "둘 다 미래"),
+
+				// 과거와 미래 혼합
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(tomorrowDateTime), "시작일 과거, 종료일 미래")
+			);
 		}
 
 		@Test
@@ -449,7 +565,7 @@ public class IssueControllerTest {
 				randomString(50),
 				null,
 				null
-				);
+			);
 
 			// when
 			String response = mockMvc.perform(
@@ -1296,6 +1412,422 @@ public class IssueControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Get Issue Detail Test")
+	class GetIssueDetailTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 이슈 상세 조회 성공")
+		public void getIssueDetailSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Label label1 = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
+			Issue issue = testDataFactory.createIssue(
+				project,
+				kanbanConfig,
+				List.of(profile),
+				List.of(label1),
+				false,
+				null,
+				null
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues/{issueId}", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			IssueDetailResDto result = objectMapper.readValue(response, IssueDetailResDto.class);
+			assertThat(result.issueId()).isEqualTo(issue.getId());
+			assertThat(result.title()).isEqualTo(issue.getTitle());
+			assertThat(result.contents()).isEqualTo(issue.getContents());
+			assertThat(result.kanbanConfig().kanbanConfigId()).isEqualTo(kanbanConfig.getId());
+			assertThat(result.isDone()).isEqualTo(issue.getIsDone());
+			assertThat(result.assignees())
+				.hasSize(1)
+				.first()
+				.satisfies(a -> {
+					assertThat(a.profileId()).isEqualTo(profile.getId());
+					assertThat(a.nickname()).isEqualTo(profile.getNickname());
+					assertThat(a.email()).isEqualTo(profile.getEmail());
+				});
+			assertThat(result.labels())
+				.hasSize(1)
+				.first()
+				.satisfies(l -> {
+					assertThat(l.labelId()).isEqualTo(label1.getId());
+					assertThat(l.name()).isEqualTo(label1.getName());
+					assertThat(l.description()).isEqualTo(label1.getDescription());
+					assertThat(l.color()).isEqualTo(label1.getColor());
+				});
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 상세 조회 요청")
+		public void getIssueDetailForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				kanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues/{issueId}", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈 상세 조회 요청")
+		public void getIssueDetailNotFoundIssue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+
+			// when
+			String response = mockMvc.perform(
+					get("/api/v1/projects/{projectUrl}/issues/{issueId}", url, 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Update Issue Date Test")
+	class UpdateIssueDateTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideDateUpdateCases")
+		@DisplayName("200 - 이슈 시작시간, 종료시간 수정 성공")
+		public void issueUpdateDateSuccess(
+			Optional<LocalDateTime> startedAt,
+			Optional<LocalDateTime> dueAt
+		) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project, 1, true, false, false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+
+			IssueDateUpdateReqDto updateDateReqDto = new IssueDateUpdateReqDto(startedAt, dueAt);
+
+			// when
+			String response = mockMvc.perform(
+				patch("/api/v1/projects/{projectUrl}/issues/{issueId}/date", url, issue.getId())
+					.cookie(new Cookie("accessToken", auth.getToken()))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(updateDateReqDto)))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// 검증
+			Issue updatedIssue = testDataFactory.findIssueById(issue.getId()).get();
+			assertThat(response).contains(issue.getId().toString());
+			assertThat(updatedIssue.getStartedAt()).isEqualTo(startedAt.orElse(null));
+			assertThat(updatedIssue.getDueAt()).isEqualTo(dueAt.orElse(null));
+		}
+
+		private static Stream<Arguments> provideDateUpdateCases() {
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(18, 0, 0);
+
+			return Stream.of(
+				Arguments.of(Optional.of(historical), Optional.of(future), "둘 다 있음"),
+				Arguments.of(Optional.of(historical), Optional.empty(), "시작일만 있음"),
+				Arguments.of(Optional.empty(), Optional.of(future), "종료일만 있음"),
+				Arguments.of(Optional.empty(), Optional.empty(), "둘 다 없음")
+			);
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 멤버가 아닌 사용자가 이슈 시작시간, 종료시간 수정 요청")
+		public void issueUpdateDateForbiddenNotProjectMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, ownerAuth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(18, 0, 0);
+
+			IssueDateUpdateReqDto updateDateReqDto = new IssueDateUpdateReqDto(
+				Optional.of(historical),
+				Optional.of(future)
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/date", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateDateReqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 이슈의 ID로 시작시간, 종료시간 수정 요청")
+		public void issueUpdateDateNotFoundIssue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(18, 0, 0);
+
+			IssueDateUpdateReqDto updateDateReqDto = new IssueDateUpdateReqDto(
+				Optional.of(historical),
+				Optional.of(future)
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/date", url, 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateDateReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 시작시간, 종료시간 수정 요청")
+		public void issueUpdateDateNotFoundProject() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(18, 0, 0);
+
+			IssueDateUpdateReqDto updateDateReqDto = new IssueDateUpdateReqDto(
+				Optional.of(historical),
+				Optional.of(future)
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/date", "not_exist_url", 9999L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateDateReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("400 - 종료시간이 시작시간보다 이전인 경우")
+		public void issueUpdateDateBadRequestDueAtBeforeStartedAt() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(9, 0, 0);
+
+			IssueDateUpdateReqDto updateDateReqDto = new IssueDateUpdateReqDto(
+				Optional.of(historical),
+				Optional.of(future)
+			);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/date", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateDateReqDto)))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_INVALID_DATE_RANGE.getMessage());
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideDateUpdateInvalidCases")
+		@DisplayName("400 - 시작시간이나 종료시간이 당일이 아닌 경우")
+		public void issueUpdateDateBadRequestNotToday(
+			Optional<LocalDateTime> startedAt,
+			Optional<LocalDateTime> dueAt
+		) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+			Issue issue = testDataFactory.createIssue(
+				project,
+				defaultKanbanConfig,
+				Collections.emptyList(),
+				Collections.emptyList(),
+				false,
+				null,
+				null
+			);
+
+			IssueDateUpdateReqDto updateDateReqDto = new IssueDateUpdateReqDto(startedAt, dueAt);
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/issues/{issueId}/date", url, issue.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updateDateReqDto)))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_DATE_MUST_TODAY.getMessage());
+		}
+
+		private static Stream<Arguments> provideDateUpdateInvalidCases() {
+			LocalDate today = LocalDate.now();
+			LocalDate yesterday = today.minusDays(1);
+			LocalDate tomorrow = today.plusDays(1);
+
+			LocalDateTime todayMorning = today.atTime(10, 0, 0);
+			LocalDateTime todayEvening = today.atTime(18, 0, 0);
+			LocalDateTime yesterdayDateTime = yesterday.atTime(10, 0, 0);
+			LocalDateTime tomorrowDateTime = tomorrow.atTime(18, 0, 0);
+
+			return Stream.of(
+				// 과거 날짜
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(todayEvening), "시작일이 과거"),
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(yesterdayDateTime), "둘 다 과거"),
+
+				// 미래 날짜
+				Arguments.of(Optional.of(todayMorning), Optional.of(tomorrowDateTime), "종료일이 미래"),
+				Arguments.of(Optional.of(tomorrowDateTime), Optional.of(tomorrowDateTime), "둘 다 미래"),
+
+				// 과거와 미래 혼합
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(tomorrowDateTime), "시작일 과거, 종료일 미래")
+			);
 		}
 	}
 }

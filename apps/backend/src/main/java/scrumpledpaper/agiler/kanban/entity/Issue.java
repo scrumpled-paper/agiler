@@ -77,4 +77,9 @@ public class Issue extends BaseEntity {
 		this.kanbanConfig = kanbanConfig;
 		this.isDone = kanbanConfig.getIsDone();
 	}
+
+	public void updateIssueDate(LocalDateTime startedAt, LocalDateTime dueAt) {
+		this.startedAt = startedAt;
+		this.dueAt = dueAt;
+	}
 }
