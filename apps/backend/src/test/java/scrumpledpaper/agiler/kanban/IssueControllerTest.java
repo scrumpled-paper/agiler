@@ -253,6 +253,110 @@ public class IssueControllerTest {
 		}
 
 		@Test
+		@DisplayName("400 - 시작시간이 종료시간보다 이후인 이슈 생성 요청")
+		public void issueCreateBadRequestStartAfterDue() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+
+			LocalDate today = LocalDate.now();
+			LocalDateTime historical = today.atTime(10, 0, 0);
+			LocalDateTime future = today.atTime(9, 0, 0);
+
+			IssueCreateReqDto createReqDto = IssueFixture.createIssueCreateReqDto(
+				Collections.emptyList(),
+				Collections.emptyList(),
+				historical,
+				future
+			);
+			String updateJson = objectMapper.writeValueAsString(createReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_INVALID_DATE_RANGE.getMessage());
+		}
+
+		@ParameterizedTest
+		@MethodSource("provideDateCreateInvalidCases")
+		@DisplayName("400 - 시작시간이나 종료시간이 당일이 아닌 경우")
+		public void issueUpdateDateBadRequestNotToday(
+			Optional<LocalDateTime> startedAt,
+			Optional<LocalDateTime> dueAt
+		) throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			testDataFactory.createKanbanConfig(
+				project,
+				1,
+				true,
+				false,
+				false
+			);
+
+			IssueCreateReqDto createReqDto = IssueFixture.createIssueCreateReqDto(
+				Collections.emptyList(),
+				Collections.emptyList(),
+				startedAt.orElse(null),
+				dueAt.orElse(null)
+			);
+			String updateJson = objectMapper.writeValueAsString(createReqDto);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/issues", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.ISSUE_DATE_MUST_TODAY.getMessage());
+		}
+
+		private static Stream<Arguments> provideDateCreateInvalidCases() {
+			LocalDate today = LocalDate.now();
+			LocalDate yesterday = today.minusDays(1);
+			LocalDate tomorrow = today.plusDays(1);
+
+			LocalDateTime todayMorning = today.atTime(10, 0, 0);
+			LocalDateTime todayEvening = today.atTime(18, 0, 0);
+			LocalDateTime yesterdayDateTime = yesterday.atTime(10, 0, 0);
+			LocalDateTime tomorrowDateTime = tomorrow.atTime(18, 0, 0);
+
+			return Stream.of(
+				// 과거 날짜
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(todayEvening), "시작일이 과거"),
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(yesterdayDateTime), "둘 다 과거"),
+
+				// 미래 날짜
+				Arguments.of(Optional.of(todayMorning), Optional.of(tomorrowDateTime), "종료일이 미래"),
+				Arguments.of(Optional.of(tomorrowDateTime), Optional.of(tomorrowDateTime), "둘 다 미래"),
+
+				// 과거와 미래 혼합
+				Arguments.of(Optional.of(yesterdayDateTime), Optional.of(tomorrowDateTime), "시작일 과거, 종료일 미래")
+			);
+		}
+
+		@Test
 		@DisplayName("404 - 존재하지 않는 프로젝트에 이슈 생성 요청")
 		public void issueCreateNotFoundProject() throws Exception {
 			// given
