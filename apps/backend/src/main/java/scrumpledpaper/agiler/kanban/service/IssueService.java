@@ -63,6 +63,7 @@ public class IssueService {
 		ProjectAccessContext projectAccessContext = projectValidator.validateAccess(userId, projectUrl);
 		Project project = projectAccessContext.project();
 
+		validateIssueDate(issueCreateReqDto.startedAt(), issueCreateReqDto.dueAt());
 		KanbanConfig defaultKanbanConfig = kanbanConfigService.getDefaultStatusKanbanConfig(project.getId());
 		Issue newIssue = issueRepository.save(issueMapper.toEntity(project, defaultKanbanConfig, issueCreateReqDto));
 
