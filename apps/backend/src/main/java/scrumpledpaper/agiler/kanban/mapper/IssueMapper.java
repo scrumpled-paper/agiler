@@ -100,6 +100,8 @@ public interface IssueMapper {
 	@Mapping(target = "issueId", source = "issue.id")
 	@Mapping(target = "isDone", source = "issue.isDone")
 	@Mapping(target = "createdAt", source = "issue.createdAt")
+	@Mapping(target = "assignees", source = "assignees")
+	@Mapping(target = "labels", source = "labels")
 	@Mapping(target = "kanbanConfig.kanbanConfigId", source = "kanbanConfig.id")
 	@Mapping(target = "kanbanConfig.statusName", source = "kanbanConfig.statusName")
 	@Mapping(target = "kanbanConfig.priority", source = "kanbanConfig.priority")

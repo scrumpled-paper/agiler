@@ -323,7 +323,6 @@ public class IssueService {
 		List<IssueDetailResDto.LabelDto> labelDtos = labelService.getIssueLabelsAsDetailDto(issueId);
 		List<IssueDetailResDto.AssigneeDto> assigneeDtos = profileService.getIssueAssigneesAsDetailDto(issueId);
 
-
 		return issueMapper.toIssueDetailDto(
 			issue,
 			labelDtos,

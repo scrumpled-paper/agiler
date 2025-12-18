@@ -113,7 +113,8 @@ public class IssueControllerTest {
 			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
 
-			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(
+				createdIssue.getKanbanConfig().getId());
 			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
 
 			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
@@ -140,7 +141,8 @@ public class IssueControllerTest {
 					tuple(createdIssue.getId(), assigneeProfile.getId())
 				);
 
-			IssueSnapshotDateMapping updatedMapping = testDataFactory.findIssueSnapshotDateMapping(project, LocalDate.now());
+			IssueSnapshotDateMapping updatedMapping = testDataFactory.findIssueSnapshotDateMapping(project,
+				LocalDate.now());
 			assertThat(updatedMapping.getIssueCount()).isEqualTo(issueCount + 1);
 		}
 
@@ -175,7 +177,8 @@ public class IssueControllerTest {
 			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
 
-			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(
+				createdIssue.getKanbanConfig().getId());
 			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
 
 			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
@@ -184,7 +187,6 @@ public class IssueControllerTest {
 			List<IssueProfile> createdIssueProfiles = testDataFactory.findIssueProfilesByIssueId(createdIssue.getId());
 			assertThat(createdIssueProfiles).isEmpty();
 		}
-
 
 		@Test
 		@DisplayName("201 - 이슈 생성 성공 - Assignees가 여러명이며, 이 중 프로젝트 멤버가 아닌 사용자가 포함된 경우")
@@ -196,7 +198,8 @@ public class IssueControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			Profile assigneeProfile = testDataFactory.createProfile(assigneeAuth.getUser(), project, Role.MEMBER);
-			Profile anotherMemberProfile = testDataFactory.createProfile(anotherMemberAuth.getUser(), project, Role.MEMBER);
+			Profile anotherMemberProfile = testDataFactory.createProfile(anotherMemberAuth.getUser(), project,
+				Role.MEMBER);
 			KanbanConfig defaultKanbanConfig = testDataFactory.createKanbanConfig(project, 1, true, false, false);
 			Label label1 = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
 			Label label2 = testDataFactory.createLabel(project, "label2", "label2 description", "#00FF00");
@@ -221,7 +224,8 @@ public class IssueControllerTest {
 			assertThat(createdIssue.getTitle()).isEqualTo(createReqDto.title());
 			assertThat(createdIssue.getContents()).isEqualTo(createReqDto.contents());
 
-			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(createdIssue.getKanbanConfig().getId());
+			KanbanConfig createdKanbanConfig = testDataFactory.findKanbanConfigById(
+				createdIssue.getKanbanConfig().getId());
 			assertThat(createdKanbanConfig.getId()).isEqualTo(defaultKanbanConfig.getId());
 
 			List<IssueLabel> createdIssueLabels = testDataFactory.findIssueLabelsByIssueId(createdIssue.getId());
@@ -561,7 +565,7 @@ public class IssueControllerTest {
 				randomString(50),
 				null,
 				null
-				);
+			);
 
 			// when
 			String response = mockMvc.perform(
@@ -1426,6 +1430,7 @@ public class IssueControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile profile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
 			KanbanConfig kanbanConfig = testDataFactory.createKanbanConfig(
 				project,
 				1,
@@ -1433,11 +1438,12 @@ public class IssueControllerTest {
 				false,
 				false
 			);
+			Label label1 = testDataFactory.createLabel(project, "label1", "label1 description", "#FF0000");
 			Issue issue = testDataFactory.createIssue(
 				project,
 				kanbanConfig,
-				Collections.emptyList(),
-				Collections.emptyList(),
+				List.of(profile),
+				List.of(label1),
 				false,
 				null,
 				null
@@ -1458,6 +1464,23 @@ public class IssueControllerTest {
 			assertThat(result.contents()).isEqualTo(issue.getContents());
 			assertThat(result.kanbanConfig().kanbanConfigId()).isEqualTo(kanbanConfig.getId());
 			assertThat(result.isDone()).isEqualTo(issue.getIsDone());
+			assertThat(result.assignees())
+				.hasSize(1)
+				.first()
+				.satisfies(a -> {
+					assertThat(a.profileId()).isEqualTo(profile.getId());
+					assertThat(a.nickname()).isEqualTo(profile.getNickname());
+					assertThat(a.email()).isEqualTo(profile.getEmail());
+				});
+			assertThat(result.labels())
+				.hasSize(1)
+				.first()
+				.satisfies(l -> {
+					assertThat(l.labelId()).isEqualTo(label1.getId());
+					assertThat(l.name()).isEqualTo(label1.getName());
+					assertThat(l.description()).isEqualTo(label1.getDescription());
+					assertThat(l.color()).isEqualTo(label1.getColor());
+				});
 		}
 
 		@Test
