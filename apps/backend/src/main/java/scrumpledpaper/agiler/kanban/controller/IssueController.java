@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDateUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDeleteReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueIdResDto;
@@ -118,5 +119,16 @@ public class IssueController {
 		@PathVariable Long issueId) {
 		IssueDetailResDto issueDetailResDto = issueService.getIssueDetail(customUserDetails.getUserId(), projectUrl, issueId);
 		return ResponseEntity.ok(issueDetailResDto);
+	}
+
+	@PatchMapping("/{projectUrl}/issues/{issueId}/date")
+	public ResponseEntity<IssueIdResDto> updateIssueDate(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long issueId,
+		@RequestBody IssueDateUpdateReqDto request) {
+		long updatedIssueId = issueService.updateIssueDate(customUserDetails.getUserId(), projectUrl, issueId, request);
+		return ResponseEntity.ok(new IssueIdResDto(updatedIssueId));
 	}
 }

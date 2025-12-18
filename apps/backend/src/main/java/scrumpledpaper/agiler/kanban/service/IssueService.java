@@ -17,6 +17,7 @@ import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.kanban.dto.IssueAssigneesReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueCreateReqDto;
+import scrumpledpaper.agiler.kanban.dto.IssueDateUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueDetailResDto;
 import scrumpledpaper.agiler.kanban.dto.IssueKanbanConfigUpdateReqDto;
 import scrumpledpaper.agiler.kanban.dto.IssueLabelsReqDto;
@@ -329,4 +330,34 @@ public class IssueService {
 			issue.getKanbanConfig()
 		);
 	}
+
+	@Transactional
+	public long updateIssueDate(long userId, String projectUrl, Long issueId, IssueDateUpdateReqDto request) {
+		projectValidator.validateAccess(userId, projectUrl);
+
+		Issue issue = findIssueById(issueId);
+		validateIssueDate(
+			request.startedAt().orElse(null),
+			request.dueAt().orElse(null)
+		);
+
+		issue.updateIssueDate(
+			request.startedAt().orElse(null),
+			request.dueAt().orElse(null)
+		);
+		return issue.getId();
+	}
+
+	private void validateIssueDate(LocalDateTime startedAt, LocalDateTime dueAt) {
+		if (startedAt != null && dueAt != null && startedAt.isAfter(dueAt)) {
+			throw new CustomException(ErrorCode.ISSUE_INVALID_DATE_RANGE);
+		}
+
+		LocalDate today = LocalDate.now();
+		if ((startedAt != null && !startedAt.toLocalDate().isEqual(today)) ||
+			(dueAt != null && !dueAt.toLocalDate().isEqual(today))) {
+			throw new CustomException(ErrorCode.ISSUE_DATE_MUST_TODAY);
+		}
+	}
 }
+

@@ -44,6 +44,8 @@ public enum ErrorCode {
 	INVALID_KANBAN_CONFIG_PRIORITY_ORDER(400, "K007", "칸반 설정의 우선순위가 올바르지 않습니다."),
 
 	ISSUE_NOT_FOUND(404, "IS001", "이슈를 찾을 수 없습니다."),
+	ISSUE_INVALID_DATE_RANGE(400, "IS002", "이슈의 시작시간은 종료시간보다 이전이어야 합니다."),
+	ISSUE_DATE_MUST_TODAY(400, "IS003", "이슈 시간은 당일만 설정할 수 있습니다."),
 
 	NOTIFICATION_CHANNEL_NOT_FOUND(404, "N001", "알림 채널을 찾을 수 없습니다."),
 	SLACK_OAUTH_FAILED(400, "N002", "Slack OAuth 인증에 실패했습니다."),
