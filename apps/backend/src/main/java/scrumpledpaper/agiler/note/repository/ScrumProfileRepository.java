@@ -15,4 +15,6 @@ public interface ScrumProfileRepository extends JpaRepository<ScrumProfile, Long
 		WHERE sp.scrum.id IN :scrumIds
 	""")
 	List<ScrumProfile> findAllByScrumIdsWithProfile(List<Long> scrumIds);
+
+	List<ScrumProfile> findAllByScrumId(Long id);
 }

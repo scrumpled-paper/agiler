@@ -3,6 +3,7 @@ package scrumpledpaper.agiler.note.controller;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import scrumpledpaper.agiler.common.PageReqDto;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.note.dto.IdResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.service.ScrumService;
 
@@ -47,5 +49,15 @@ public class ScrumController {
 		@RequestBody @Valid NoteCreateReqDto noteCreateReqDto) {
 		long id = scrumService.createScrum(customUserDetails.getUserId(), projectUrl, noteCreateReqDto);
 		return ResponseEntity.ok().body(new IdResDto(id));
+	}
+
+	@DeleteMapping("/{projectUrl}/scrums")
+	public ResponseEntity<Void> deleteScrums(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@RequestBody @Valid NoteDeleteReqDto request) {
+		scrumService.deleteScrums(customUserDetails.getUserId(), projectUrl, request);
+		return ResponseEntity.noContent().build();
 	}
 }

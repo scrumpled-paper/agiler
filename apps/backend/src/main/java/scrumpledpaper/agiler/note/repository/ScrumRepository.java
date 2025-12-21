@@ -12,4 +12,6 @@ public interface ScrumRepository extends JpaRepository<Scrum, Long> {
 	Page<Scrum> findAllByProjectId(Long id, Pageable pageable);
 
 	Optional<Scrum> findTopByProjectIdOrderByCreatedAtDesc(Long id);
+
+	Optional<Scrum> findByIdAndProjectId(long scrumId, Long id);
 }

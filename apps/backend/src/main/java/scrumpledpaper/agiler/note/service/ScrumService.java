@@ -12,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.entity.Scrum;
 import scrumpledpaper.agiler.note.entity.ScrumProfile;
@@ -98,5 +101,19 @@ public class ScrumService {
 			return scrumMapper.toEntity(project, template);
 		}
 		return scrumMapper.toEntity(project, "", "");
+	}
+
+	@Transactional
+	public void deleteScrums(long userId, String projectUrl, NoteDeleteReqDto request) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Scrum scrum = findByIdAndProject(request.id(), project);
+		scrumRepository.delete(scrum);
+	}
+
+	private Scrum findByIdAndProject(long scrumId, Project project) {
+		return scrumRepository.findByIdAndProjectId(scrumId, project.getId())
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
 	}
 }
