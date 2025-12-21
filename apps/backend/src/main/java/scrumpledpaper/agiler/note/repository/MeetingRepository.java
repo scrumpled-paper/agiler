@@ -12,4 +12,6 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
 	Page<Meeting> findAllByProjectId(Long projectId, Pageable pageable);
 
 	Optional<Meeting> findTopByProjectIdOrderByCreatedAtDesc(Long projectId);
+
+	Optional<Meeting> findByIdAndProjectId(Long meetingId, Long projectId);
 }

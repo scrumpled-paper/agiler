@@ -12,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
@@ -98,5 +101,18 @@ public class MeetingService {
 			return meetingMapper.toEntity(project, template);
 		}
 		return meetingMapper.toEntity(project, "", "");
+	}
+
+	public void deleteMeetings(long userId, String projectUrl, NoteDeleteReqDto noteDeleteReqDto) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Meeting meeting = findByIdAndProject(noteDeleteReqDto.id(), project);
+		meetingRepository.delete(meeting);
+	}
+
+	private Meeting findByIdAndProject(Long id, Project project) {
+		return meetingRepository.findByIdAndProjectId(id, project.getId())
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
 	}
 }

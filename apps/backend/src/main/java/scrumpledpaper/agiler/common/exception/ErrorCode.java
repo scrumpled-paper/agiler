@@ -35,6 +35,8 @@ public enum ErrorCode {
 	RETRO_TEMPLATE_NOT_FOUND(404, "T003", "회고 템플릿을 찾을 수 없습니다."),
 	MEETING_TEMPLATE_NOT_FOUND(404, "T004", "회의 템플릿을 찾을 수 없습니다."),
 
+	NOTE_NOT_FOUND(404, "NT001", "문서를 찾을 수 없습니다."),
+
 	DEFAULT_KANBAN_CONFIG_NOT_FOUND(404, "K001", "Default 칸반 설정을 찾을 수 없습니다."),
 	KANBAN_CONFIG_NOT_FOUND(404, "K002", "칸반 설정을 찾을 수 없습니다."),
 	INVALID_KANBAN_CONFIG_DEFAULT_STATUS(400, "K003", "칸반 설정에는 정확히 하나의 기본 상태가 있어야 합니다."),
