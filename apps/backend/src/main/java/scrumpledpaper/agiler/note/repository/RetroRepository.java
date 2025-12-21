@@ -11,4 +11,6 @@ public interface RetroRepository extends JpaRepository<Retro, Long> {
 	Page<Retro> findAllByProjectId(Long id, Pageable pageable);
 
 	Optional<Retro> findTopByProjectIdOrderByCreatedAtDesc(Long id);
+
+	Optional<Retro> findByIdAndProjectId(long retroId, Long projectId);
 }

@@ -12,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.RetroResDto;
 import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.note.entity.RetroProfile;
@@ -98,5 +101,19 @@ public class RetroService {
 			return retroMapper.toEntity(project, template);
 		}
 		return retroMapper.toEntity(project, "", "");
+	}
+
+	@Transactional
+	public void deleteRetrospect(long userId, String projectUrl, NoteDeleteReqDto request) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Retro retro = findByIdAndProject(request.id(), project);
+		retroRepository.delete(retro);
+	}
+
+	private Retro findByIdAndProject(long retroId, Project project) {
+		return retroRepository.findByIdAndProjectId(retroId, project.getId())
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
 	}
 }
