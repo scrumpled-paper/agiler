@@ -1,18 +1,19 @@
 package scrumpledpaper.agiler.image.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import scrumpledpaper.agiler.common.exception.CustomException;
-import scrumpledpaper.agiler.common.exception.ErrorCode;
-import scrumpledpaper.agiler.image.entity.Image;
-import scrumpledpaper.agiler.image.repository.ImageRepository;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.LongConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import scrumpledpaper.agiler.common.exception.CustomException;
+import scrumpledpaper.agiler.common.exception.ErrorCode;
+import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.image.repository.ImageRepository;
 
 @Service
 @RequiredArgsConstructor
