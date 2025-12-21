@@ -333,7 +333,6 @@ public class MeetingControllerTest {
 				.andExpect(status().isNoContent())
 				.andReturn().getResponse().getContentAsString();
 
-
 			// then
 			assertThat(testDataFactory.findMeetingById(meeting.getId())).isNull();
 		}

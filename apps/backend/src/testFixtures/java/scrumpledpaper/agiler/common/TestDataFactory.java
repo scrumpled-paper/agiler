@@ -8,7 +8,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import jakarta.persistence.EntityManager;
@@ -479,7 +481,7 @@ public class TestDataFactory {
 	}
 
 	public Page<Meeting> findMeetingsByProjectIdPaged(Long id, int page, int size) {
-		Pageable pageable = Pageable.ofSize(size).withPage(page);
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 		return meetingRepository.findAllByProjectId(id, pageable);
 	}
 
@@ -521,11 +523,12 @@ public class TestDataFactory {
 		return retroRepository.findById(id).orElse(null);
 	}
 
-	public void createScrumWithParticipants(Project project, List<Profile> participants) {
+	public Scrum createScrumWithParticipants(Project project, List<Profile> participants) {
 		Scrum savedScrum = scrumRepository.save(ScrumFixture.createScrum(project));
 		scrumProfileRepository.saveAll(
 			ScrumFixture.createScrumProfiles(savedScrum, participants)
 		);
+		return savedScrum;
 	}
 
 	public Page<Scrum> findScrumsByProjectIdPaged(Long id, int page, int size) {
@@ -535,5 +538,9 @@ public class TestDataFactory {
 
 	public Scrum findLatestScrumByProjectId(Long id) {
 		return scrumRepository.findTopByProjectIdOrderByCreatedAtDesc(id).orElseThrow();
+	}
+
+	public Scrum findScrumById(Long id) {
+		return scrumRepository.findById(id).orElse(null);
 	}
 }

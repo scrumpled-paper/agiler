@@ -26,6 +26,7 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.entity.Scrum;
 import scrumpledpaper.agiler.project.entity.Profile;
@@ -304,6 +305,108 @@ public class ScrumControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Delete Scrum Test")
+	class DeleteScrumTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Scrum 삭제 성공")
+		public void deleteScrumSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Scrum scrum = testDataFactory.createScrumWithParticipants(project, List.of(authProfile));
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(scrum.getId());
+
+			// when
+			mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNoContent());
+
+			// then
+			assertThat(testDataFactory.findScrumById(scrum.getId())).isNull();
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 참여자가 아닌 사용자가 Scrum 삭제 시도")
+		public void deleteScrumForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
+			Scrum scrum = testDataFactory.createScrumWithParticipants(project, List.of(authProfile));
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(scrum.getId());
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+			assertThat(testDataFactory.findScrumById(scrum.getId())).isNotNull();
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트의 Scrum 삭제 시도")
+		public void deleteScrumProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non-existent-url";
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(1L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 Scrum 삭제 시도")
+		public void deleteScrumNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(9999L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
 		}
 	}
 }
