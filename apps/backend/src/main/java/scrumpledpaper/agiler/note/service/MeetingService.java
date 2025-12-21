@@ -109,6 +109,9 @@ public class MeetingService {
 		Project project = context.project();
 
 		Meeting meeting = findByIdAndProject(noteDeleteReqDto.id(), project);
+		List<MeetingProfile> meetingProfiles = meetingProfileRepository.findAllByMeetingId(meeting.getId());
+
+		meetingProfileRepository.deleteAll(meetingProfiles);
 		meetingRepository.delete(meeting);
 	}
 

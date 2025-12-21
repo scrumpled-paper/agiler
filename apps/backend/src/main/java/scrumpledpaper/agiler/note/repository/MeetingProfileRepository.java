@@ -15,4 +15,6 @@ public interface MeetingProfileRepository extends JpaRepository<MeetingProfile, 
 		WHERE mp.meeting.id IN :meetingIds
 	""")
 	List<MeetingProfile> findAllByMeetingIdsWithProfile(List<Long> meetingIds);
+
+	List<MeetingProfile> findAllByMeetingId(Long id);
 }

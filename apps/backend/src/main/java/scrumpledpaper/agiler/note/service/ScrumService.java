@@ -109,6 +109,9 @@ public class ScrumService {
 		Project project = context.project();
 
 		Scrum scrum = findByIdAndProject(request.id(), project);
+		List<ScrumProfile> scrumProfiles = scrumProfileRepository.findAllByScrumId(scrum.getId());
+
+		scrumProfileRepository.deleteAll(scrumProfiles);
 		scrumRepository.delete(scrum);
 	}
 

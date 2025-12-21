@@ -109,6 +109,9 @@ public class RetroService {
 		Project project = context.project();
 
 		Retro retro = findByIdAndProject(request.id(), project);
+		List<RetroProfile> retroProfiles = retroProfileRepository.findAllByRetroId(retro.getId());
+
+		retroProfileRepository.deleteAll(retroProfiles);
 		retroRepository.delete(retro);
 	}
 
