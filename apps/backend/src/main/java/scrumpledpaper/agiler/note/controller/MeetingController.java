@@ -18,10 +18,10 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.common.PageReqDto;
 import scrumpledpaper.agiler.common.PageResDto;
-import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.IdResDto;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.service.MeetingService;
 
 @RestController
