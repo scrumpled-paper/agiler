@@ -25,11 +25,13 @@ import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.entity.Scrum;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
+import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
 @IntegrationTest
 @Transactional
@@ -68,7 +70,7 @@ public class ScrumControllerTest {
 
 			// when
 			String response = mockMvc.perform(
-					get("/api/v1/projects/{projectUrl}/meetings", url)
+					get("/api/v1/projects/{projectUrl}/scrums", url)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.param("page", page + "")
 						.param("size", size + ""))
@@ -171,6 +173,137 @@ public class ScrumControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Create Scrum Test")
+	class CreateScrumTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - Scrum 생성 성공")
+		public void createScrumSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url,  auth.getUser());
+			ScrumTemplate template = testDataFactory.createScrumTemplate(project);
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(template.getId());
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Scrum scrum = testDataFactory.findLatestScrumByProjectId(project.getId());
+			assertThat(response).contains(scrum.getId().toString());
+
+			assertThat(scrum.getTitle()).isEqualTo(template.getTitle());
+			assertThat(scrum.getContents()).isEqualTo(template.getContents());
+			assertThat(scrum.getProject().getId()).isEqualTo(project.getId());
+		}
+
+		@Test
+		@DisplayName("200 - Scrum 템플릿 없이 생성 성공")
+		public void createScrumWithoutTemplateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url,  auth.getUser());
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(null);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Scrum scrum = testDataFactory.findLatestScrumByProjectId(project.getId());
+			assertThat(response).contains(scrum.getId().toString());
+
+			assertThat(scrum.getTitle()).isEqualTo("");
+			assertThat(scrum.getContents()).isEqualTo("");
+			assertThat(scrum.getProject().getId()).isEqualTo(project.getId());
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 참여자가 아닌 사용자가 Scrum 생성 시도")
+		public void createScrumForbidden() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			ScrumTemplate template = testDataFactory.createScrumTemplate(project);
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(template.getId());
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트에 Scrum 생성 시도")
+		public void createScrumProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non-existent-url";
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(null);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 Scrum 템플릿으로 Scrum 생성 시도")
+		public void createScrumTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url,  auth.getUser());
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(9999L);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/scrums", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND.getMessage());
 		}
 	}
 }

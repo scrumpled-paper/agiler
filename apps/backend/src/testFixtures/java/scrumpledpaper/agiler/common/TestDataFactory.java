@@ -290,12 +290,12 @@ public class TestDataFactory {
 		return scrumTemplateRepository.findByProjectId(projectId);
 	}
 
-	public ScrumTemplate createScrumTemplate(Project project, String title, String description, String contents) {
+	public ScrumTemplate createScrumTemplate(Project project) {
 		ScrumTemplate scrumTemplate = ScrumTemplateFixture.createScrumTemplate(
 				project,
-				title,
-				description,
-				contents
+				randomString(10),
+				randomString(20),
+				randomString(50)
 		);
 		return scrumTemplateRepository.save(scrumTemplate);
 	}
@@ -521,15 +521,19 @@ public class TestDataFactory {
 		return retroRepository.findById(id).orElse(null);
 	}
 
-	public void createScrumWithParticipants(Project project, List<Profile> authProfile) {
+	public void createScrumWithParticipants(Project project, List<Profile> participants) {
 		Scrum savedScrum = scrumRepository.save(ScrumFixture.createScrum(project));
 		scrumProfileRepository.saveAll(
-			ScrumFixture.createScrumProfiles(savedScrum, authProfile)
+			ScrumFixture.createScrumProfiles(savedScrum, participants)
 		);
 	}
 
 	public Page<Scrum> findScrumsByProjectIdPaged(Long id, int page, int size) {
 		Pageable pageable = Pageable.ofSize(size).withPage(page);
 		return scrumRepository.findAllByProjectId(id, pageable);
+	}
+
+	public Scrum findLatestScrumByProjectId(Long id) {
+		return scrumRepository.findTopByProjectIdOrderByCreatedAtDesc(id).orElseThrow();
 	}
 }
