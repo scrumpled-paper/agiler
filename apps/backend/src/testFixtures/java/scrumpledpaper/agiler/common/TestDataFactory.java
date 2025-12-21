@@ -474,4 +474,13 @@ public class TestDataFactory {
 	public Meeting findByLatestMeetingByProjectId(Long projectId) {
 		return meetingRepository.findTopByProjectIdOrderByCreatedAtDesc(projectId).orElseThrow();
 	}
+
+	public Meeting createMeeting(Project project) {
+		Meeting meeting = MeetingFixture.createMeeting(project);
+		return meetingRepository.save(meeting);
+	}
+
+	public Meeting findMeetingById(Long id) {
+		return meetingRepository.findById(id).orElse(null);
+	}
 }

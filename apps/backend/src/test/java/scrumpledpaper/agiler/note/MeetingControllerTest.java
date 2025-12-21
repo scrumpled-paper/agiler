@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
@@ -302,6 +303,106 @@ public class MeetingControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.MEETING_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Delete Meeting Test")
+	class DeleteMeetingTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Meeting 삭제 성공")
+		public void deleteMeetingSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Meeting meeting = testDataFactory.createMeeting(project);
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(meeting.getId());
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+
+			// then
+			assertThat(testDataFactory.findMeetingById(meeting.getId())).isNull();
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 참여자가 아닌 사용자가 Meeting 삭제 시도")
+		public void deleteMeetingNotMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Meeting meeting = testDataFactory.createMeeting(project);
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(meeting.getId());
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트의 Meeting 삭제 시도")
+		public void deleteMeetingProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non-existent-url";
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(1L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 Meeting 삭제 시도")
+		public void deleteMeetingNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(999L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
 		}
 	}
 }
