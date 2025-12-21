@@ -314,12 +314,12 @@ public class TestDataFactory {
 		return meetingTemplateRepository.findByProjectId(projectId);
 	}
 
-	public MeetingTemplate createMeetingTemplate(Project project, String title, String description, String contents) {
+	public MeetingTemplate createMeetingTemplate(Project project) {
 		MeetingTemplate meetingTemplate = MeetingTemplateFixture.createMeetingTemplate(
 				project,
-				title,
-				description,
-				contents
+				randomString(10),
+				randomString(20),
+				randomString(50)
 		);
 		return meetingTemplateRepository.save(meetingTemplate);
 	}
