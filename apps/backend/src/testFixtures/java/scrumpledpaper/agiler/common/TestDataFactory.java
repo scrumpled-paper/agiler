@@ -470,4 +470,8 @@ public class TestDataFactory {
 		Pageable pageable = Pageable.ofSize(size).withPage(page);
 		return meetingRepository.findAllByProjectId(id, pageable);
 	}
+
+	public Meeting findByLatestMeetingByProjectId(Long projectId) {
+		return meetingRepository.findTopByProjectIdOrderByCreatedAtDesc(projectId).orElseThrow();
+	}
 }

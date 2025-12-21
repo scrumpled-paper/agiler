@@ -26,10 +26,12 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
+import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
+import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 
 @IntegrationTest
 @Transactional
@@ -171,6 +173,135 @@ public class MeetingControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Create Meeting Test")
+	class CreateMeetingTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - Meeting 생성 성공")
+		public void createMeetingSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplate template = testDataFactory.createMeetingTemplate(project);
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(template.getId());
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Meeting meeting = testDataFactory.findByLatestMeetingByProjectId(project.getId());
+			assertThat(response).contains(meeting.getId().toString());
+
+			assertThat(meeting.getTitle()).isEqualTo(template.getTitle());
+			assertThat(meeting.getContents()).isEqualTo(template.getContents());
+		}
+
+		@Test
+		@DisplayName("200 - 템플릿 없이 Meeting 생성 성공")
+		public void createMeetingWithoutTemplateSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(null);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Meeting meeting = testDataFactory.findByLatestMeetingByProjectId(project.getId());
+			assertThat(response).contains(meeting.getId().toString());
+
+			assertThat(meeting.getTitle()).isEqualTo("");
+			assertThat(meeting.getContents()).isEqualTo("");
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 참여자가 아닌 사용자가 Meeting 생성 시도")
+		public void createMeetingNotMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			MeetingTemplate template = testDataFactory.createMeetingTemplate(project);
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(template.getId());
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트의 Meeting 생성 시도")
+		public void createMeetingProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non-existent-url";
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(1L);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 템플릿으로 Meeting 생성 시도")
+		public void createMeetingTemplateNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			NoteCreateReqDto reqDto = new NoteCreateReqDto(999L);
+
+			// when
+			String response = mockMvc.perform(
+					post("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.MEETING_TEMPLATE_NOT_FOUND.getMessage());
 		}
 	}
 }
