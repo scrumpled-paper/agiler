@@ -501,4 +501,8 @@ public class TestDataFactory {
 			RetroFixture.createRetroProfiles(savedRetro, participants)
 		);
 	}
+
+	public Retro findByLatestRetroByProjectId(Long id) {
+		return retroRepository.findTopByProjectIdOrderByCreatedAtDesc(id).orElseThrow();
+	}
 }
