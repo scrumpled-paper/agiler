@@ -58,7 +58,7 @@ public class RetroTemplateService {
 		);
 	}
 
-	private RetroTemplate findById(Long id) {
+	public RetroTemplate findById(Long id) {
 		return retroTemplateRepository.findById(id)
 			.orElseThrow(() -> new CustomException(ErrorCode.RETRO_TEMPLATE_NOT_FOUND));
 	}

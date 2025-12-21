@@ -9,6 +9,8 @@ import org.mapstruct.Mapping;
 import scrumpledpaper.agiler.note.dto.RetroResDto;
 import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.template.entity.RetroTemplate;
 
 @Mapper(componentModel = "spring")
 public interface RetroMapper {
@@ -41,4 +43,18 @@ public interface RetroMapper {
 			participantDtos
 		);
 	}
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "template.title")
+	@Mapping(target = "contents", source = "template.contents")
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "retroProfiles", ignore = true)
+	Retro toEntity(Project project, RetroTemplate template);
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "title")
+	@Mapping(target = "contents", source = "contents")
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "retroProfiles", ignore = true)
+	Retro toEntity(Project project, String title, String contents);
 }

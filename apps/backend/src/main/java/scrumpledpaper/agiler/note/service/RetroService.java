@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.RetroResDto;
 import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.note.entity.RetroProfile;
@@ -23,12 +24,15 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
+import scrumpledpaper.agiler.template.entity.RetroTemplate;
+import scrumpledpaper.agiler.template.service.RetroTemplateService;
 
 @Service
 @RequiredArgsConstructor
 public class RetroService {
 	private final ImageService imageService;
 	private final RetroRepository retroRepository;
+	private final RetroTemplateService retroTemplateService;
 	private final RetroProfileRepository retroProfileRepository;
 	private final ProjectValidator projectValidator;
 	private final RetroMapper retroMapper;
@@ -75,5 +79,24 @@ public class RetroService {
 		);
 
 		return PageResDto.from(dtoPage);
+	}
+
+	@Transactional
+	public long createRetrospect(long userId, String projectUrl, NoteCreateReqDto request) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Retro retro = createRetroEntity(project, request);
+		retroRepository.save(retro);
+
+		return retro.getId();
+	}
+
+	private Retro createRetroEntity(Project project, NoteCreateReqDto request) {
+		if (request.templateId() != null) {
+			RetroTemplate template = retroTemplateService.findById(request.templateId());
+			return retroMapper.toEntity(project, template);
+		}
+		return retroMapper.toEntity(project, "", "");
 	}
 }
