@@ -505,4 +505,13 @@ public class TestDataFactory {
 	public Retro findByLatestRetroByProjectId(Long id) {
 		return retroRepository.findTopByProjectIdOrderByCreatedAtDesc(id).orElseThrow();
 	}
+
+	public Retro createRetro(Project project) {
+		Retro retro = RetroFixture.createRetro(project);
+		return retroRepository.save(retro);
+	}
+
+	public Retro findRetroById(Long id) {
+		return retroRepository.findById(id).orElse(null);
+	}
 }

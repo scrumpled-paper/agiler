@@ -26,6 +26,7 @@ import scrumpledpaper.agiler.common.TestDataFactory;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
+import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
 import scrumpledpaper.agiler.note.dto.RetroResDto;
 import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.project.entity.Profile;
@@ -60,7 +61,8 @@ public class RetroControllerTest {
 			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
 			Profile otherProfile = testDataFactory.createProfile(otherAuth.getUser(), project, Role.MEMBER);
 			for (int i = 1; i <= 15; i++) {
 				testDataFactory.createRetroWithParticipants(project, List.of(authProfile, otherProfile));
@@ -79,7 +81,8 @@ public class RetroControllerTest {
 
 			// then
 			PageResDto<RetroResDto> resDto = objectMapper.readValue(response,
-				new TypeReference<PageResDto<RetroResDto>>() {});
+				new TypeReference<PageResDto<RetroResDto>>() {
+				});
 
 			assertThat(resDto.getPageSize()).isEqualTo(10);
 			assertThat(resDto.getCurrentPage()).isEqualTo(0);
@@ -120,7 +123,8 @@ public class RetroControllerTest {
 
 			// then
 			PageResDto<RetroResDto> resDto = objectMapper.readValue(response,
-				new TypeReference<PageResDto<RetroResDto>>() {});
+				new TypeReference<PageResDto<RetroResDto>>() {
+				});
 
 			assertThat(resDto.getPageSize()).isEqualTo(10);
 			assertThat(resDto.getCurrentPage()).isEqualTo(0);
@@ -303,6 +307,107 @@ public class RetroControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.RETRO_TEMPLATE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Delete Retro Test")
+	class DeleteRetroTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - Retro 삭제 성공")
+		public void deleteRetroSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Retro retro = testDataFactory.createRetro(project);
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(retro.getId());
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(testDataFactory.findRetroById(retro.getId())).isNull();
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 참여자가 아닌 사용자의 Retro 삭제 실패")
+		public void deleteRetroForbiddenFail() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Retro retro = testDataFactory.createRetro(project);
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(retro.getId());
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros", url)
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+			assertThat(testDataFactory.findRetroById(retro.getId())).isNotNull();
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트의 Retro 삭제 실패")
+		public void deleteRetroNotFoundFail() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non-existent-url";
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(1L);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 Retro 삭제 실패")
+		public void deleteRetroNotFoundFail2() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Long nonExistentRetroId = 9999L;
+			NoteDeleteReqDto reqDto = new NoteDeleteReqDto(nonExistentRetroId);
+
+			// when
+			String response = mockMvc.perform(
+					delete("/api/v1/projects/{projectUrl}/retros", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
 		}
 	}
 }
