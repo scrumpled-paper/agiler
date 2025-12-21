@@ -302,12 +302,12 @@ public class TestDataFactory {
 		return retroTemplateRepository.findByProjectId(projectId);
 	}
 
-	public RetroTemplate createRetroTemplate(Project project, String title, String description, String contents) {
+	public RetroTemplate createRetroTemplate(Project project) {
 		RetroTemplate retroTemplate = RetroTemplateFixture.createRetroTemplate(
 				project,
-				title,
-				description,
-				contents
+				randomString(10),
+				randomString(20),
+				randomString(50)
 		);
 		return retroTemplateRepository.save(retroTemplate);
 	}

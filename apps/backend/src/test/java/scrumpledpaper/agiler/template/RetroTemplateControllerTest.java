@@ -153,12 +153,7 @@ public class RetroTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			existingTemplate = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Old Template"
-			);
+			existingTemplate = testDataFactory.createRetroTemplate(project);
 			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
 				existingTemplate.getId(),
 				"update template",
@@ -219,12 +214,7 @@ public class RetroTemplateControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			existingTemplate = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Old Template"
-			);
+			existingTemplate = testDataFactory.createRetroTemplate(project);
 			RetroTemplateUpdateReqDto updateReqDto = new RetroTemplateUpdateReqDto(
 				9999L,
 				"update template",
@@ -289,18 +279,8 @@ public class RetroTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			RetroTemplate template1 = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template 1"
-			);
-			RetroTemplate template2 = testDataFactory.createRetroTemplate(
-				project,
-				"스프린트",
-				"스프린트 회고 템플릿",
-				"Template 2"
-			);
+			RetroTemplate template1 = testDataFactory.createRetroTemplate(project);
+			RetroTemplate template2 = testDataFactory.createRetroTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -352,12 +332,7 @@ public class RetroTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			RetroTemplate template = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template Detail"
-			);
+			RetroTemplate template = testDataFactory.createRetroTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -381,12 +356,7 @@ public class RetroTemplateControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
-			RetroTemplate template = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template Detail"
-			);
+			RetroTemplate template = testDataFactory.createRetroTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -407,12 +377,7 @@ public class RetroTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template Detail"
-			);
+			testDataFactory.createRetroTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -442,12 +407,7 @@ public class RetroTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			RetroTemplate template = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template Detail"
-			);
+			RetroTemplate template = testDataFactory.createRetroTemplate(project);
 			RetroTemplateDeleteReqDto deleteReqDto = new RetroTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
@@ -473,12 +433,7 @@ public class RetroTemplateControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			RetroTemplate template = testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template Detail"
-			);
+			RetroTemplate template = testDataFactory.createRetroTemplate(project);
 			RetroTemplateDeleteReqDto deleteReqDto = new RetroTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
@@ -502,12 +457,7 @@ public class RetroTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			testDataFactory.createRetroTemplate(
-				project,
-				"회고",
-				"회고 템플릿",
-				"Template Detail"
-			);
+			testDataFactory.createRetroTemplate(project);
 			RetroTemplateDeleteReqDto deleteReqDto = new RetroTemplateDeleteReqDto(9999L);
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
