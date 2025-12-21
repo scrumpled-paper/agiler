@@ -9,6 +9,8 @@ import org.mapstruct.Mapping;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
 import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 
 @Mapper(componentModel = "spring")
 public interface MeetingMapper {
@@ -41,4 +43,18 @@ public interface MeetingMapper {
 			participantDtos
 		);
 	}
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "template.title")
+	@Mapping(target = "contents", source = "template.contents")
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "meetingProfiles", ignore = true)
+	Meeting toEntity(Project project, MeetingTemplate template);
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "title")
+	@Mapping(target = "contents", source = "contents")
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "meetingProfiles", ignore = true)
+	Meeting toEntity(Project project, String title, String contents);
 }

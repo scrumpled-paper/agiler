@@ -58,7 +58,7 @@ public class MeetingTemplateService {
 		);
 	}
 
-	private MeetingTemplate findById(Long id) {
+	public MeetingTemplate findById(Long id) {
 		return meetingTemplateRepository.findById(id)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEETING_TEMPLATE_NOT_FOUND));
 	}

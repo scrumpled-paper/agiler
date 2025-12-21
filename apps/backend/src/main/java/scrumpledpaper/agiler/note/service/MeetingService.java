@@ -14,6 +14,7 @@ import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
+import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
 import scrumpledpaper.agiler.note.entity.MeetingProfile;
 import scrumpledpaper.agiler.note.mapper.MeetingMapper;
@@ -23,12 +24,15 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
+import scrumpledpaper.agiler.template.entity.MeetingTemplate;
+import scrumpledpaper.agiler.template.service.MeetingTemplateService;
 
 @Service
 @RequiredArgsConstructor
 public class MeetingService {
 	private final ImageService imageService;
 	private final MeetingRepository meetingRepository;
+	private final MeetingTemplateService meetingTemplateService;
 	private final MeetingProfileRepository meetingProfileRepository;
 	private final MeetingMapper meetingMapper;
 	private final ProjectValidator projectValidator;
@@ -77,5 +81,22 @@ public class MeetingService {
 		return PageResDto.from(dtoPage);
 	}
 
+	@Transactional
+	public long createMeeting(long userId, String projectUrl, NoteCreateReqDto noteCreateReqDto) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
 
+		Meeting meeting = createMeetingEntity(project, noteCreateReqDto);
+		meetingRepository.save(meeting);
+
+		return meeting.getId();
+	}
+
+	private Meeting createMeetingEntity(Project project, NoteCreateReqDto noteCreateReqDto) {
+		if (noteCreateReqDto.templateId() != null) {
+			MeetingTemplate template = meetingTemplateService.findById(noteCreateReqDto.templateId());
+			return meetingMapper.toEntity(project, template);
+		}
+		return meetingMapper.toEntity(project, "", "");
+	}
 }
