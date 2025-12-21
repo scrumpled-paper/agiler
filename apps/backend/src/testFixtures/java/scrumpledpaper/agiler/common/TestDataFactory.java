@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import jakarta.persistence.EntityManager;
@@ -17,6 +19,7 @@ import scrumpledpaper.agiler.fixture.IssueSnapshotDateMappingFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.fixture.LabelFixture;
+import scrumpledpaper.agiler.fixture.MeetingFixture;
 import scrumpledpaper.agiler.fixture.MeetingTemplateFixture;
 import scrumpledpaper.agiler.fixture.NotificationSubscriptionFixture;
 import scrumpledpaper.agiler.fixture.ProfileFixture;
@@ -42,6 +45,9 @@ import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueSnapshotDateMappingRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
+import scrumpledpaper.agiler.note.entity.Meeting;
+import scrumpledpaper.agiler.note.repository.MeetingProfileRepository;
+import scrumpledpaper.agiler.note.repository.MeetingRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
@@ -75,12 +81,14 @@ public class TestDataFactory {
 	private final LabelRepository labelRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
+	private final MeetingRepository meetingRepository;
 	private final IssueLabelRepository issueLabelRepository;
 	private final IssueProfileRepository issueProfileRepository;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
+	private final MeetingProfileRepository meetingProfileRepository;
 	private final MeetingTemplateRepository meetingTemplateRepository;
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final IssueSnapshotDateMappingRepository issueSnapshotDateMappingRepository;
@@ -449,5 +457,17 @@ public class TestDataFactory {
 	}
 	public List<Issue> findIssuesByProjectId(Long id) {
 		return issueRepository.findAllByProjectId(id);
+	}
+
+	public void createMeetingWithParticipants(Project project, List<Profile> participants) {
+		Meeting savedMeeting = meetingRepository.save(MeetingFixture.createMeeting(project));
+		meetingProfileRepository.saveAll(
+			MeetingFixture.createMeetingProfiles(savedMeeting, participants)
+		);
+	}
+
+	public Page<Meeting> findMeetingsByProjectIdPaged(Long id, int page, int size) {
+		Pageable pageable = Pageable.ofSize(size).withPage(page);
+		return meetingRepository.findAllByProjectId(id, pageable);
 	}
 }
