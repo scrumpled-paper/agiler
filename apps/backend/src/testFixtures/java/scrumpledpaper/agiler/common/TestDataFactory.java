@@ -25,6 +25,7 @@ import scrumpledpaper.agiler.fixture.NotificationSubscriptionFixture;
 import scrumpledpaper.agiler.fixture.ProfileFixture;
 import scrumpledpaper.agiler.fixture.ProfileNotificationChannelFixture;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
+import scrumpledpaper.agiler.fixture.RetroFixture;
 import scrumpledpaper.agiler.fixture.RetroTemplateFixture;
 import scrumpledpaper.agiler.fixture.ScheduleNotificationFixture;
 import scrumpledpaper.agiler.fixture.ScrumTemplateFixture;
@@ -46,8 +47,11 @@ import scrumpledpaper.agiler.kanban.repository.IssueSnapshotDateMappingRepositor
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.note.entity.Meeting;
+import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.note.repository.MeetingProfileRepository;
 import scrumpledpaper.agiler.note.repository.MeetingRepository;
+import scrumpledpaper.agiler.note.repository.RetroProfileRepository;
+import scrumpledpaper.agiler.note.repository.RetroRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
@@ -79,10 +83,12 @@ public class TestDataFactory {
 	private final IssueRepository issueRepository;
 	private final ImageRepository imageRepository;
 	private final LabelRepository labelRepository;
+	private final RetroRepository retroRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
 	private final MeetingRepository meetingRepository;
 	private final IssueLabelRepository issueLabelRepository;
+	private final RetroProfileRepository retroProfileRepository;
 	private final IssueProfileRepository issueProfileRepository;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
@@ -482,5 +488,17 @@ public class TestDataFactory {
 
 	public Meeting findMeetingById(Long id) {
 		return meetingRepository.findById(id).orElse(null);
+	}
+
+	public Page<Retro> findRetrosByProjectIdPaged(Long id, int page, int size) {
+		Pageable pageable = Pageable.ofSize(size).withPage(page);
+		return retroRepository.findAllByProjectId(id, pageable);
+	}
+
+	public void createRetroWithParticipants(Project project, List<Profile> participants) {
+		Retro savedRetro = retroRepository.save(RetroFixture.createRetro(project));
+		retroProfileRepository.saveAll(
+			RetroFixture.createRetroProfiles(savedRetro, participants)
+		);
 	}
 }
