@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.entity.Scrum;
 import scrumpledpaper.agiler.note.entity.ScrumProfile;
@@ -23,6 +24,7 @@ import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
+import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 import scrumpledpaper.agiler.template.service.ScrumTemplateService;
 
 @Service
@@ -36,7 +38,7 @@ public class ScrumService {
 	private final ProjectValidator projectValidator;
 
 	@Transactional(readOnly = true)
-	public PageResDto<ScrumResDto> getRetrospects(long userId, String projectUrl, Pageable pageable) {
+	public PageResDto<ScrumResDto> getScrums(long userId, String projectUrl, Pageable pageable) {
 		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
 		Project project = context.project();
 
@@ -77,5 +79,24 @@ public class ScrumService {
 		);
 
 		return PageResDto.from(dtoPage);
+	}
+
+	@Transactional
+	public long createScrum(long userId, String projectUrl, NoteCreateReqDto noteCreateReqDto) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Scrum scrum = createScrumEntity(project, noteCreateReqDto);
+		scrumRepository.save(scrum);
+
+		return scrum.getId();
+	}
+
+	private Scrum createScrumEntity(Project project, NoteCreateReqDto noteCreateReqDto) {
+		if (noteCreateReqDto.templateId() != null) {
+			ScrumTemplate template = scrumTemplateService.findById(noteCreateReqDto.templateId());
+			return scrumMapper.toEntity(project, template);
+		}
+		return scrumMapper.toEntity(project, "", "");
 	}
 }

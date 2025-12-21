@@ -9,6 +9,8 @@ import org.mapstruct.Mapping;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.entity.Scrum;
 import scrumpledpaper.agiler.project.entity.Profile;
+import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.template.entity.ScrumTemplate;
 
 @Mapper(componentModel = "spring")
 public interface ScrumMapper {
@@ -41,4 +43,18 @@ public interface ScrumMapper {
 			participantDtos
 		);
 	}
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "template.title")
+	@Mapping(target = "contents", source = "template.contents")
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "scrumProfiles", ignore = true)
+	Scrum toEntity(Project project, ScrumTemplate template);
+
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "title", source = "title")
+	@Mapping(target = "contents", source = "contents")
+	@Mapping(target = "project", source = "project")
+	@Mapping(target = "scrumProfiles", ignore = true)
+	Scrum toEntity(Project project, String title, String contents);
 }

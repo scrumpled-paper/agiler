@@ -1,12 +1,16 @@
 package scrumpledpaper.agiler.note.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -37,4 +41,8 @@ public class Retro extends BaseEntity {
 
 	@Column(name = "contents")
 	private String contents;
+
+	@OneToMany(mappedBy = "retro", fetch = FetchType.LAZY)
+	@Builder.Default
+	private List<RetroProfile> retroProfiles = new java.util.ArrayList<>();
 }
