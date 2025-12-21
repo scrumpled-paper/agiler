@@ -28,6 +28,7 @@ import scrumpledpaper.agiler.fixture.ProjectFixture;
 import scrumpledpaper.agiler.fixture.RetroFixture;
 import scrumpledpaper.agiler.fixture.RetroTemplateFixture;
 import scrumpledpaper.agiler.fixture.ScheduleNotificationFixture;
+import scrumpledpaper.agiler.fixture.ScrumFixture;
 import scrumpledpaper.agiler.fixture.ScrumTemplateFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
@@ -48,10 +49,13 @@ import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
 import scrumpledpaper.agiler.note.entity.Meeting;
 import scrumpledpaper.agiler.note.entity.Retro;
+import scrumpledpaper.agiler.note.entity.Scrum;
 import scrumpledpaper.agiler.note.repository.MeetingProfileRepository;
 import scrumpledpaper.agiler.note.repository.MeetingRepository;
 import scrumpledpaper.agiler.note.repository.RetroProfileRepository;
 import scrumpledpaper.agiler.note.repository.RetroRepository;
+import scrumpledpaper.agiler.note.repository.ScrumProfileRepository;
+import scrumpledpaper.agiler.note.repository.ScrumRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
@@ -84,12 +88,14 @@ public class TestDataFactory {
 	private final ImageRepository imageRepository;
 	private final LabelRepository labelRepository;
 	private final RetroRepository retroRepository;
+	private final ScrumRepository scrumRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
 	private final MeetingRepository meetingRepository;
 	private final IssueLabelRepository issueLabelRepository;
 	private final RetroProfileRepository retroProfileRepository;
 	private final IssueProfileRepository issueProfileRepository;
+	private final ScrumProfileRepository scrumProfileRepository;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
@@ -513,5 +519,17 @@ public class TestDataFactory {
 
 	public Retro findRetroById(Long id) {
 		return retroRepository.findById(id).orElse(null);
+	}
+
+	public void createScrumWithParticipants(Project project, List<Profile> authProfile) {
+		Scrum savedScrum = scrumRepository.save(ScrumFixture.createScrum(project));
+		scrumProfileRepository.saveAll(
+			ScrumFixture.createScrumProfiles(savedScrum, authProfile)
+		);
+	}
+
+	public Page<Scrum> findScrumsByProjectIdPaged(Long id, int page, int size) {
+		Pageable pageable = Pageable.ofSize(size).withPage(page);
+		return scrumRepository.findAllByProjectId(id, pageable);
 	}
 }

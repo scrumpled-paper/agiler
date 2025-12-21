@@ -91,7 +91,7 @@ public class MeetingControllerTest {
 			Page<Meeting> meetingPage = testDataFactory.findMeetingsByProjectIdPaged(project.getId(), page, size);
 			for (int i = 0; i < meetingPage.getContent().size(); i++) {
 				Meeting meeting = meetingPage.getContent().get(i);
-				var meetingResDto = resDto.getContents().get(i);
+				MeetingResDto meetingResDto = resDto.getContents().get(i);
 
 				assertThat(meetingResDto.meetingId()).isEqualTo(meeting.getId());
 				assertThat(meetingResDto.title()).isEqualTo(meeting.getTitle());
