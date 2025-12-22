@@ -5,23 +5,32 @@ import { Button } from '@/components/ui/button'
 import { issueColumns } from '@/mocks/mockTasks'
 import { Info, LayoutGrid, Table } from 'lucide-react'
 import { useState, useMemo } from 'react'
-import type { Issue } from '@/types'
+import type { Issue, IssuePayload } from '@/types/issue'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { kanbanService } from '@/api/services/kanbanService'
 import { KanbanDateSelector } from '@/components/kanban/KanbanDateSelector'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  TemplateSelectModal,
+  type SelectedTemplate,
+} from '@/components/template/TemplateSelectModal'
+import { issueService } from '@/api/services/issueService'
+import { IssueModal } from '@/components/IssueModal'
 
 type ViewMode = 'kanban' | 'table'
 
 export default function Project() {
   const { projectUrl } = useParams<{ projectUrl: string }>()
   const [viewMode, setViewMode] = useState<ViewMode>('kanban')
+  const [issueModalOpen, setIssueModalOpen] = useState<boolean>(false)
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   )
+  const [templateModalOpen, setTemplateModalOpen] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<SelectedTemplate | null>(null)
   const queryClient = useQueryClient()
-
   // Check if selected date is today
   const isToday = useMemo(() => {
     const today = new Date().toISOString().split('T')[0]
@@ -73,6 +82,27 @@ export default function Project() {
   const handleTasksChange = (updatedTasks: Issue[]) => {
     // mutation 실행 (onMutate에서 낙관적 업데이트 처리)
     updateMutation.mutate(updatedTasks)
+  }
+
+  const handleTemplateSelect = (template: SelectedTemplate) => {
+    // template.templateId will be null for blank template
+    // Use template data to open IssueModal with pre-filled content
+    setSelectedTemplate(template)
+    setIssueModalOpen(true)
+  }
+
+  const handleIssueSave = (issueData: IssuePayload) => {
+    // TODO: API call to create/update issue
+    console.log('이슈 저장:', issueData)
+    try {
+      const response = issueService.createIssue(projectUrl, issueData)
+      console.log('response: ', response)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      // After successful save, refetch the kanban data
+      queryClient.invalidateQueries({ queryKey: ['kanban', projectUrl] })
+    }
   }
 
   if (isLoading) {
@@ -145,6 +175,38 @@ export default function Project() {
         />
       ) : (
         <TableView columns={issueColumns} tasks={tasks} />
+      )}
+      <Button
+        variant={viewMode === 'kanban' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => {
+          setTemplateModalOpen(true)
+        }}
+        className="gap-2"
+      >
+        <LayoutGrid className="h-4 w-4" />
+        이슈 생성하기
+      </Button>
+      {templateModalOpen && (
+        <TemplateSelectModal
+          isOpen={templateModalOpen}
+          onClose={() => setTemplateModalOpen(false)}
+          projectUrl={projectUrl}
+          resourceType="issues"
+          onSelectTemplate={handleTemplateSelect}
+        />
+      )}
+      {issueModalOpen && (
+        <IssueModal
+          isOpen={issueModalOpen}
+          onClose={() => {
+            setIssueModalOpen(false)
+            setSelectedTemplate(null)
+          }}
+          projectUrl={projectUrl}
+          selectedTemplate={selectedTemplate}
+          onSave={handleIssueSave}
+        />
       )}
     </div>
   )

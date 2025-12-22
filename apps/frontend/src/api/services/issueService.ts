@@ -1,14 +1,17 @@
-import type { updateIssuePayload } from '@/types/issue'
+import type { IssuePayload, updateIssuePayload } from '@/types/issue'
 import { apiClient } from '../client'
 import type { Label } from '../../types/label'
 import type { UserInfo } from '@/types'
 
-export const kanbanService = {
+export const issueService = {
   baseURL: '/api/v1/projects/',
 
-  async createIssue(projectUrl: string) {
+  async createIssue(projectUrl: string | undefined, payload: IssuePayload) {
+    if (!projectUrl) {
+      throw new Error('프로젝트 url이 유효하지 않습니다.')
+    }
     const url = `${this.baseURL}${projectUrl}/issue`
-    const response = await apiClient.post(url)
+    const response = await apiClient.post(url, payload)
     return response.data
   },
 

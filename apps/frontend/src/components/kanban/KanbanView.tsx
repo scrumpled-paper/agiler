@@ -11,11 +11,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Info } from 'lucide-react'
-import type { Issue, IssueColumn, Label, UserInfo } from '@/types'
+import type { IssueColumn, Label, UserInfo } from '@/types'
 import {
   KanbanFilterBar,
   type KanbanFilters,
 } from '@/components/kanban/KanbanFilterBar'
+import type { Issue } from '@/types/issue'
 
 interface KanbanViewProps {
   columns: IssueColumn[]

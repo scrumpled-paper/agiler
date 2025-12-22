@@ -1,4 +1,5 @@
-import type { Issue, IssueColumn, UserInfo, Label, ProjectInfo } from '@/types'
+import type { IssueColumn, UserInfo, Label, ProjectInfo } from '@/types'
+import type { Issue } from '@/types/issue'
 import type { PagedResponse } from '@/types/list'
 
 // Mock Users
@@ -229,6 +230,102 @@ export const mockListData: PagedResponse<{
           id: 4,
           nickname: '최지민',
           imageUrl: 'https://github.com/facebook.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '데일리 스크럼 - 2024.01.14',
+      createdAt: '2024-01-14T09:30:00',
+      participants: [
+        {
+          id: 1,
+          nickname: '김철수',
+          imageUrl: 'https://github.com/shadcn.png',
         },
       ],
     },
