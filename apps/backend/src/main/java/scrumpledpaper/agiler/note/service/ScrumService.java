@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.note.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,6 +71,7 @@ public class ScrumService {
 			.stream()
 			.collect(Collectors.groupingBy(
 				scrumProfile -> scrumProfile.getScrum().getId(),
+				LinkedHashMap::new,
 				Collectors.mapping(ScrumProfile::getProfile, Collectors.toList())
 			));
 
