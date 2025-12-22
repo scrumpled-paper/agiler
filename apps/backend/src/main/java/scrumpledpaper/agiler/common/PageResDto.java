@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.common;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -27,6 +28,16 @@ public class PageResDto<T> {
 			.totalPages(page.getTotalPages())
 			.totalElements(page.getTotalElements())
 			.contents(page.getContent())
+			.build();
+	}
+
+	public static <T> PageResDto<T> empty(Page<?> page) {
+		return PageResDto.<T>builder()
+			.pageSize(page.getSize())
+			.currentPage(page.getNumber())
+			.totalPages(0)
+			.totalElements(0L)
+			.contents(Collections.emptyList())
 			.build();
 	}
 }

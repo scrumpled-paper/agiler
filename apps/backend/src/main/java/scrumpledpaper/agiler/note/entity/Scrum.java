@@ -1,24 +1,31 @@
 package scrumpledpaper.agiler.note.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import scrumpledpaper.agiler.common.BaseEntity;
 import scrumpledpaper.agiler.project.entity.Project;
 
 @Getter
-@NoArgsConstructor
 @Entity
 @Table(name = "scrum")
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Scrum extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +41,8 @@ public class Scrum extends BaseEntity {
 
 	@Column(name = "contents")
 	private String contents;
+
+	@OneToMany(mappedBy = "scrum", fetch = FetchType.LAZY)
+	@Builder.Default
+	private List<ScrumProfile> scrumProfiles = new java.util.ArrayList<>();
 }

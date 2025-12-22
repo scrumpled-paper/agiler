@@ -154,11 +154,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Old Template"
-			);
+				project	);
 			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
 				existingTemplate.getId(),
 				"update template",
@@ -220,11 +216,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Old Template"
-			);
+				project	);
 			MeetingTemplateUpdateReqDto updateReqDto = new MeetingTemplateUpdateReqDto(
 				9999L,
 				"update template",
@@ -289,18 +281,8 @@ public class MeetingTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			MeetingTemplate template1 = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template 1"
-			);
-			MeetingTemplate template2 = testDataFactory.createMeetingTemplate(
-				project,
-				"스프린트",
-				"스프린트 템플릿",
-				"Template 2"
-			);
+			MeetingTemplate template1 = testDataFactory.createMeetingTemplate(project);
+			MeetingTemplate template2 = testDataFactory.createMeetingTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -353,10 +335,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template Detail"
+				project
 			);
 
 			// when
@@ -381,10 +360,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template Detail"
+				project
 			);
 
 			// when
@@ -407,10 +383,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template Detail"
+				project
 			);
 
 			// when
@@ -442,10 +415,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template Detail"
+				project
 			);
 			MeetingTemplateDeleteReqDto deleteReqDto = new MeetingTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
@@ -473,10 +443,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			MeetingTemplate template = testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template Detail"
+				project
 			);
 			MeetingTemplateDeleteReqDto deleteReqDto = new MeetingTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
@@ -502,10 +469,7 @@ public class MeetingTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			testDataFactory.createMeetingTemplate(
-				project,
-				"회의",
-				"회의 템플릿",
-				"Template Detail"
+				project
 			);
 			MeetingTemplateDeleteReqDto deleteReqDto = new MeetingTemplateDeleteReqDto(9999L);
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);

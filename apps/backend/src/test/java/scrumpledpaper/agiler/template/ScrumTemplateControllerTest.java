@@ -154,11 +154,7 @@ public class ScrumTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Old Template"
-			);
+				project	);
 			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				existingTemplate.getId(),
 				"update template",
@@ -220,11 +216,7 @@ public class ScrumTemplateControllerTest {
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
 			existingTemplate = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Old Template"
-			);
+				project	);
 			ScrumTemplateUpdateReqDto updateReqDto = new ScrumTemplateUpdateReqDto(
 				9999L,
 				"update template",
@@ -289,18 +281,8 @@ public class ScrumTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			ScrumTemplate template1 = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template 1"
-			);
-			ScrumTemplate template2 = testDataFactory.createScrumTemplate(
-				project,
-				"데일리",
-				"데일리 스크럼 템플릿",
-				"Template 2"
-			);
+			ScrumTemplate template1 = testDataFactory.createScrumTemplate(project);
+			ScrumTemplate template2 = testDataFactory.createScrumTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -352,12 +334,7 @@ public class ScrumTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			ScrumTemplate template = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template Detail"
-			);
+			ScrumTemplate template = testDataFactory.createScrumTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -381,12 +358,7 @@ public class ScrumTemplateControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url,	auth.getUser());
-			ScrumTemplate template = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template Detail"
-			);
+			ScrumTemplate template = testDataFactory.createScrumTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -407,12 +379,7 @@ public class ScrumTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template Detail"
-			);
+			testDataFactory.createScrumTemplate(project);
 
 			// when
 			String response = mockMvc.perform(
@@ -442,12 +409,7 @@ public class ScrumTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			ScrumTemplate template = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template Detail"
-			);
+			ScrumTemplate template = testDataFactory.createScrumTemplate(project);
 			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
@@ -473,12 +435,7 @@ public class ScrumTemplateControllerTest {
 			AuthContext ownerAuth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			ScrumTemplate template = testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template Detail"
-			);
+			ScrumTemplate template = testDataFactory.createScrumTemplate(project);
 			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(template.getId());
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 
@@ -502,12 +459,7 @@ public class ScrumTemplateControllerTest {
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
 			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
-			testDataFactory.createScrumTemplate(
-				project,
-				"스크럼",
-				"스크럼 템플릿",
-				"Template Detail"
-			);
+			testDataFactory.createScrumTemplate(project);
 			ScrumTemplateDeleteReqDto deleteReqDto = new ScrumTemplateDeleteReqDto(9999L);
 			String deleteJson = objectMapper.writeValueAsString(deleteReqDto);
 

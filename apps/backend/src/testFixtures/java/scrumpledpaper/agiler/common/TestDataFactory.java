@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import jakarta.persistence.EntityManager;
@@ -17,13 +21,16 @@ import scrumpledpaper.agiler.fixture.IssueSnapshotDateMappingFixture;
 import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.fixture.LabelFixture;
+import scrumpledpaper.agiler.fixture.MeetingFixture;
 import scrumpledpaper.agiler.fixture.MeetingTemplateFixture;
 import scrumpledpaper.agiler.fixture.NotificationSubscriptionFixture;
 import scrumpledpaper.agiler.fixture.ProfileFixture;
 import scrumpledpaper.agiler.fixture.ProfileNotificationChannelFixture;
 import scrumpledpaper.agiler.fixture.ProjectFixture;
+import scrumpledpaper.agiler.fixture.RetroFixture;
 import scrumpledpaper.agiler.fixture.RetroTemplateFixture;
 import scrumpledpaper.agiler.fixture.ScheduleNotificationFixture;
+import scrumpledpaper.agiler.fixture.ScrumFixture;
 import scrumpledpaper.agiler.fixture.ScrumTemplateFixture;
 import scrumpledpaper.agiler.fixture.TokenFixture;
 import scrumpledpaper.agiler.fixture.UserFixture;
@@ -42,6 +49,15 @@ import scrumpledpaper.agiler.kanban.repository.IssueRepository;
 import scrumpledpaper.agiler.kanban.repository.IssueSnapshotDateMappingRepository;
 import scrumpledpaper.agiler.kanban.repository.KanbanConfigRepository;
 import scrumpledpaper.agiler.kanban.repository.LabelRepository;
+import scrumpledpaper.agiler.note.entity.Meeting;
+import scrumpledpaper.agiler.note.entity.Retro;
+import scrumpledpaper.agiler.note.entity.Scrum;
+import scrumpledpaper.agiler.note.repository.MeetingProfileRepository;
+import scrumpledpaper.agiler.note.repository.MeetingRepository;
+import scrumpledpaper.agiler.note.repository.RetroProfileRepository;
+import scrumpledpaper.agiler.note.repository.RetroRepository;
+import scrumpledpaper.agiler.note.repository.ScrumProfileRepository;
+import scrumpledpaper.agiler.note.repository.ScrumRepository;
 import scrumpledpaper.agiler.notification.domain.ChannelType;
 import scrumpledpaper.agiler.notification.domain.NotificationSubscription;
 import scrumpledpaper.agiler.notification.domain.ProfileNotificationChannel;
@@ -73,14 +89,20 @@ public class TestDataFactory {
 	private final IssueRepository issueRepository;
 	private final ImageRepository imageRepository;
 	private final LabelRepository labelRepository;
+	private final RetroRepository retroRepository;
+	private final ScrumRepository scrumRepository;
 	private final ProfileRepository profileRepository;
 	private final ProjectRepository projectRepository;
+	private final MeetingRepository meetingRepository;
 	private final IssueLabelRepository issueLabelRepository;
+	private final RetroProfileRepository retroProfileRepository;
 	private final IssueProfileRepository issueProfileRepository;
+	private final ScrumProfileRepository scrumProfileRepository;
 	private final KanbanConfigRepository kanbanConfigRepository;
 	private final IssueTemplateRepository issueTemplateRepository;
 	private final ScrumTemplateRepository scrumTemplateRepository;
 	private final RetroTemplateRepository retroTemplateRepository;
+	private final MeetingProfileRepository meetingProfileRepository;
 	private final MeetingTemplateRepository meetingTemplateRepository;
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final IssueSnapshotDateMappingRepository issueSnapshotDateMappingRepository;
@@ -270,12 +292,12 @@ public class TestDataFactory {
 		return scrumTemplateRepository.findByProjectId(projectId);
 	}
 
-	public ScrumTemplate createScrumTemplate(Project project, String title, String description, String contents) {
+	public ScrumTemplate createScrumTemplate(Project project) {
 		ScrumTemplate scrumTemplate = ScrumTemplateFixture.createScrumTemplate(
 				project,
-				title,
-				description,
-				contents
+				randomString(10),
+				randomString(20),
+				randomString(50)
 		);
 		return scrumTemplateRepository.save(scrumTemplate);
 	}
@@ -288,12 +310,12 @@ public class TestDataFactory {
 		return retroTemplateRepository.findByProjectId(projectId);
 	}
 
-	public RetroTemplate createRetroTemplate(Project project, String title, String description, String contents) {
+	public RetroTemplate createRetroTemplate(Project project) {
 		RetroTemplate retroTemplate = RetroTemplateFixture.createRetroTemplate(
 				project,
-				title,
-				description,
-				contents
+				randomString(10),
+				randomString(20),
+				randomString(50)
 		);
 		return retroTemplateRepository.save(retroTemplate);
 	}
@@ -306,12 +328,12 @@ public class TestDataFactory {
 		return meetingTemplateRepository.findByProjectId(projectId);
 	}
 
-	public MeetingTemplate createMeetingTemplate(Project project, String title, String description, String contents) {
+	public MeetingTemplate createMeetingTemplate(Project project) {
 		MeetingTemplate meetingTemplate = MeetingTemplateFixture.createMeetingTemplate(
 				project,
-				title,
-				description,
-				contents
+				randomString(10),
+				randomString(20),
+				randomString(50)
 		);
 		return meetingTemplateRepository.save(meetingTemplate);
 	}
@@ -449,5 +471,76 @@ public class TestDataFactory {
 	}
 	public List<Issue> findIssuesByProjectId(Long id) {
 		return issueRepository.findAllByProjectId(id);
+	}
+
+	public void createMeetingWithParticipants(Project project, List<Profile> participants) {
+		Meeting savedMeeting = meetingRepository.save(MeetingFixture.createMeeting(project));
+		meetingProfileRepository.saveAll(
+			MeetingFixture.createMeetingProfiles(savedMeeting, participants)
+		);
+	}
+
+	public Page<Meeting> findMeetingsByProjectIdPaged(Long id, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		return meetingRepository.findAllByProjectId(id, pageable);
+	}
+
+	public Meeting findByLatestMeetingByProjectId(Long projectId) {
+		return meetingRepository.findTopByProjectIdOrderByCreatedAtDesc(projectId).orElseThrow();
+	}
+
+	public Meeting createMeeting(Project project) {
+		Meeting meeting = MeetingFixture.createMeeting(project);
+		return meetingRepository.save(meeting);
+	}
+
+	public Meeting findMeetingById(Long id) {
+		return meetingRepository.findById(id).orElse(null);
+	}
+
+	public Page<Retro> findRetrosByProjectIdPaged(Long id, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		return retroRepository.findAllByProjectId(id, pageable);
+	}
+
+	public void createRetroWithParticipants(Project project, List<Profile> participants) {
+		Retro savedRetro = retroRepository.save(RetroFixture.createRetro(project));
+		retroProfileRepository.saveAll(
+			RetroFixture.createRetroProfiles(savedRetro, participants)
+		);
+	}
+
+	public Retro findByLatestRetroByProjectId(Long id) {
+		return retroRepository.findTopByProjectIdOrderByCreatedAtDesc(id).orElseThrow();
+	}
+
+	public Retro createRetro(Project project) {
+		Retro retro = RetroFixture.createRetro(project);
+		return retroRepository.save(retro);
+	}
+
+	public Retro findRetroById(Long id) {
+		return retroRepository.findById(id).orElse(null);
+	}
+
+	public Scrum createScrumWithParticipants(Project project, List<Profile> participants) {
+		Scrum savedScrum = scrumRepository.save(ScrumFixture.createScrum(project));
+		scrumProfileRepository.saveAll(
+			ScrumFixture.createScrumProfiles(savedScrum, participants)
+		);
+		return savedScrum;
+	}
+
+	public Page<Scrum> findScrumsByProjectIdPaged(Long id, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		return scrumRepository.findAllByProjectId(id, pageable);
+	}
+
+	public Scrum findLatestScrumByProjectId(Long id) {
+		return scrumRepository.findTopByProjectIdOrderByCreatedAtDesc(id).orElseThrow();
+	}
+
+	public Scrum findScrumById(Long id) {
+		return scrumRepository.findById(id).orElse(null);
 	}
 }

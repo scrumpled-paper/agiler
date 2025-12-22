@@ -58,7 +58,7 @@ public class ScrumTemplateService {
 		);
 	}
 
-	private ScrumTemplate findById(Long id) {
+	public ScrumTemplate findById(Long id) {
 		return scrumTemplateRepository.findById(id)
 			.orElseThrow(() -> new CustomException(ErrorCode.SCRUM_TEMPLATE_NOT_FOUND));
 	}
