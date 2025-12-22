@@ -1,5 +1,6 @@
 package scrumpledpaper.agiler.note.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,6 +71,7 @@ public class RetroService {
 			.stream()
 			.collect(Collectors.groupingBy(
 				retroProfile -> retroProfile.getRetro().getId(),
+				LinkedHashMap::new,
 				Collectors.mapping(RetroProfile::getProfile, Collectors.toList())
 			));
 
