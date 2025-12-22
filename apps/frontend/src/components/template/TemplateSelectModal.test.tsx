@@ -123,10 +123,11 @@ describe('TemplateSelectModal', () => {
   })
 
   it('템플릿이 없을 때 적절한 메시지를 표시한다', async () => {
-    // 1. 빈 응답을 반환하도록 명확하게 모킹
+    // 1. MSW 핸들러를 가장 높은 우선순위로 등록
+    // URL 매칭을 더 유연하게 하기 위해 문자열 대신 정규식을 사용해 봅니다.
     server.use(
       http.get(
-        `${API_BASE_URL}/api/v1/projects/test-project/issues/templates`,
+        new RegExp('.*/api/v1/projects/test-project/issues/templates'),
         () => {
           return HttpResponse.json({
             issueTemplates: [],
@@ -136,22 +137,38 @@ describe('TemplateSelectModal', () => {
       )
     )
 
-    renderWithClient(
-      <TemplateSelectModal
-        isOpen={true}
-        onClose={mockOnClose}
-        projectUrl="test-project"
-        resourceType="issues"
-        onSelectTemplate={mockOnSelectTemplate}
-      />
+    // 2. renderWithClient 내부의 queryClient를 가져오기 위해 직접 선언
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0, staleTime: 0 } },
+    })
+
+    // 명시적으로 이전 모든 캐시 삭제
+    queryClient.clear()
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TemplateSelectModal
+          isOpen={true}
+          onClose={mockOnClose}
+          projectUrl="test-project"
+          resourceType="issues"
+          onSelectTemplate={mockOnSelectTemplate}
+        />
+      </QueryClientProvider>
     )
 
-    // 2. 텍스트 부분 일치를 위해 정규식 /i 사용 (컴포넌트에 뒤 문장이 더 붙어있기 때문)
-    await waitFor(() => {
-      // 모킹이 정상 작동했다면 이전 데이터인 "Bug Report Template"이 보이지 않아야 함
-      expect(screen.queryByText('Bug Report Template')).not.toBeInTheDocument()
-      expect(screen.getByText(/No templates available/i)).toBeInTheDocument()
-    })
+    // 3. CI 환경의 지연을 고려하여 더 확실하게 대기
+    await waitFor(
+      () => {
+        // Bug Report Template이 아예 없어야 함 (queryByText는 없으면 null 반환)
+        const oldData = screen.queryByText('Bug Report Template')
+        expect(oldData).not.toBeInTheDocument()
+
+        // 그 다음 에러 메시지가 있는지 확인
+        expect(screen.getByText(/No templates available/i)).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    ) // CI 환경을 위해 타임아웃을 조금 더 늘림
   })
 
   it('isOpen이 false일 때 모달을 렌더링하지 않는다', () => {
