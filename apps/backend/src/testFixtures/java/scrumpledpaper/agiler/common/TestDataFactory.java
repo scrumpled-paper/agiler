@@ -481,7 +481,11 @@ public class TestDataFactory {
 	}
 
 	public Page<Meeting> findMeetingsByProjectIdPaged(Long id, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		Pageable pageable = PageRequest.of(
+			page, size,
+			Sort.by("id").ascending()
+				.and(Sort.by("createdAt").ascending())
+		);
 		return meetingRepository.findAllByProjectId(id, pageable);
 	}
 
@@ -499,7 +503,11 @@ public class TestDataFactory {
 	}
 
 	public Page<Retro> findRetrosByProjectIdPaged(Long id, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		Pageable pageable = PageRequest.of(
+			page, size,
+			Sort.by("id").ascending()
+				.and(Sort.by("createdAt").ascending())
+		);
 		return retroRepository.findAllByProjectId(id, pageable);
 	}
 
@@ -532,7 +540,11 @@ public class TestDataFactory {
 	}
 
 	public Page<Scrum> findScrumsByProjectIdPaged(Long id, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		Pageable pageable = PageRequest.of(
+			page, size,
+			Sort.by("id").ascending()
+				.and(Sort.by("createdAt").ascending())
+		);
 		return scrumRepository.findAllByProjectId(id, pageable);
 	}
 
