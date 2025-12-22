@@ -6,7 +6,7 @@ export interface Issue extends Record<string, unknown> {
   startAt: Date
   endAt: Date
   column: string // TaskColumn의 id
-  owner?: UserInfo
+  owner: UserInfo
   subscribers?: UserInfo[] // 알림 구독자 목록
   labels?: Label[]
 }

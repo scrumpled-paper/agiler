@@ -9,7 +9,8 @@ import {
   TableProvider,
   TableRow,
 } from '@/components/ui/shadcn-io/table'
-import type { Issue, IssueColumn } from '@/types'
+import type { Issue } from '@/types/issue'
+import type { IssueColumn } from '@/types'
 import { useMemo } from 'react'
 import type { Column, Row } from '@tanstack/react-table'
 

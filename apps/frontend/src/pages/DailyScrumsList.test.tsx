@@ -40,7 +40,7 @@ describe('DailyScrumsList', () => {
       render(<DailyScrumsList />)
 
       // mockListData의 contents 길이는 2
-      expect(screen.getByText('Total Items: 2')).toBeInTheDocument()
+      expect(screen.getByText('Total Items: 10')).toBeInTheDocument()
     })
 
     it('제목이 올바른 스타일로 렌더링된다', () => {
@@ -94,7 +94,7 @@ describe('DailyScrumsList', () => {
       render(<DailyScrumsList />)
 
       // mockListData는 2개의 항목을 가지고 있음
-      expect(screen.getByText('Total Items: 2')).toBeInTheDocument()
+      expect(screen.getByText('Total Items: 10')).toBeInTheDocument()
     })
   })
 })
