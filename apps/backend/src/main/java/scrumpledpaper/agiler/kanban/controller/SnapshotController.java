@@ -32,8 +32,9 @@ public class SnapshotController {
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@PathVariable String projectUrl,
 		HttpServletResponse response) {
-		long time = issueService.issueSnapshotAndResetForToday(customUserDetails.getUserId(), projectUrl);
-		CookieUtils.addProjectUrlCookie(response, projectUrl, time);
+		long timeInMillis = issueService.issueSnapshotAndResetForToday(customUserDetails.getUserId(), projectUrl);
+		long maxAgeInSeconds = timeInMillis / 1000;
+		CookieUtils.addCookie(response, projectUrl, String.valueOf(timeInMillis), (int) maxAgeInSeconds);
 		return ResponseEntity.ok().build();
 	}
 

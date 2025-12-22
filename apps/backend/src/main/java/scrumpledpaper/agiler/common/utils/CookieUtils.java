@@ -1,13 +1,14 @@
 package scrumpledpaper.agiler.common.utils;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.Base64;
+import java.util.Optional;
+
 import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
-import java.util.Base64;
-import java.util.Optional;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class CookieUtils {
 
@@ -56,15 +57,5 @@ public class CookieUtils {
 	public static <T> T deserialize(Cookie cookie, Class<T> cls) {
 		return cls.cast(SerializationUtils.deserialize(
 				Base64.getUrlDecoder().decode(cookie.getValue())));
-	}
-
-	public static void addProjectUrlCookie(HttpServletResponse response, String projectUrl, long maxAgeSeconds) {
-		ResponseCookie cookie = ResponseCookie.from("project_url", projectUrl)
-			.path("/")
-			.httpOnly(true)
-			.maxAge(maxAgeSeconds)
-			.sameSite("Lax")
-			.build();
-		response.addHeader("Set-Cookie", cookie.toString());
 	}
 }
