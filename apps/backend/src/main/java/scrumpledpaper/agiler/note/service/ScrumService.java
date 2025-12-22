@@ -121,4 +121,11 @@ public class ScrumService {
 		return scrumRepository.findByIdAndProjectId(scrumId, project.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
 	}
+
+	public void validateScrumInProject(Long projectId, Long scrumId) {
+		boolean exists = scrumRepository.existsByIdAndProjectId(scrumId, projectId);
+		if (!exists) {
+			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
+		}
+	}
 }

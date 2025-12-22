@@ -121,4 +121,11 @@ public class RetroService {
 		return retroRepository.findByIdAndProjectId(retroId, project.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
 	}
+
+	public void validateRetroInProject(Long projectId, Long retroId) {
+		boolean exists = retroRepository.existsByIdAndProjectId(retroId, projectId);
+		if (!exists) {
+			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
+		}
+	}
 }

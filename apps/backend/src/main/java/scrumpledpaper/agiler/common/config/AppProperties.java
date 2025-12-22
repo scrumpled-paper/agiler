@@ -15,6 +15,7 @@ public class AppProperties {
 
 	private final Auth auth = new Auth();
 	private final OAuth2 oauth2 = new OAuth2();
+	private final Api api = new Api();
 
 	@Getter
 	@Setter
@@ -29,5 +30,12 @@ public class AppProperties {
 	@Setter
 	public static final class OAuth2 {
 		private List<String> authorizedRedirectUris = new ArrayList<>();
+	}
+
+	@Getter
+	@Setter
+	public static class Api {
+		private String key;
+		private long wssTokenExpiry;
 	}
 }

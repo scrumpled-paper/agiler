@@ -121,4 +121,11 @@ public class MeetingService {
 		return meetingRepository.findByIdAndProjectId(id, project.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
 	}
+
+	public void validateMeetingInProject(Long projectId, Long meetingId) {
+		boolean exists = meetingRepository.existsByIdAndProjectId(meetingId, projectId);
+		if (!exists) {
+			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
+		}
+	}
 }
