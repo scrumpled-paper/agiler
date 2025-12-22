@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Issue } from '@/types'
+import type { Issue } from '@/types/issue'
 import {
   applySearchFilter,
   applyOwnerFilter,

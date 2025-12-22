@@ -42,3 +42,13 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 })
+
+// ResizeObserver mock (Radix UI 컴포넌트 테스트용)
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
+
+// scrollIntoView mock (Radix UI Select 컴포넌트 테스트용)
+Element.prototype.scrollIntoView = vi.fn()

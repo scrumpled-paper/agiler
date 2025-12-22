@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { kanbanService } from './kanbanService'
 import { apiClient } from '../client'
-import type { Issue } from '@/types'
+import type { Issue } from '@/types/issue'
 
 // Mock apiClient
 vi.mock('../client', () => ({

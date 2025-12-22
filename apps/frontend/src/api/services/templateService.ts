@@ -38,9 +38,12 @@ export const templateService = {
    * @param resourceType 'issues', 'meetings', 'retros', 'scrums' 중 하나
    */
   async getTemplates<T extends ResourceType>(
-    projectUrl: string,
+    projectUrl: string | undefined,
     resourceType: T
   ): Promise<(typeof RESOURCE_MAP)[T]['listType']> {
+    if (!projectUrl) {
+      throw new Error('프로젝트 Url이 존재하지 않습니다.')
+    }
     const resourcePath = RESOURCE_MAP[resourceType].path
     const response = await apiClient.get(
       `${this.baseURL}/${projectUrl}/${resourcePath}/templates`
