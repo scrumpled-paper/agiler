@@ -1,100 +1,107 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { describe, it, expect } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import DailyScrumsList from './DailyScrumsList'
 
-// Mock ContentListTable component
-vi.mock('@/components/ContentListTable', () => ({
-  default: ({
-    data,
-    onPageChange,
-  }: {
-    data: { contents: unknown[] }
-    onPageChange: (page: number) => void
-  }) => (
-    <div data-testid="content-list-table">
-      <div>Total Items: {data.contents.length}</div>
-      <button onClick={() => onPageChange(2)}>Change to Page 2</button>
-    </div>
-  ),
-}))
-
-describe('DailyScrumsList', () => {
-  const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-  afterEach(() => {
-    consoleSpy.mockClear()
+/**
+ * 테스트용 래퍼 컴포넌트
+ * - MemoryRouter: useParams를 사용할 수 있도록 routing context 제공
+ * - QueryClientProvider: useQuery를 사용할 수 있도록 React Query context 제공
+ */
+function renderWithProviders(projectUrl = 'test-project') {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // 테스트에서는 재시도 비활성화
+      },
+    },
   })
 
-  describe('기본 렌더링', () => {
-    it('페이지 제목과 ContentListTable을 렌더링한다', () => {
-      render(<DailyScrumsList />)
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[`/projects/${projectUrl}/dailyscrums`]}>
+        <Routes>
+          <Route
+            path="/projects/:projectUrl/dailyscrums"
+            element={<DailyScrumsList />}
+          />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
+  )
+}
 
-      expect(
-        screen.getByRole('heading', { name: /DailyScrumList/i })
-      ).toBeInTheDocument()
-      expect(screen.getByTestId('content-list-table')).toBeInTheDocument()
+describe('DailyScrumsList - 통합 테스트', () => {
+  describe('데이터 로딩 및 렌더링', () => {
+    it('로딩 중일 때 로딩 메시지를 표시한다', () => {
+      renderWithProviders()
+
+      expect(screen.getByText('로딩 중...')).toBeInTheDocument()
     })
 
-    it('mockListData를 ContentListTable에 전달한다', () => {
-      render(<DailyScrumsList />)
+    it('데이터 로딩 후 페이지 제목을 렌더링한다', async () => {
+      renderWithProviders()
 
-      // mockListData의 contents 길이는 2
-      expect(screen.getByText('Total Items: 10')).toBeInTheDocument()
-    })
-
-    it('제목이 올바른 스타일로 렌더링된다', () => {
-      render(<DailyScrumsList />)
-
-      const heading = screen.getByRole('heading', { name: /DailyScrumList/i })
-      expect(heading).toHaveClass('text-3xl', 'font-bold', 'mb-4')
-    })
-
-    it('컨테이너가 올바른 스타일로 렌더링된다', () => {
-      const { container } = render(<DailyScrumsList />)
-
-      const containerDiv = container.querySelector('.container.p-4')
-      expect(containerDiv).toBeInTheDocument()
-    })
-  })
-
-  describe('페이지 변경 핸들러', () => {
-    it('페이지 변경 시 console.log가 호출된다', async () => {
-      const user = userEvent.setup()
-
-      render(<DailyScrumsList />)
-
-      const changeButton = screen.getByRole('button', {
-        name: /change to page 2/i,
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: /데일리 스크럼 목록/i })
+        ).toBeInTheDocument()
       })
-      await user.click(changeButton)
-
-      expect(consoleSpy).toHaveBeenCalledWith('페이지 변경:', 2)
     })
 
-    it('페이지 변경 핸들러가 올바른 페이지 번호를 전달한다', async () => {
-      const user = userEvent.setup()
+    it('MSW를 통해 받은 데이터를 ContentListTable에 렌더링한다', async () => {
+      renderWithProviders()
 
-      render(<DailyScrumsList />)
-
-      const changeButton = screen.getByRole('button', {
-        name: /change to page 2/i,
+      // MSW 핸들러가 10개의 스크럼 항목을 반환하므로, 첫 번째 항목이 렌더링되는지 확인
+      await waitFor(() => {
+        expect(screen.getByText('데일리 스크럼 #1')).toBeInTheDocument()
       })
-      await user.click(changeButton)
+    })
 
-      // 가장 최근 호출 확인
-      expect(consoleSpy).toHaveBeenCalledTimes(1)
-      expect(consoleSpy.mock.calls[0][0]).toBe('페이지 변경:')
-      expect(consoleSpy.mock.calls[0][1]).toBe(2)
+    it('참여자 정보를 렌더링한다', async () => {
+      renderWithProviders()
+
+      await waitFor(() => {
+        // 참여자 아바타의 fallback 텍스트가 렌더링되는지 확인
+        // Alice의 첫 글자 'A', Bob의 첫 글자 'B'
+        const avatarFallbacks = screen.getAllByText('A')
+        expect(avatarFallbacks.length).toBeGreaterThan(0)
+      })
     })
   })
 
-  describe('상태 관리', () => {
-    it('초기 상태로 mockListData를 사용한다', () => {
-      render(<DailyScrumsList />)
+  describe('페이지 스타일링', () => {
+    it('제목이 올바른 스타일로 렌더링된다', async () => {
+      renderWithProviders()
 
-      // mockListData는 2개의 항목을 가지고 있음
-      expect(screen.getByText('Total Items: 10')).toBeInTheDocument()
+      await waitFor(() => {
+        const heading = screen.getByRole('heading', {
+          name: /데일리 스크럼 목록/i,
+        })
+        expect(heading).toHaveClass('text-3xl', 'font-bold', 'mb-4')
+      })
+    })
+
+    it('컨테이너가 올바른 스타일로 렌더링된다', async () => {
+      const { container } = renderWithProviders()
+
+      await waitFor(() => {
+        const containerDiv = container.querySelector('.container.p-4')
+        expect(containerDiv).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('프로젝트 URL 처리', () => {
+    it('다른 프로젝트 URL로도 정상 작동한다', async () => {
+      renderWithProviders('another-project')
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: /데일리 스크럼 목록/i })
+        ).toBeInTheDocument()
+      })
     })
   })
 })

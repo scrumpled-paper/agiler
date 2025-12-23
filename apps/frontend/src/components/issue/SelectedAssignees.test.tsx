@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SelectedAssignees } from './SelectedAssignees'
-import type { ProjectMember } from '@/types'
 import { afterEach } from 'node:test'
+import type { UserInfo } from '@/types'
 
 describe('SelectedAssignees', () => {
-  const mockAssignees: ProjectMember[] = [
+  const mockAssignees: UserInfo[] = [
     {
-      peopleId: 1,
+      profileId: 1,
       nickname: 'John Doe',
       email: 'john@example.com',
       imageUrl: 'https://example.com/john.jpg',
@@ -16,7 +16,7 @@ describe('SelectedAssignees', () => {
       description: 'Frontend Developer',
     },
     {
-      peopleId: 2,
+      profileId: 2,
       nickname: 'Jane Smith',
       email: 'jane@example.com',
       imageUrl: '',
@@ -86,10 +86,10 @@ describe('SelectedAssignees', () => {
     const removeButtons = screen.getAllByRole('button')
     await user.click(removeButtons[0])
 
-    expect(mockOnRemove).toHaveBeenCalledWith(1) // John Doe의 peopleId
+    expect(mockOnRemove).toHaveBeenCalledWith(1) // John Doe의 profileId
   })
 
-  it('여러 assignee의 삭제 버튼이 각각 올바른 peopleId로 호출된다', async () => {
+  it('여러 assignee의 삭제 버튼이 각각 올바른 profileId로 호출된다', async () => {
     const user = userEvent.setup()
 
     render(

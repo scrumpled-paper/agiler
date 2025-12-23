@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { labelService } from './labelService'
 import { apiClient } from '../client'
-import type { LabelListResponse } from '@/types/label'
 
 // Mock apiClient
 vi.mock('../client', () => ({
@@ -20,7 +19,7 @@ describe('labelService', () => {
 
   describe('getLabels', () => {
     it('should fetch labels successfully', async () => {
-      const mockResponse: LabelListResponse = {
+      const mockApiResponse = {
         labels: [
           {
             id: 1,
@@ -38,14 +37,30 @@ describe('labelService', () => {
         size: 2,
       }
 
-      vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
+      vi.mocked(apiClient.get).mockResolvedValue({ data: mockApiResponse })
 
       const result = await labelService.getLabels('test-project')
 
       expect(apiClient.get).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/labels'
       )
-      expect(result).toEqual(mockResponse)
+      expect(result).toEqual({
+        labels: [
+          {
+            labelId: 1,
+            name: 'bug',
+            description: 'Bug report label',
+            color: '#FF4040',
+          },
+          {
+            labelId: 2,
+            name: 'feature',
+            description: 'Feature request label',
+            color: '#4040FF',
+          },
+        ],
+        size: 2,
+      })
     })
 
     it('should handle error when fetching labels fails', async () => {
@@ -59,19 +74,19 @@ describe('labelService', () => {
     })
 
     it('should fetch empty labels list', async () => {
-      const mockResponse: LabelListResponse = {
+      const mockApiResponse = {
         labels: [],
         size: 0,
       }
 
-      vi.mocked(apiClient.get).mockResolvedValue({ data: mockResponse })
+      vi.mocked(apiClient.get).mockResolvedValue({ data: mockApiResponse })
 
       const result = await labelService.getLabels('empty-project')
 
       expect(apiClient.get).toHaveBeenCalledWith(
         '/api/v1/projects/empty-project/labels'
       )
-      expect(result).toEqual(mockResponse)
+      expect(result).toEqual({ labels: [], size: 0 })
       expect(result.labels).toHaveLength(0)
     })
   })

@@ -103,7 +103,7 @@ describe('projectService', () => {
       const mockResponse: GetProjectMembersResponse = {
         contents: [
           {
-            peopleId: 1,
+            profileId: 1,
             nickname: 'Alice',
             email: 'alice@example.com',
             imageUrl: 'https://placehold.co/100x100',
@@ -292,7 +292,7 @@ describe('projectService', () => {
   describe('getUserInfo', () => {
     it('should fetch user info successfully', async () => {
       const mockUserInfo = {
-        peopleId: 1,
+        profileId: 1,
         nickname: 'Test User',
         email: 'test@example.com',
         imageUrl: 'https://example.com/avatar.jpg',
@@ -324,7 +324,7 @@ describe('projectService', () => {
   describe('getMemberProfileById', () => {
     it('should fetch member profile by ID successfully', async () => {
       const mockProfile = {
-        peopleId: 5,
+        profileId: 5,
         nickname: 'John Doe',
         email: 'john@example.com',
         imageUrl: 'https://example.com/john.jpg',

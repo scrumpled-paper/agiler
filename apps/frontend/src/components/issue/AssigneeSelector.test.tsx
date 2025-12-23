@@ -2,12 +2,12 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AssigneeSelector } from './AssigneeSelector'
-import type { ProjectMember } from '@/types'
+import type { UserInfo } from '@/types'
 
 describe('AssigneeSelector', () => {
-  const mockMembers: ProjectMember[] = [
+  const mockMembers: UserInfo[] = [
     {
-      peopleId: 1,
+      profileId: 1,
       nickname: 'John Doe',
       email: 'john@example.com',
       imageUrl: 'https://example.com/john.jpg',
@@ -15,7 +15,7 @@ describe('AssigneeSelector', () => {
       description: 'Frontend Developer',
     },
     {
-      peopleId: 2,
+      profileId: 2,
       nickname: 'Jane Smith',
       email: 'jane@example.com',
       imageUrl: '',
@@ -23,7 +23,7 @@ describe('AssigneeSelector', () => {
       description: 'Backend Developer',
     },
     {
-      peopleId: 3,
+      profileId: 3,
       nickname: 'Bob Johnson',
       email: 'bob@example.com',
       imageUrl: 'https://example.com/bob.jpg',
