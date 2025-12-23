@@ -1,5 +1,5 @@
 export interface UserInfo {
-  profileId?: number
+  profileId: number
   nickname: string
   email?: string
   imageUrl?: string
@@ -39,7 +39,7 @@ export interface ProjectMember {
 
 // 프로젝트 맴버 API 전체 응답의 타입
 export interface GetProjectMembersResponse {
-  contents: ProjectMember[]
+  contents: UserInfo[]
   size: number
   number: number
   totalPages: number
@@ -66,11 +66,11 @@ export interface IssueColumn extends Record<string, unknown> {
   color?: string
 }
 
-export interface Label extends Record<string, unknown> {
-  name: string
-  description: string
-  color: string // #FFFFFF 형태
-}
+// export interface Label extends Record<string, unknown> {
+//   name: string
+//   description: string
+//   color: string // #FFFFFF 형태
+// }
 
 //  대시보드 유저 프로필 수정 (전역)
 export interface UserUpdateParams {

@@ -1,6 +1,5 @@
-import type { Issue } from '@/types/issue'
+import type { GetFilteredIssuesResponse, Issue } from '@/types/issue'
 import { apiClient } from '../client'
-// import { mockIssues } from '@/mocks/mockTasks'
 
 export const kanbanService = {
   baseURL: '/api/v1/projects/',
@@ -11,11 +10,23 @@ export const kanbanService = {
     return response.data
   },
 
-  async getIssues(projectUrl: string, date?: string) {
-    const url = `${this.baseURL}${projectUrl}/kanban`
+  async getFilteredIssues(
+    projectUrl: string,
+    params: {
+      date?: string
+      profiles?: string
+      noti?: string
+      labels?: string
+    }
+  ): Promise<GetFilteredIssuesResponse> {
+    const url = `${this.baseURL}${projectUrl}/issues`
+
     const response = await apiClient.get(url, {
-      params: date ? { date } : undefined,
+      params: params,
     })
+
+    // 백엔드 응답에서 issues 배열만 추출하여 프론트엔드 Issue 타입으로 변환
+    // return toIssues(response.data.issues)
     return response.data
   },
 }

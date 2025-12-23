@@ -2,7 +2,7 @@
  * GET /api/v1/projects/{projectUrl}/labels 응답의 단일 레이블 객체
  */
 export type Label = {
-  id: number
+  labelId: number
   name: string
   description: string
   color: string // 예: "#4bB68C"
