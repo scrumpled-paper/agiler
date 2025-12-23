@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { projectService } from '@/api/services/projectService'
 import { labelService } from '@/api/services/labelService'
-import type { ProjectMember } from '@/types'
+import type { UserInfo } from '@/types'
 import type { Label } from '@/types/label'
 import type { SelectedTemplate } from './template/TemplateSelectModal'
 import { AssigneeSelector } from './issue/AssigneeSelector'
@@ -30,15 +30,6 @@ export type IssueModalProps = {
   onSave?: (issueData: IssuePayload) => void
 }
 
-// export type IssueFormData = {
-//   title: string
-//   contents: string
-//   startedAt: string
-//   dueAt: string
-//   assignees: ProjectMember[]
-//   labels: Label[]
-// }
-
 export function IssueModal({
   isOpen,
   onClose,
@@ -51,9 +42,7 @@ export function IssueModal({
   const [contents, setContents] = useState('')
   const [startedAt, setStartedAt] = useState('')
   const [dueAt, setDueAt] = useState('')
-  const [selectedAssignees, setSelectedAssignees] = useState<ProjectMember[]>(
-    []
-  )
+  const [selectedAssignees, setSelectedAssignees] = useState<UserInfo[]>([])
   const [selectedLabels, setSelectedLabels] = useState<Label[]>([])
 
   // Popover states
@@ -118,26 +107,28 @@ export function IssueModal({
   }, [isOpen])
 
   // Handlers
-  const handleAddAssignee = (member: ProjectMember) => {
-    if (!selectedAssignees.find(a => a.peopleId === member.peopleId)) {
+  const handleAddAssignee = (member: UserInfo) => {
+    if (!selectedAssignees.find(a => a.profileId === member.profileId)) {
       setSelectedAssignees([...selectedAssignees, member])
     }
     setAssigneePopoverOpen(false)
   }
 
-  const handleRemoveAssignee = (peopleId: number) => {
-    setSelectedAssignees(selectedAssignees.filter(a => a.peopleId !== peopleId))
+  const handleRemoveAssignee = (profileId: number) => {
+    setSelectedAssignees(
+      selectedAssignees.filter(a => a.profileId !== profileId)
+    )
   }
 
   const handleAddLabel = (label: Label) => {
-    if (!selectedLabels.find(l => l.id === label.id)) {
+    if (!selectedLabels.find(l => l === label)) {
       setSelectedLabels([...selectedLabels, label])
     }
     setLabelPopoverOpen(false)
   }
 
-  const handleRemoveLabel = (labelId: number) => {
-    setSelectedLabels(selectedLabels.filter(l => l.id !== labelId))
+  const handleRemoveLabel = (label: Label) => {
+    setSelectedLabels(selectedLabels.filter(l => l !== label))
   }
 
   const handleSave = () => {
@@ -146,11 +137,10 @@ export function IssueModal({
       contents,
       startedAt,
       dueAt,
-      assignees: selectedAssignees,
-      labels: selectedLabels,
+      assignees: selectedAssignees.map(p => p.profileId),
+      labels: selectedLabels.map(l => l.labelId),
     }
     onSave?.(issueData)
-    console.log('issueData : ', issueData)
     onClose()
   }
 
@@ -198,15 +188,6 @@ export function IssueModal({
                 />
               </div>
             </div>
-
-            {/* Date Section */}
-            {/* <div className="flex flex-col gap-1">
-              <label className="text-sm font-bold text-black">Date</label>
-              <div className="flex h-[46px] items-center rounded-md border border-[#f1f3f7] bg-white px-3 py-3.5 shadow-sm">
-                <span className="text-xs text-[#6d758f]">자동 기입</span>
-              </div>
-            </div> */}
-
             {/* Start and Due Time */}
             <TimeSelector
               startedAt={startedAt}

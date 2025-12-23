@@ -20,7 +20,7 @@ type LabelSelectorProps = {
   labels: Label[]
   selectedLabels: Label[]
   onAdd: (label: Label) => void
-  onRemove: (labelId: number) => void
+  onRemove: (labelId: Label) => void
   isOpen: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -45,7 +45,6 @@ export function LabelSelector({
               <Button
                 type="button"
                 size="sm"
-                // className="h-8 bg-[#6d758f] px-3 text-xs hover:bg-[#6d758f]/90"
                 className="h-8 bg-[#6d758f] px-3 text-xs hover:bg-[#6d758f]/90"
               >
                 <Plus />
@@ -60,7 +59,7 @@ export function LabelSelector({
                 <CommandGroup>
                   {labels.map(label => (
                     <CommandItem
-                      key={label.id}
+                      key={label.labelId}
                       onSelect={() => onAdd(label)}
                       className="flex items-center gap-2"
                     >
@@ -82,14 +81,14 @@ export function LabelSelector({
           <div className="flex flex-wrap gap-1">
             {selectedLabels.map(label => (
               <Badge
-                key={label.id}
+                key={label.labelId}
                 className="rounded-[10px] px-3 py-1 text-xs text-white"
                 style={{ backgroundColor: label.color }}
               >
                 {label.name}
                 <button
                   type="button"
-                  onClick={() => onRemove(label.id)}
+                  onClick={() => onRemove(label)}
                   className="ml-1 hover:text-gray-200"
                 >
                   <X className="h-3 w-3" />
