@@ -2,10 +2,16 @@ import KanbanView from '@/components/kanban/KanbanView'
 import TableView from '@/components/table/TableView'
 import ProjectSummaryCard from '@/components/ProjectSummaryCard'
 import { Button } from '@/components/ui/button'
-import { issueColumns } from '@/mocks/mockTasks'
+// import { issueColumns } from '@/mocks/mockTasks'
 import { Info, LayoutGrid, Table } from 'lucide-react'
 import { useState, useMemo } from 'react'
-import type { Issue, IssuePayload } from '@/types/issue'
+import {
+  toIssueColumns,
+  toIssues,
+  type GetFilteredIssuesResponse,
+  type Issue,
+  type IssuePayload,
+} from '@/types/issue'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { kanbanService } from '@/api/services/kanbanService'
@@ -17,8 +23,18 @@ import {
 } from '@/components/template/TemplateSelectModal'
 import { issueService } from '@/api/services/issueService'
 import { IssueModal } from '@/components/IssueModal'
+import type { IssueColumn } from '@/types'
+import type { UserInfo } from '../types/index'
+import type { Label } from '@/types/label'
 
 type ViewMode = 'kanban' | 'table'
+
+interface KanbanData {
+  tasks: Issue[]
+  columns: IssueColumn[]
+  profiles: UserInfo[]
+  labels: Label[]
+}
 
 export default function Project() {
   const { projectUrl } = useParams<{ projectUrl: string }>()
@@ -37,51 +53,53 @@ export default function Project() {
     return selectedDate === today
   }, [selectedDate])
 
-  // MSW를 통해 칸반 데이터 조회
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery<
+    GetFilteredIssuesResponse,
+    Error,
+    KanbanData
+  >({
     queryKey: ['kanban', projectUrl, selectedDate],
-    queryFn: () => kanbanService.getIssues(projectUrl!, selectedDate),
-    enabled: !!projectUrl, // projectUrl이 있을 때만 쿼리 실행
+    queryFn: () =>
+      kanbanService.getFilteredIssues(projectUrl!, { date: selectedDate }),
+    enabled: !!projectUrl,
+    select: (response): KanbanData => ({
+      tasks: toIssues(response.issues),
+      columns: toIssueColumns(response.kanbanConfigs),
+      profiles: response.profiles,
+      labels: response.labels,
+    }),
   })
 
-  // 드래그 앤 드롭 시 API 호출 (낙관적 업데이트 + 에러 롤백)
-  const updateMutation = useMutation({
-    mutationFn: (updatedTasks: Issue[]) =>
-      kanbanService.updateIssue(projectUrl!, 'bulk', updatedTasks),
-
-    onMutate: async (updatedTasks: Issue[]) => {
-      // 진행 중인 쿼리 취소 (낙관적 업데이트와 충돌 방지)
-      await queryClient.cancelQueries({ queryKey: ['kanban', projectUrl] })
-
-      // 이전 데이터 백업 (에러 시 롤백용)
-      const previousData = queryClient.getQueryData(['kanban', projectUrl])
-
-      // 낙관적 업데이트
-      queryClient.setQueryData(
-        ['kanban', projectUrl],
-        (oldData: { contents: Issue[]; size: number } | undefined) => ({
-          contents: updatedTasks,
-          size: updatedTasks.length,
-          ...oldData,
-        })
+  // 드래그 앤 드롭 시 개별 이슈 상태 업데이트
+  const updateIssueStatusMutation = useMutation({
+    mutationFn: ({
+      issueId,
+      kanbanConfigId,
+    }: {
+      issueId: number
+      kanbanConfigId: number
+    }) => {
+      return issueService.updateIssueStatus(
+        projectUrl!,
+        issueId,
+        kanbanConfigId
       )
+    },
 
-      // 롤백을 위한 이전 데이터 반환
-      return { previousData }
+    onSuccess: () => {
+      // 성공 시 쿼리 무효화하여 최신 데이터 자동 refetch
+      queryClient.invalidateQueries({
+        queryKey: ['kanban', projectUrl, selectedDate],
+      })
     },
-    onError: (err, _updatedTasks, context) => {
-      // 에러 발생 시 이전 데이터로 롤백
-      if (context?.previousData) {
-        queryClient.setQueryData(['kanban', projectUrl], context.previousData)
-      }
-      console.error('칸반 업데이트 실패:', err)
+    onError: err => {
+      console.error('❌ API Error:', err)
     },
-    // onSuccess 제거 - 낙관적 업데이트만으로 충분
   })
 
-  const handleTasksChange = (updatedTasks: Issue[]) => {
-    // mutation 실행 (onMutate에서 낙관적 업데이트 처리)
-    updateMutation.mutate(updatedTasks)
+  const handleTaskStatusChange = (issueId: number, kanbanConfigId: number) => {
+    // 개별 이슈 상태 업데이트 API 호출
+    updateIssueStatusMutation.mutate({ issueId, kanbanConfigId })
   }
 
   const handleTemplateSelect = (template: SelectedTemplate) => {
@@ -91,14 +109,11 @@ export default function Project() {
     setIssueModalOpen(true)
   }
 
-  const handleIssueSave = (issueData: IssuePayload) => {
-    // TODO: API call to create/update issue
-    console.log('이슈 저장:', issueData)
+  const handleIssueSave = async (issueData: IssuePayload) => {
     try {
-      const response = issueService.createIssue(projectUrl, issueData)
-      console.log('response: ', response)
+      await issueService.createIssue(projectUrl, issueData)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     } finally {
       // After successful save, refetch the kanban data
       queryClient.invalidateQueries({ queryKey: ['kanban', projectUrl] })
@@ -124,8 +139,8 @@ export default function Project() {
     )
   }
 
-  const tasks: Issue[] = (data?.contents as Issue[]) || []
-
+  // const tasks: Issue[] = toIssues(data) || []
+  const { tasks = [], columns = [], labels = [], profiles = [] } = data || {}
   return (
     <div className="container p-4">
       <ProjectSummaryCard />
@@ -168,13 +183,17 @@ export default function Project() {
       {/* 조건부 렌더링: viewMode에 따라 다른 뷰 표시 */}
       {viewMode === 'kanban' ? (
         <KanbanView
-          columns={issueColumns}
+          // columns={issueColumns}
+          columns={columns}
           tasks={tasks}
-          onTasksChange={handleTasksChange}
+          onTaskStatusChange={handleTaskStatusChange}
           isReadOnly={!isToday}
+          labels={labels}
+          profiles={profiles}
         />
       ) : (
-        <TableView columns={issueColumns} tasks={tasks} />
+        // <TableView columns={issueColumns} tasks={tasks} />
+        <TableView columns={columns} tasks={tasks} profiles={profiles} />
       )}
       <Button
         variant={viewMode === 'kanban' ? 'default' : 'outline'}

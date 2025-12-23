@@ -11,53 +11,78 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Info } from 'lucide-react'
-import type { IssueColumn, Label, UserInfo } from '@/types'
+import type { IssueColumn, UserInfo } from '@/types'
 import {
   KanbanFilterBar,
   type KanbanFilters,
 } from '@/components/kanban/KanbanFilterBar'
 import type { Issue } from '@/types/issue'
+import type { Label } from '@/types/label'
 
 interface KanbanViewProps {
   columns: IssueColumn[]
   tasks: Issue[]
-  onTasksChange: (tasks: Issue[]) => void
+  onTaskStatusChange?: (issueId: number, kanbanConfigId: number) => void
   isReadOnly?: boolean
+  labels: Label[]
+  profiles: UserInfo[]
 }
 
 export default function KanbanView({
   columns,
   tasks,
-  onTasksChange,
+  onTaskStatusChange,
   isReadOnly = false,
+  labels,
+  profiles,
 }: KanbanViewProps) {
   const [filters, setFilters] = useState<KanbanFilters>({
     search: '',
-    sortBy: 'endAt-asc',
+    sortBy: 'endAt-asc', // 내부 값은 유지하되 로직에서 dueAt 연결
     selectedOwners: [],
     selectedLabels: [],
     selectedSubscribers: [],
   })
 
-  // Extract unique owners, labels, and subscribers from all tasks
+  // 1. 빠른 조회를 위해 labels 배열을 Map으로 변환
+  const labelMap = useMemo(
+    () => new Map(labels.map(l => [Number(l.labelId), l])),
+    [labels]
+  )
+
+  const profileMap = useMemo(
+    () => new Map(profiles.map(p => [Number(p.profileId), p])),
+    [profiles]
+  )
+
+  // 2. 담당자, 라벨, 구독자 추출 로직
   const { availableOwners, availableLabels, availableSubscribers } =
     useMemo(() => {
-      const ownersMap = new Map<string, UserInfo>()
-      const labelsMap = new Map<string, Label>()
-      const subscribersMap = new Map<string, UserInfo>()
+      const ownersMap = new Map<number, UserInfo>()
+      const labelsMap = new Map<number, Label>()
+      const subscribersMap = new Map<number, UserInfo>()
 
       tasks.forEach(task => {
-        // Add owner
-        ownersMap.set(task.owner.nickname, task.owner)
-
-        // Add labels
-        task.labels?.forEach(label => {
-          labelsMap.set(label.name, label)
+        // 라벨 매핑
+        task.labels?.forEach(labelId => {
+          const labelDetail = labelMap.get(Number(labelId))
+          if (labelDetail) labelsMap.set(labelDetail.labelId, labelDetail)
         })
 
-        // Add subscribers
-        task.subscribers?.forEach(subscriber => {
-          subscribersMap.set(subscriber.nickname, subscriber)
+        //  담당자(Assignees) 매핑
+        task.assignees?.forEach(profileId => {
+          const profileDetail = profileMap.get(Number(profileId))
+          if (profileDetail?.profileId) {
+            ownersMap.set(profileDetail.profileId, profileDetail)
+          }
+        })
+
+        // 구독자(Notis) 매핑
+        task.notis?.forEach(profileId => {
+          const profileDetail = profileMap.get(Number(profileId))
+          if (profileDetail?.profileId) {
+            subscribersMap.set(profileDetail.profileId, profileDetail)
+          }
         })
       })
 
@@ -66,56 +91,58 @@ export default function KanbanView({
         availableLabels: Array.from(labelsMap.values()),
         availableSubscribers: Array.from(subscribersMap.values()),
       }
-    }, [tasks])
+      // labelMap과 profileMap이 변경될 때도 값이 갱신되도록 의존성 추가
+    }, [tasks, labelMap, profileMap])
 
-  // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
     let result = [...tasks]
 
-    // Apply search filter
+    // 검색 (name -> title)
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
       result = result.filter(task =>
-        task.name.toLowerCase().includes(searchLower)
+        task.title.toLowerCase().includes(searchLower)
       )
     }
 
-    // Apply owner filter
+    // 담당자 필터 (assignees 중 한 명이라도 포함되는지 확인)
     if (filters.selectedOwners.length > 0) {
       result = result.filter(task =>
-        filters.selectedOwners.includes(task.owner.nickname)
+        task.assignees.some(a => filters.selectedOwners.includes(a))
       )
     }
 
-    // Apply label filter
+    // 라벨 필터
     if (filters.selectedLabels.length > 0) {
       result = result.filter(task =>
-        task.labels?.some(label => filters.selectedLabels.includes(label.name))
+        task.labels?.some(label => filters.selectedLabels.includes(label))
       )
     }
 
-    // Apply subscriber filter
+    // 구독자 필터 (notis)
     if (filters.selectedSubscribers.length > 0) {
       result = result.filter(task =>
-        task.subscribers?.some(subscriber =>
-          filters.selectedSubscribers.includes(subscriber.nickname)
-        )
+        task.notis?.some(noti => filters.selectedSubscribers.includes(noti))
       )
     }
 
-    // Apply sorting
+    // 정렬 (date 필드 변경 대응)
     result.sort((a, b) => {
       switch (filters.sortBy) {
         case 'endAt-asc':
-          return new Date(a.endAt).getTime() - new Date(b.endAt).getTime()
+          return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
         case 'endAt-desc':
-          return new Date(b.endAt).getTime() - new Date(a.endAt).getTime()
+          return new Date(b.dueAt).getTime() - new Date(a.dueAt).getTime()
         case 'startAt-asc':
-          return new Date(a.startAt).getTime() - new Date(b.startAt).getTime()
+          return (
+            new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()
+          )
         case 'startAt-desc':
-          return new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
+          return (
+            new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+          )
         case 'name-asc':
-          return a.name.localeCompare(b.name)
+          return a.title.localeCompare(b.title)
         default:
           return 0
       }
@@ -126,26 +153,28 @@ export default function KanbanView({
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
-    if (!over) {
-      return
+    if (!over) return
+
+    const issueId = String(active.id)
+
+    // over.id는 컬럼 id일 수도 있고, 다른 카드의 id일 수도 있음
+    // 1. 먼저 컬럼에서 찾기
+    // 2. 없으면 카드에서 찾아서 해당 카드의 kanbanConfigId 사용
+    const overColumn =
+      columns.find(column => column.id === over.id)?.id ??
+      tasks.find(task => task.issueId === String(over.id))?.kanbanConfigId
+
+    if (!overColumn) return
+
+    const newKanbanConfigId = Number(overColumn)
+
+    // 상태가 실제로 변경된 경우만 API 호출
+    const targetTask = tasks.find(task => task.issueId === issueId)
+
+    if (targetTask && targetTask.kanbanConfigId !== newKanbanConfigId) {
+      // 개별 이슈 상태 업데이트 API 호출
+      onTaskStatusChange?.(Number(issueId), newKanbanConfigId)
     }
-
-    // active.id는 Task(Issue) id, over.id는 Column(IssueColumn) id
-    const status = columns.find(({ id }) => id === over.id)
-    if (!status) {
-      return
-    }
-
-    // 컬럼 변경 로직
-    const updatedTasks = tasks.map(task => {
-      if (task.id === active.id) {
-        // ⚠️ task의 'column' 속성 업데이트
-        return { ...task, column: status.id }
-      }
-      return task
-    })
-
-    onTasksChange(updatedTasks)
   }
 
   return (
@@ -171,7 +200,6 @@ export default function KanbanView({
         columns={columns}
         data={filteredAndSortedTasks}
         onDragEnd={handleDragEnd}
-        onDataChange={onTasksChange}
         isReadOnly={isReadOnly}
       >
         {column => (
@@ -180,22 +208,22 @@ export default function KanbanView({
             <KanbanCards<Issue> id={column.id}>
               {task => (
                 <KanbanCard
-                  column={task.column}
-                  id={task.id}
-                  key={task.id}
-                  name={task.name}
+                  column={String(task.kanbanConfigId)} // ID 매칭용
+                  id={task.issueId}
+                  key={task.issueId}
+                  name={task.title}
                 >
                   <div className="flex flex-col gap-2">
                     <div className=" flex flex-row">
-                      {/* Task Name */}
-                      <p className="m-0 font-medium text-sm ">{task.name}</p>
-                      {/* Subscribers */}
-                      {task.subscribers && task.subscribers.length > 0 && (
+                      <p className="m-0 font-medium text-sm ">{task.title}</p>
+                      {/* Notis (구독자) 렌더링 */}
+                      {task.notis && task.notis.length > 0 && (
                         <div className="flex flex-1 items-start justify-end gap-1 ">
                           <div className="flex -space-x-2">
-                            {task.subscribers
-                              .slice(0, 3)
-                              .map((subscriber, idx) => (
+                            {task.notis.slice(0, 3).map((profileId, idx) => {
+                              const subscriber = profileMap.get(profileId)
+                              if (!subscriber) return null
+                              return (
                                 <Avatar
                                   key={idx}
                                   className="h-6 w-6 border-2 border-background"
@@ -210,10 +238,11 @@ export default function KanbanView({
                                       .toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
-                              ))}
-                            {task.subscribers.length > 3 && (
+                              )
+                            })}
+                            {task.notis.length > 3 && (
                               <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium">
-                                +{task.subscribers.length - 3}
+                                +{task.notis.length - 3}
                               </div>
                             )}
                           </div>
@@ -224,38 +253,58 @@ export default function KanbanView({
                     {/* Labels */}
                     {task.labels && task.labels.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        {task.labels.map(label => (
-                          <Badge
-                            key={label.name}
-                            variant="outline"
-                            style={{
-                              backgroundColor: label.color,
-                              borderColor: label.color,
-                              color: '#fff',
-                            }}
-                            className="text-[10px] px-1.5 py-0"
-                          >
-                            {label.name}
-                          </Badge>
-                        ))}
+                        {task.labels.map(labelId => {
+                          const label = labelMap.get(Number(labelId))
+                          if (!label) return null // 상세 정보가 없으면 렌더링 안함
+                          return (
+                            <Badge
+                              key={label.name}
+                              variant="outline"
+                              style={{
+                                backgroundColor: label.color,
+                                borderColor: label.color,
+                                color: '#fff',
+                              }}
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {label.name}
+                            </Badge>
+                          )
+                        })}
                       </div>
                     )}
 
-                    {/* Owner and Date */}
+                    {/* Assignees (첫 번째 담당자 표시) 및 마감일 */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      {/* task.owner는 Issue['owner'] (UserInfo) 타입입니다. */}
-                      <div className="flex flex-ro items-center gap-1">
-                        <Avatar className="h-6 w-6 border-2">
-                          <AvatarImage src={task.owner.imageUrl} />
-                          <AvatarFallback>
-                            {task.owner.nickname.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{task.owner.nickname}</span>
+                      <div className="flex flex-row items-center gap-1">
+                        {task.assignees &&
+                          task.assignees.length > 0 &&
+                          (() => {
+                            const firstAssigneeId = task.assignees[0]
+                            const firstAssignee =
+                              profileMap.get(firstAssigneeId)
+                            if (!firstAssignee) return null
+                            return (
+                              <>
+                                <Avatar className="h-6 w-6 border-2">
+                                  <AvatarImage src={firstAssignee.imageUrl} />
+                                  <AvatarFallback>
+                                    {firstAssignee.nickname
+                                      .slice(0, 2)
+                                      .toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>
+                                  {firstAssignee.nickname}
+                                  {task.assignees.length > 1 &&
+                                    ` 외 ${task.assignees.length - 1}명`}
+                                </span>
+                              </>
+                            )
+                          })()}
                       </div>
                       <span>
-                        {/* task.endAt은 Issue['endAt'] (Date) 타입입니다. */}
-                        {new Date(task.endAt).toLocaleDateString('ko-KR', {
+                        {new Date(task.dueAt).toLocaleDateString('ko-KR', {
                           month: 'short',
                           day: 'numeric',
                         })}

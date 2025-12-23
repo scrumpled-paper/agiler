@@ -27,16 +27,6 @@ export interface GetProjectListParams {
   page: number
 }
 
-//프로젝트 사이드바 멤버
-// export interface ProjectMember {
-//   peopleId: number
-//   nickname: string
-//   email: string
-//   imageUrl: string
-//   role: string
-//   description: string
-// }
-
 // 프로젝트 맴버 API 전체 응답의 타입
 export interface GetProjectMembersResponse {
   contents: UserInfo[]

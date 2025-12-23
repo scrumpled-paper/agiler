@@ -965,6 +965,131 @@ export const handlers = [
       })
     }
   ),
+
+  // ==================== Activity List Handlers ====================
+
+  // 데일리 스크럼 목록 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/scrums',
+    ({ request, params }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page')) || 0
+      const size = Number(url.searchParams.get('size')) || 10
+
+      console.log('[MSW] 데일리 스크럼 목록 조회 호출됨:', params.projectUrl, {
+        page,
+        size,
+      })
+
+      const mockScrums = Array.from({ length: 10 }, (_, i) => ({
+        scrumId: i + 1,
+        title: `데일리 스크럼 #${i + 1}`,
+        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      }))
+
+      return HttpResponse.json({
+        contents: mockScrums,
+        pageSize: size,
+        currentPage: page,
+        totalPages: 1,
+        totalElements: 10,
+      })
+    }
+  ),
+
+  // 회의록 목록 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/meetings',
+    ({ request, params }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page')) || 0
+      const size = Number(url.searchParams.get('size')) || 10
+
+      console.log('[MSW] 회의록 목록 조회 호출됨:', params.projectUrl, {
+        page,
+        size,
+      })
+
+      const mockMeetings = Array.from({ length: 10 }, (_, i) => ({
+        meetingId: i + 1,
+        title: `회의록 #${i + 1}`,
+        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      }))
+
+      return HttpResponse.json({
+        contents: mockMeetings,
+        pageSize: size,
+        currentPage: page,
+        totalPages: 1,
+        totalElements: 10,
+      })
+    }
+  ),
+
+  // 회고 목록 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/retros',
+    ({ request, params }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page')) || 0
+      const size = Number(url.searchParams.get('size')) || 10
+
+      console.log('[MSW] 회고 목록 조회 호출됨:', params.projectUrl, {
+        page,
+        size,
+      })
+
+      const mockRetros = Array.from({ length: 10 }, (_, i) => ({
+        retroId: i + 1,
+        title: `회고 #${i + 1}`,
+        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      }))
+
+      return HttpResponse.json({
+        contents: mockRetros,
+        pageSize: size,
+        currentPage: page,
+        totalPages: 1,
+        totalElements: 10,
+      })
+    }
+  ),
 ]
 
 // Helper function to reset labels store for tests
