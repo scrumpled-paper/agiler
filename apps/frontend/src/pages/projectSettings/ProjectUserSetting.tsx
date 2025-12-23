@@ -87,6 +87,7 @@ export default function ProjectUserSetting() {
   }
 
   const members = data.contents.map(member => ({
+    profileId: member.profileId,
     nickname: member.nickname,
     imageUrl: member.imageUrl,
     role: member.role,

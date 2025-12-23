@@ -8,7 +8,7 @@ export function applySearchFilter(issues: Issue[], search: string): Issue[] {
   if (!search) return issues
 
   const searchLower = search.toLowerCase()
-  return issues.filter(issue => issue.name.toLowerCase().includes(searchLower))
+  return issues.filter(issue => issue.title.toLowerCase().includes(searchLower))
 }
 
 /**
@@ -16,11 +16,13 @@ export function applySearchFilter(issues: Issue[], search: string): Issue[] {
  */
 export function applyOwnerFilter(
   issues: Issue[],
-  selectedOwners: string[]
+  selectedOwners: number[]
 ): Issue[] {
   if (selectedOwners.length === 0) return issues
 
-  return issues.filter(issue => selectedOwners.includes(issue.owner.nickname))
+  return issues.filter(issue =>
+    issue.assignees.some(assignee => selectedOwners.includes(assignee))
+  )
 }
 
 /**
@@ -28,12 +30,12 @@ export function applyOwnerFilter(
  */
 export function applyLabelFilter(
   issues: Issue[],
-  selectedLabels: string[]
+  selectedLabels: number[]
 ): Issue[] {
   if (selectedLabels.length === 0) return issues
 
   return issues.filter(issue =>
-    issue.labels?.some(label => selectedLabels.includes(label.name))
+    issue.labels?.some(label => selectedLabels.includes(label))
   )
 }
 
@@ -42,14 +44,12 @@ export function applyLabelFilter(
  */
 export function applySubscriberFilter(
   issues: Issue[],
-  selectedSubscribers: string[]
+  selectedSubscribers: number[]
 ): Issue[] {
   if (selectedSubscribers.length === 0) return issues
 
   return issues.filter(issue =>
-    issue.subscribers?.some(subscriber =>
-      selectedSubscribers.includes(subscriber.nickname)
-    )
+    issue.notis?.some(noti => selectedSubscribers.includes(noti))
   )
 }
 
@@ -65,15 +65,15 @@ export function sortIssues(
   sorted.sort((a, b) => {
     switch (sortBy) {
       case 'endAt-asc':
-        return new Date(a.endAt).getTime() - new Date(b.endAt).getTime()
+        return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
       case 'endAt-desc':
-        return new Date(b.endAt).getTime() - new Date(a.endAt).getTime()
+        return new Date(b.dueAt).getTime() - new Date(a.dueAt).getTime()
       case 'startAt-asc':
-        return new Date(a.startAt).getTime() - new Date(b.startAt).getTime()
+        return new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime()
       case 'startAt-desc':
-        return new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
+        return new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
       case 'name-asc':
-        return a.name.localeCompare(b.name)
+        return a.title.localeCompare(b.title)
       default:
         return 0
     }

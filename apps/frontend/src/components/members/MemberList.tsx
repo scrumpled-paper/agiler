@@ -1,7 +1,9 @@
-import { MemberListItem, type MemberListItemProps } from './MemberListItem'
+import { MemberListItem } from './MemberListItem'
+import type { UserInfo } from '@/types'
 
 export interface MemberListProps {
-  members: MemberListItemProps['member'][]
+  members: UserInfo[]
+  // members: MemberListItemProps['member'][]
   onRoleChange?: (memberId: number, newRole: string) => void
   onRemove?: (memberId: number) => void
   canEdit?: boolean

@@ -1,6 +1,6 @@
 // lib/sidebar/types.ts
 
-import type { ProjectInfo, ProjectMember, UserInfo } from '@/types'
+import type { ProjectInfo, UserInfo } from '@/types'
 
 export type SidebarContext = 'dashboard' | 'project' | 'project-settings'
 
@@ -68,7 +68,7 @@ export interface SidebarConfig {
 }
 //ListSection이나 DisplaySection에서 사용되는 실제 동적 데이터를 담는 구조
 export interface SidebarData {
-  projects?: ProjectInfo[]
-  members?: ProjectMember[]
-  userInfo?: UserInfo
+  projects: ProjectInfo[] | []
+  members: UserInfo[] | []
+  userInfo: UserInfo
 }

@@ -74,8 +74,8 @@ export const useSidebarData = (
   const userInfo = useUserInfo(context, projectUrl)
 
   return {
-    projects: projectsData,
-    members: membersData?.contents,
+    projects: projectsData || [],
+    members: membersData?.contents || [],
     userInfo: userInfo,
   }
 }

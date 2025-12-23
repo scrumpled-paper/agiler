@@ -1,10 +1,10 @@
 // components/layout/sidebar/items/DisplayItem.tsx
 
 import { User } from 'lucide-react'
-import type { ProjectMember } from '@/types'
+import type { UserInfo } from '@/types'
 
 interface DisplayItemProps {
-  member: ProjectMember
+  member: UserInfo
 }
 
 export function DisplayItem({ member }: DisplayItemProps) {

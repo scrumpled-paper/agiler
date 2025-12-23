@@ -22,7 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Label, UserInfo } from '@/types'
+import type { UserInfo } from '@/types'
+import type { Label } from '@/types/label'
 
 export type SortOption =
   | 'endAt-asc'
@@ -34,9 +35,9 @@ export type SortOption =
 export interface KanbanFilters {
   search: string
   sortBy: SortOption
-  selectedOwners: string[] // nickname[]
-  selectedLabels: string[] // label names[]
-  selectedSubscribers: string[] // nickname[]
+  selectedOwners: number[] // profileId[]
+  selectedLabels: number[] // labelId[]
+  selectedSubscribers: number[] // profileId[]
 }
 
 interface KanbanFilterBarProps {
@@ -58,24 +59,24 @@ export function KanbanFilterBar({
     onFiltersChange({ ...filters, ...updates })
   }
 
-  const toggleOwner = (nickname: string) => {
-    const newOwners = filters.selectedOwners.includes(nickname)
-      ? filters.selectedOwners.filter(n => n !== nickname)
-      : [...filters.selectedOwners, nickname]
+  const toggleOwner = (profileId: number) => {
+    const newOwners = filters.selectedOwners.includes(profileId)
+      ? filters.selectedOwners.filter(id => id !== profileId)
+      : [...filters.selectedOwners, profileId]
     updateFilters({ selectedOwners: newOwners })
   }
 
-  const toggleLabel = (labelName: string) => {
-    const newLabels = filters.selectedLabels.includes(labelName)
-      ? filters.selectedLabels.filter(n => n !== labelName)
-      : [...filters.selectedLabels, labelName]
+  const toggleLabel = (labelId: number) => {
+    const newLabels = filters.selectedLabels.includes(labelId)
+      ? filters.selectedLabels.filter(id => id !== labelId)
+      : [...filters.selectedLabels, labelId]
     updateFilters({ selectedLabels: newLabels })
   }
 
-  const toggleSubscriber = (nickname: string) => {
-    const newSubscribers = filters.selectedSubscribers.includes(nickname)
-      ? filters.selectedSubscribers.filter(n => n !== nickname)
-      : [...filters.selectedSubscribers, nickname]
+  const toggleSubscriber = (profileId: number) => {
+    const newSubscribers = filters.selectedSubscribers.includes(profileId)
+      ? filters.selectedSubscribers.filter(id => id !== profileId)
+      : [...filters.selectedSubscribers, profileId]
     updateFilters({ selectedSubscribers: newSubscribers })
   }
 
@@ -148,13 +149,13 @@ export function KanbanFilterBar({
                 <CommandGroup>
                   {availableOwners.map(owner => (
                     <CommandItem
-                      key={owner.nickname}
-                      onSelect={() => toggleOwner(owner.nickname)}
+                      key={owner.profileId}
+                      onSelect={() => toggleOwner(owner.profileId)}
                     >
                       <div className="flex items-center gap-2 ">
                         <div
                           className={`h-4 w-4 rounded border ${
-                            filters.selectedOwners.includes(owner.nickname)
+                            filters.selectedOwners.includes(owner.profileId)
                               ? 'bg-primary border-primary'
                               : 'border-input'
                           }`}
@@ -189,13 +190,13 @@ export function KanbanFilterBar({
                 <CommandGroup>
                   {availableLabels.map(label => (
                     <CommandItem
-                      key={label.name}
-                      onSelect={() => toggleLabel(label.name)}
+                      key={label.labelId}
+                      onSelect={() => toggleLabel(label.labelId)}
                     >
                       <div className="flex items-center gap-2">
                         <div
                           className={`h-4 w-4 rounded border ${
-                            filters.selectedLabels.includes(label.name)
+                            filters.selectedLabels.includes(label.labelId)
                               ? 'bg-primary border-primary'
                               : 'border-input'
                           }`}
@@ -234,14 +235,14 @@ export function KanbanFilterBar({
                 <CommandGroup>
                   {availableSubscribers.map(subscriber => (
                     <CommandItem
-                      key={subscriber.nickname}
-                      onSelect={() => toggleSubscriber(subscriber.nickname)}
+                      key={subscriber.profileId}
+                      onSelect={() => toggleSubscriber(subscriber.profileId)}
                     >
                       <div className="flex items-center gap-2">
                         <div
                           className={`h-4 w-4 rounded border ${
                             filters.selectedSubscribers.includes(
-                              subscriber.nickname
+                              subscriber.profileId
                             )
                               ? 'bg-primary border-primary'
                               : 'border-input'
@@ -284,20 +285,23 @@ export function KanbanFilterBar({
                 />
               </Badge>
             )}
-            {filters.selectedOwners.map(owner => (
-              <Badge key={owner} variant="secondary" className="gap-1">
-                담당: {owner}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => toggleOwner(owner)}
-                />
-              </Badge>
-            ))}
-            {filters.selectedLabels.map(label => {
-              const labelObj = availableLabels.find(l => l.name === label)
+            {filters.selectedOwners.map(ownerId => {
+              const owner = availableOwners.find(o => o.profileId === ownerId)
+              return (
+                <Badge key={ownerId} variant="secondary" className="gap-1">
+                  담당: {owner?.nickname || ownerId}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => toggleOwner(ownerId)}
+                  />
+                </Badge>
+              )
+            })}
+            {filters.selectedLabels.map(labelId => {
+              const labelObj = availableLabels.find(l => l.labelId === labelId)
               return (
                 <Badge
-                  key={label}
+                  key={labelId}
                   variant="outline"
                   className="gap-1"
                   style={{
@@ -306,23 +310,28 @@ export function KanbanFilterBar({
                     color: '#fff',
                   }}
                 >
-                  {label}
+                  {labelObj?.name || labelId}
                   <X
                     className="h-3 w-3 cursor-pointer"
-                    onClick={() => toggleLabel(label)}
+                    onClick={() => toggleLabel(labelId)}
                   />
                 </Badge>
               )
             })}
-            {filters.selectedSubscribers.map(subscriber => (
-              <Badge key={subscriber} variant="secondary" className="gap-1">
-                구독: {subscriber}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => toggleSubscriber(subscriber)}
-                />
-              </Badge>
-            ))}
+            {filters.selectedSubscribers.map(subscriberId => {
+              const subscriber = availableSubscribers.find(
+                s => s.profileId === subscriberId
+              )
+              return (
+                <Badge key={subscriberId} variant="secondary" className="gap-1">
+                  구독: {subscriber?.nickname || subscriberId}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => toggleSubscriber(subscriberId)}
+                  />
+                </Badge>
+              )
+            })}
           </div>
           {/* Clear All */}
           <Button

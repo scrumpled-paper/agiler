@@ -70,7 +70,7 @@ export default function ProjectLabelSetting() {
       <div className="flex w-full flex-col gap-5 max-w-3xl">
         {data.labels.map(label => (
           <div
-            key={label.id}
+            key={label.labelId}
             className="flex h-[90px] items-center justify-between rounded-[10px] border-[1.7px] border-[#e1e4ed] bg-white px-9 py-5"
           >
             <div

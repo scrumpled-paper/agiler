@@ -7,13 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { type UserInfo } from '@/types'
 
 export interface MemberListItemProps {
-  member: {
-    nickname: string
-    imageUrl?: string
-    role: string
-  }
+  member: UserInfo
   onRoleChange?: (newRole: string) => void
   onRemove?: () => void
   canEdit?: boolean

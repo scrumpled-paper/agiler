@@ -1,14 +1,27 @@
-import type { IssueColumn, UserInfo, Label, ProjectInfo } from '@/types'
+import type { IssueColumn, UserInfo, ProjectInfo } from '@/types'
 import type { Issue } from '@/types/issue'
+import type { Label } from '@/types/label'
 import type { PagedResponse } from '@/types/list'
 
 // Mock Users
 // UserInfo 타입은 이미 정의된 mockUsers 배열과 호환됩니다.
 export const mockUsers: UserInfo[] = [
-  { nickname: 'Alice Johnson', imageUrl: 'https://placehold.co/6x6' },
-  { nickname: 'Bob Smith', imageUrl: 'https://placehold.co/6x6' },
-  { nickname: 'Charlie Day', imageUrl: 'https://placehold.co/6x6' },
-  { nickname: 'Dana Scully', imageUrl: 'https://placehold.co/6x6' },
+  {
+    profileId: 1,
+    nickname: 'Alice Johnson',
+    imageUrl: 'https://placehold.co/6x6',
+  },
+  { profileId: 2, nickname: 'Bob Smith', imageUrl: 'https://placehold.co/6x6' },
+  {
+    profileId: 3,
+    nickname: 'Charlie Day',
+    imageUrl: 'https://placehold.co/6x6',
+  },
+  {
+    profileId: 4,
+    nickname: 'Dana Scully',
+    imageUrl: 'https://placehold.co/6x6',
+  },
 ]
 
 export const MOCK_MEMBER_PROFILES = [
@@ -40,18 +53,30 @@ export const MOCK_MEMBER_PROFILES = [
 
 // Mock Labels (새로 추가)
 export const mockLabels: Label[] = [
-  { name: 'Frontend', description: 'Client-side UI tasks', color: '#10B981' }, // green
   {
+    labelId: 1,
+    name: 'Frontend',
+    description: 'Client-side UI tasks',
+    color: '#10B981',
+  },
+  {
+    labelId: 2,
     name: 'Backend',
     description: 'Server-side logic and API tasks',
     color: '#F59E0B',
-  }, // yellow/amber
+  },
   {
+    labelId: 3,
     name: 'Database',
     description: 'Schema and persistence tasks',
     color: '#3B82F6',
-  }, // blue
-  { name: 'Urgent', description: 'High priority tasks', color: '#EF4444' }, // red
+  },
+  {
+    labelId: 4,
+    name: 'Urgent',
+    description: 'High priority tasks',
+    color: '#EF4444',
+  },
 ]
 
 // Issue Columns (Kanban 컬럼)
@@ -65,91 +90,134 @@ export const issueColumns: IssueColumn[] = [
 
 // Mock Issues
 export const mockIssues: Issue[] = [
-  // Planned (col-2-planned)
+  // Planned (kanbanConfigId: 2)
   {
-    id: 'task-1',
+    // 호환용 필드
+    id: '1',
     name: 'Implement User Authentication',
-    startAt: new Date('2025-11-01'),
-    endAt: new Date('2025-11-15'),
-    column: 'col-2-planned',
-    owner: mockUsers[0], // Alice
-    // 💡 optional properties added
-    subscribers: [mockUsers[1], mockUsers[2]], // Bob, Charlie
-    labels: [mockLabels[1], mockLabels[3]], // Backend, Urgent
+    column: '2',
+    // 신규 API 명세 필드
+    issueId: '1',
+    title: 'Implement User Authentication',
+    kanbanConfigId: 2,
+    assignees: [1],
+    notis: [2, 3],
+    labels: [2, 4],
+    startedAt: '2025-11-01T00:00:00Z',
+    dueAt: '2025-11-15T00:00:00Z',
+    createdAt: '2025-10-20T00:00:00Z',
+    isDone: false,
   },
   {
-    id: 'task-2',
+    id: '2',
     name: 'Design Landing Page Layout',
-    startAt: new Date('2025-11-05'),
-    endAt: new Date('2025-11-20'),
-    column: 'col-2-planned',
-    owner: mockUsers[1], // Bob
-    labels: [mockLabels[0]], // Frontend
+    column: '2',
+    issueId: '2',
+    title: 'Design Landing Page Layout',
+    kanbanConfigId: 2,
+    assignees: [2],
+    notis: [],
+    labels: [1],
+    startedAt: '2025-11-05T00:00:00Z',
+    dueAt: '2025-11-20T00:00:00Z',
+    createdAt: '2025-10-21T00:00:00Z',
+    isDone: false,
   },
   {
-    id: 'task-3',
+    id: '3',
     name: 'Set up Database Schema',
-    startAt: new Date('2025-11-08'),
-    endAt: new Date('2025-11-18'),
-    column: 'col-2-planned',
-    owner: mockUsers[0], // Alice
-    labels: [mockLabels[2]], // Database
+    column: '2',
+    issueId: '3',
+    title: 'Set up Database Schema',
+    kanbanConfigId: 2,
+    assignees: [1],
+    notis: [],
+    labels: [3],
+    startedAt: '2025-11-08T00:00:00Z',
+    dueAt: '2025-11-18T00:00:00Z',
+    createdAt: '2025-10-22T00:00:00Z',
+    isDone: false,
   },
 
-  // In Progress (col-3-progress)
+  // In Progress (kanbanConfigId: 3)
   {
-    id: 'task-4',
+    id: '4',
     name: 'Develop Kanban Card Component',
-    startAt: new Date('2025-10-25'),
-    endAt: new Date('2025-11-10'),
-    column: 'col-3-progress',
-    owner: mockUsers[2], // Charlie
-    subscribers: [mockUsers[0], mockUsers[1], mockUsers[3]], // Alice, Bob, Dana (3명)
-    labels: [mockLabels[0], mockLabels[3]], // Frontend, Urgent
+    column: '3',
+    issueId: '4',
+    title: 'Develop Kanban Card Component',
+    kanbanConfigId: 3,
+    assignees: [3],
+    notis: [1, 2, 4],
+    labels: [1, 4],
+    startedAt: '2025-10-25T00:00:00Z',
+    dueAt: '2025-11-10T00:00:00Z',
+    createdAt: '2025-10-20T00:00:00Z',
+    isDone: false,
   },
   {
-    id: 'task-5',
+    id: '5',
     name: 'Write API Documentation',
-    startAt: new Date('2025-11-03'),
-    endAt: new Date('2025-11-12'),
-    column: 'col-3-progress',
-    owner: mockUsers[3], // Dana
-    subscribers: [mockUsers[0], mockUsers[1]], // Alice, Bob
-    labels: [mockLabels[1]], // Backend
+    column: '3',
+    issueId: '5',
+    title: 'Write API Documentation',
+    kanbanConfigId: 3,
+    assignees: [4],
+    notis: [1, 2],
+    labels: [2],
+    startedAt: '2025-11-03T00:00:00Z',
+    dueAt: '2025-11-12T00:00:00Z',
+    createdAt: '2025-10-25T00:00:00Z',
+    isDone: false,
   },
 
-  // Done (col-4-done)
+  // Done (kanbanConfigId: 4)
   {
-    id: 'task-6',
+    id: '6',
     name: 'Project Initialization Complete',
-    startAt: new Date('2025-10-15'),
-    endAt: new Date('2025-10-20'),
-    column: 'col-4-done',
-    owner: mockUsers[1], // Bob
-    labels: [mockLabels[0]], // Frontend
+    column: '4',
+    issueId: '6',
+    title: 'Project Initialization Complete',
+    kanbanConfigId: 4,
+    assignees: [2],
+    notis: [],
+    labels: [1],
+    startedAt: '2025-10-15T00:00:00Z',
+    dueAt: '2025-10-20T00:00:00Z',
+    createdAt: '2025-10-10T00:00:00Z',
+    isDone: true,
   },
   {
-    id: 'task-7',
+    id: '7',
     name: 'Configure CI/CD Pipeline',
-    startAt: new Date('2025-10-28'),
-    endAt: new Date('2025-11-04'),
-    column: 'col-4-done',
-    owner: mockUsers[2], // Charlie
-    subscribers: [mockUsers[3]], // Dana
-    labels: [mockLabels[1]], // Backend
+    column: '4',
+    issueId: '7',
+    title: 'Configure CI/CD Pipeline',
+    kanbanConfigId: 4,
+    assignees: [3],
+    notis: [4],
+    labels: [2],
+    startedAt: '2025-10-28T00:00:00Z',
+    dueAt: '2025-11-04T00:00:00Z',
+    createdAt: '2025-10-20T00:00:00Z',
+    isDone: true,
   },
   {
-    id: 'task-8',
+    id: '8',
     name: 'First Deployment to Staging',
-    startAt: new Date('2025-11-01'),
-    endAt: new Date('2025-11-05'),
-    column: 'col-4-done',
-    owner: mockUsers[3], // Dana
-    subscribers: [mockUsers[0], mockUsers[1], mockUsers[2], mockUsers[3]], // 4명 이상 (to test +N display)
-    labels: [mockLabels[1], mockLabels[3]], // Backend, Urgent
+    column: '4',
+    issueId: '8',
+    title: 'First Deployment to Staging',
+    kanbanConfigId: 4,
+    assignees: [4],
+    notis: [1, 2, 3, 4],
+    labels: [2, 4],
+    startedAt: '2025-11-01T00:00:00Z',
+    dueAt: '2025-11-05T00:00:00Z',
+    createdAt: '2025-10-30T00:00:00Z',
+    isDone: true,
   },
 ]
-
 export const mockProjectList: ProjectInfo[] = [
   {
     title: 'Agile Project',

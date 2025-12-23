@@ -127,7 +127,7 @@ export function LabelFormModal({
       createMutation.mutate(formData)
     } else if (currentLabel) {
       updateMutation.mutate({
-        labelId: currentLabel.id,
+        labelId: currentLabel.labelId,
         payload: formData,
       })
     }
@@ -136,7 +136,7 @@ export function LabelFormModal({
   const handleDelete = () => {
     if (!currentLabel) return
     if (confirm(`정말 '${currentLabel.name}' 라벨을 삭제하시겠습니까?`)) {
-      deleteMutation.mutate(currentLabel.id)
+      deleteMutation.mutate(currentLabel.labelId)
     }
   }
 
