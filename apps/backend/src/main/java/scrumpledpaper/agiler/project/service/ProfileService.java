@@ -188,4 +188,8 @@ public class ProfileService {
 			})
 			.toList();
 	}
+
+	public List<Profile> getProfilesByIds(List<Long> profileIds) {
+		return profileRepository.findAllById(profileIds);
+	}
 }

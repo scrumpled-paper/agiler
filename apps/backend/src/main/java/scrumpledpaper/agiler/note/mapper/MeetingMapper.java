@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
+import scrumpledpaper.agiler.note.entity.MeetingProfile;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
@@ -57,4 +58,7 @@ public interface MeetingMapper {
 	@Mapping(target = "project", source = "project")
 	@Mapping(target = "meetingProfiles", ignore = true)
 	Meeting toEntity(Project project, String title, String contents);
+
+	@Mapping(target = "id", ignore = true)
+	MeetingProfile toMeetingProfileEntity(Meeting meeting, Profile profile);
 }
