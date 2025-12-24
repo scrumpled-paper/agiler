@@ -7,14 +7,19 @@ import { afterEach } from 'node:test'
 
 describe('LabelSelector', () => {
   const mockLabels: Label[] = [
-    { id: 1, name: 'Bug', description: 'test', color: '#ff0000' },
+    { labelId: 1, name: 'Bug', description: 'test', color: '#ff0000' },
     {
-      id: 2,
+      labelId: 2,
       name: 'Feature',
       description: 'test',
       color: '#00ff00',
     },
-    { id: 3, name: 'Documentation', description: 'test', color: '#0000ff' },
+    {
+      labelId: 3,
+      name: 'Documentation',
+      description: 'test',
+      color: '#0000ff',
+    },
   ]
 
   const mockSelectedLabels: Label[] = [mockLabels[0]] // Bug is selected
@@ -137,7 +142,7 @@ describe('LabelSelector', () => {
     // 첫 번째는 Plus 버튼, 두 번째는 Badge의 삭제 버튼
     await user.click(removeButtons[1])
 
-    expect(mockOnRemove).toHaveBeenCalledWith(1) // Bug의 id
+    expect(mockOnRemove).toHaveBeenCalledWith(mockLabels[0]) // Bug의 id
   })
 
   it('선택된 레이블이 없으면 Badge를 표시하지 않는다', () => {

@@ -99,7 +99,7 @@ export function LabelFormModal({
     mutationFn: (payload: LabelUpdateParams) => {
       if (!projectUrl || !currentLabel)
         throw new Error('Context required for update')
-      return labelService.updateLabel(projectUrl, currentLabel.id, payload)
+      return labelService.updateLabel(projectUrl, currentLabel.labelId, payload)
     },
     onSuccess: handleSuccess,
     onError: error => {
@@ -141,7 +141,7 @@ export function LabelFormModal({
   const handleDelete = () => {
     if (!currentLabel) return
     if (confirm(`정말 '${currentLabel.name}' 라벨을 삭제하시겠습니까?`)) {
-      deleteMutation.mutate(currentLabel.id)
+      deleteMutation.mutate(currentLabel.labelId)
     }
   }
 

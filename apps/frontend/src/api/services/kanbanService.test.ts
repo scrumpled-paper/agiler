@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { kanbanService } from './kanbanService'
 import { apiClient } from '../client'
-import type { Issue } from '@/types/issue'
+import type { Issue, IssueResponse } from '@/types/issue'
 
 // Mock apiClient
 vi.mock('../client', () => ({
@@ -16,81 +16,97 @@ describe('kanbanService', () => {
     vi.clearAllMocks()
   })
 
-  describe('getIssues', () => {
+  describe('getFilteredIssues', () => {
     it('should fetch issues successfully without date', async () => {
-      const mockIssues: Issue[] = [
+      const mockBackendResponse: IssueResponse[] = [
         {
-          id: '1',
-          name: 'Issue 1',
-          column: 'todo',
-          owner: {
-            nickname: 'user1',
-            email: 'user1@example.com',
-            imageUrl: 'https://placehold.co/100x100',
-          },
-          startAt: new Date('2025-01-01'),
-          endAt: new Date('2025-01-10'),
+          issueId: 1,
+          title: 'Issue 1',
+          kanbanConfigId: 1,
+          assignees: [1],
+          startedAt: '2025-01-01T00:00:00.000Z',
+          dueAt: '2025-01-10T00:00:00.000Z',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          isDone: false,
           labels: [],
-          subscribers: [],
+          notis: [],
         },
         {
-          id: '2',
-          name: 'Issue 2',
-          column: 'in-progress',
-          owner: {
-            nickname: 'user2',
-            email: 'user2@example.com',
-            imageUrl: 'https://placehold.co/100x100',
-          },
-          startAt: new Date('2025-01-05'),
-          endAt: new Date('2025-01-15'),
+          issueId: 2,
+          title: 'Issue 2',
+          kanbanConfigId: 2,
+          assignees: [2],
+          startedAt: '2025-01-05T00:00:00.000Z',
+          dueAt: '2025-01-15T00:00:00.000Z',
+          createdAt: '2025-01-05T00:00:00.000Z',
+          isDone: false,
           labels: [],
-          subscribers: [],
+          notis: [],
         },
       ]
 
-      vi.mocked(apiClient.get).mockResolvedValue({ data: mockIssues })
+      vi.mocked(apiClient.get).mockResolvedValue({
+        data: {
+          issues: mockBackendResponse,
+          kanbanConfigs: [],
+          labels: [],
+          profiles: [],
+        },
+      })
 
-      const result = await kanbanService.getIssues('test-project')
+      const result = await kanbanService.getFilteredIssues('test-project', {})
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/api/v1/projects/test-project/kanban',
+        '/api/v1/projects/test-project/issues',
         {
-          params: undefined,
+          params: {},
         }
       )
-      expect(result).toEqual(mockIssues)
+      const issues = result.issues
+      expect(issues).toHaveLength(2)
+      expect(issues[0].issueId).toBe(1)
+      expect(issues[0].title).toBe('Issue 1')
+      expect(issues[0].title).toBe('Issue 1')
     })
 
     it('should fetch issues successfully with date', async () => {
-      const mockIssues: Issue[] = [
+      const mockBackendResponse: IssueResponse[] = [
         {
-          id: '1',
-          name: 'Issue 1',
-          column: 'todo',
-          owner: {
-            nickname: 'user1',
-            email: 'user1@example.com',
-            imageUrl: 'https://placehold.co/100x100',
-          },
-          startAt: new Date('2025-01-01'),
-          endAt: new Date('2025-01-10'),
+          issueId: 1,
+          title: 'Issue 1',
+          kanbanConfigId: 1,
+          assignees: [1],
+          startedAt: '2025-01-01T00:00:00.000Z',
+          dueAt: '2025-01-10T00:00:00.000Z',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          isDone: false,
           labels: [],
-          subscribers: [],
+          notis: [],
         },
       ]
 
-      vi.mocked(apiClient.get).mockResolvedValue({ data: mockIssues })
+      vi.mocked(apiClient.get).mockResolvedValue({
+        data: {
+          issues: mockBackendResponse,
+          kanbanConfigs: [],
+          labels: [],
+          profiles: [],
+        },
+      })
 
-      const result = await kanbanService.getIssues('test-project', '2025-01-01')
+      const result = await kanbanService.getFilteredIssues('test-project', {
+        date: '2025-01-01',
+      })
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/api/v1/projects/test-project/kanban',
+        '/api/v1/projects/test-project/issues',
         {
           params: { date: '2025-01-01' },
         }
       )
-      expect(result).toEqual(mockIssues)
+      const issues = result.issues
+      expect(issues).toHaveLength(1)
+      expect(issues[0].issueId).toBe(1)
     })
 
     it('should handle axios error', async () => {
@@ -98,17 +114,72 @@ describe('kanbanService', () => {
 
       vi.mocked(apiClient.get).mockRejectedValue(axiosError)
 
-      await expect(kanbanService.getIssues('test-project')).rejects.toThrow(
-        'Failed to fetch issues'
-      )
+      await expect(
+        kanbanService.getFilteredIssues('test-project', {})
+      ).rejects.toThrow('Failed to fetch issues')
     })
 
     it('should handle empty response', async () => {
-      vi.mocked(apiClient.get).mockResolvedValue({ data: [] })
+      vi.mocked(apiClient.get).mockResolvedValue({
+        data: {
+          issues: [],
+          kanbanConfigs: [],
+          labels: [],
+          profiles: [],
+        },
+      })
 
-      const result = await kanbanService.getIssues('test-project')
+      const result = await kanbanService.getFilteredIssues('test-project', {})
 
-      expect(result).toEqual([])
+      expect(result.issues).toEqual([])
+    })
+
+    it('should fetch issues with multiple filters', async () => {
+      const mockBackendResponse: IssueResponse[] = [
+        {
+          issueId: 1,
+          title: 'Issue 1',
+          kanbanConfigId: 1,
+          assignees: [1],
+          startedAt: '2025-01-01T00:00:00.000Z',
+          dueAt: '2025-01-10T00:00:00.000Z',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          isDone: false,
+          labels: [],
+          notis: [],
+        },
+      ]
+
+      vi.mocked(apiClient.get).mockResolvedValue({
+        data: {
+          issues: mockBackendResponse,
+          kanbanConfigs: [],
+          labels: [],
+          profiles: [],
+        },
+      })
+
+      const result = await kanbanService.getFilteredIssues('test-project', {
+        date: '2025-01-01',
+        profiles: 'user1,user2',
+        noti: 'user3',
+        labels: 'bug,feature',
+      })
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/api/v1/projects/test-project/issues',
+        {
+          params: {
+            date: '2025-01-01',
+            profiles: 'user1,user2',
+            noti: 'user3',
+            labels: 'bug,feature',
+          },
+        }
+      )
+      const issues = result.issues
+      expect(issues).toHaveLength(1)
+      expect(issues[0].issueId).toBe(1)
     })
   })
 
@@ -118,16 +189,17 @@ describe('kanbanService', () => {
         {
           id: '1',
           name: 'Updated Issue',
-          column: 'done',
-          owner: {
-            nickname: 'user1',
-            email: 'user1@example.com',
-            imageUrl: 'https://placehold.co/100x100',
-          },
-          startAt: new Date('2025-01-01'),
-          endAt: new Date('2025-01-10'),
+          column: '3',
+          issueId: '1',
+          title: 'Updated Issue',
+          kanbanConfigId: 3,
+          assignees: [1],
+          startedAt: '2025-01-01T00:00:00.000Z',
+          dueAt: '2025-01-10T00:00:00.000Z',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          isDone: false,
           labels: [],
-          subscribers: [],
+          notis: [],
         },
       ]
 
@@ -161,30 +233,32 @@ describe('kanbanService', () => {
         {
           id: '1',
           name: 'Issue 1',
-          column: 'done',
-          owner: {
-            nickname: 'user1',
-            email: 'user1@example.com',
-            imageUrl: 'https://placehold.co/100x100',
-          },
-          startAt: new Date('2025-01-01'),
-          endAt: new Date('2025-01-10'),
+          column: '3',
+          issueId: '1',
+          title: 'Issue 1',
+          kanbanConfigId: 3,
+          assignees: [1],
+          startedAt: '2025-01-01T00:00:00.000Z',
+          dueAt: '2025-01-10T00:00:00.000Z',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          isDone: false,
           labels: [],
-          subscribers: [],
+          notis: [],
         },
         {
           id: '2',
           name: 'Issue 2',
-          column: 'done',
-          owner: {
-            nickname: 'user2',
-            email: 'user2@example.com',
-            imageUrl: 'https://placehold.co/100x100',
-          },
-          startAt: new Date('2025-01-05'),
-          endAt: new Date('2025-01-15'),
+          column: '3',
+          issueId: '2',
+          title: 'Issue 2',
+          kanbanConfigId: 3,
+          assignees: [2],
+          startedAt: '2025-01-05T00:00:00.000Z',
+          dueAt: '2025-01-15T00:00:00.000Z',
+          createdAt: '2025-01-05T00:00:00.000Z',
+          isDone: false,
           labels: [],
-          subscribers: [],
+          notis: [],
         },
       ]
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import DailyScrumsList from './DailyScrumsList'
+import RetrospectivesList from './RetrospectList'
 
 /**
  * 테스트용 래퍼 컴포넌트
@@ -20,11 +20,11 @@ function renderWithProviders(projectUrl = 'test-project') {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/projects/${projectUrl}/dailyscrums`]}>
+      <MemoryRouter initialEntries={[`/projects/${projectUrl}/retrospectives`]}>
         <Routes>
           <Route
-            path="/projects/:projectUrl/dailyscrums"
-            element={<DailyScrumsList />}
+            path="/projects/:projectUrl/retrospectives"
+            element={<RetrospectivesList />}
           />
         </Routes>
       </MemoryRouter>
@@ -32,7 +32,7 @@ function renderWithProviders(projectUrl = 'test-project') {
   )
 }
 
-describe('DailyScrumsList - 통합 테스트', () => {
+describe('RetrospectivesList - 통합 테스트', () => {
   describe('데이터 로딩 및 렌더링', () => {
     it('로딩 중일 때 로딩 메시지를 표시한다', () => {
       renderWithProviders()
@@ -45,7 +45,7 @@ describe('DailyScrumsList - 통합 테스트', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole('heading', { name: /데일리 스크럼 목록/i })
+          screen.getByRole('heading', { name: /회고 목록/i })
         ).toBeInTheDocument()
       })
     })
@@ -53,9 +53,9 @@ describe('DailyScrumsList - 통합 테스트', () => {
     it('MSW를 통해 받은 데이터를 ContentListTable에 렌더링한다', async () => {
       renderWithProviders()
 
-      // MSW 핸들러가 10개의 스크럼 항목을 반환하므로, 첫 번째 항목이 렌더링되는지 확인
+      // MSW 핸들러가 10개의 회고 항목을 반환하므로, 첫 번째 항목이 렌더링되는지 확인
       await waitFor(() => {
-        expect(screen.getByText('데일리 스크럼 #1')).toBeInTheDocument()
+        expect(screen.getByText('회고 #1')).toBeInTheDocument()
       })
     })
 
@@ -77,7 +77,7 @@ describe('DailyScrumsList - 통합 테스트', () => {
 
       await waitFor(() => {
         const heading = screen.getByRole('heading', {
-          name: /데일리 스크럼 목록/i,
+          name: /회고 목록/i,
         })
         expect(heading).toHaveClass('text-3xl', 'font-bold', 'mb-4')
       })
@@ -99,7 +99,7 @@ describe('DailyScrumsList - 통합 테스트', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole('heading', { name: /데일리 스크럼 목록/i })
+          screen.getByRole('heading', { name: /회고 목록/i })
         ).toBeInTheDocument()
       })
     })

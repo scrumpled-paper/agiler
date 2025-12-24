@@ -6,6 +6,13 @@ import {
 } from '@/types/label'
 import { apiClient } from '../client'
 
+type TempLabel = {
+  id: number
+  name: string
+  description: string
+  color: string // 예: "#4bB68C"
+}
+
 export const labelService = {
   baseURL: '/api/v1/projects',
 
@@ -13,7 +20,19 @@ export const labelService = {
 
   async getLabels(projectUrl: string): Promise<LabelListResponse> {
     const response = await apiClient.get(`${this.baseURL}/${projectUrl}/labels`)
-    return response.data
+    const mappedLabels = response.data.labels.map((label: TempLabel) => {
+      return {
+        labelId: label.id,
+        name: label.name,
+        description: label.description,
+        color: label.color,
+      }
+    })
+
+    return {
+      labels: mappedLabels,
+      size: response.data.size,
+    }
   },
 
   //  * 새 레이블을 생성합니다.

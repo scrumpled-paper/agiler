@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { projectService } from '@/api/services/projectService'
 import { labelService } from '@/api/services/labelService'
-import type { ProjectMember } from '@/types'
+import { issueService } from '@/api/services/issueService'
+import type { UserInfo } from '@/types'
 import type { Label } from '@/types/label'
 import type { SelectedTemplate } from './template/TemplateSelectModal'
 import { AssigneeSelector } from './issue/AssigneeSelector'
@@ -23,6 +24,8 @@ import { templateService } from '@/api/services/templateService'
 import type { IssuePayload } from '@/types/issue'
 
 export type IssueModalProps = {
+  mode?: 'create' | 'edit'
+  issueId?: number
   isOpen: boolean
   onClose: () => void
   projectUrl: string | undefined
@@ -30,16 +33,9 @@ export type IssueModalProps = {
   onSave?: (issueData: IssuePayload) => void
 }
 
-// export type IssueFormData = {
-//   title: string
-//   contents: string
-//   startedAt: string
-//   dueAt: string
-//   assignees: ProjectMember[]
-//   labels: Label[]
-// }
-
 export function IssueModal({
+  mode = 'create',
+  issueId,
   isOpen,
   onClose,
   projectUrl,
@@ -51,14 +47,15 @@ export function IssueModal({
   const [contents, setContents] = useState('')
   const [startedAt, setStartedAt] = useState('')
   const [dueAt, setDueAt] = useState('')
-  const [selectedAssignees, setSelectedAssignees] = useState<ProjectMember[]>(
-    []
-  )
+  const [selectedAssignees, setSelectedAssignees] = useState<UserInfo[]>([])
   const [selectedLabels, setSelectedLabels] = useState<Label[]>([])
 
   // Popover states
   const [assigneePopoverOpen, setAssigneePopoverOpen] = useState(false)
   const [labelPopoverOpen, setLabelPopoverOpen] = useState(false)
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false)
 
   // Fetch project members
   const { data: membersData } = useQuery({
@@ -77,6 +74,13 @@ export function IssueModal({
     queryKey: ['labels', projectUrl],
     queryFn: () => labelService.getLabels(projectUrl!),
     enabled: !!projectUrl && isOpen,
+  })
+
+  // Fetch issue detail (edit 모드일 때만)
+  const { data: issueDetail } = useQuery({
+    queryKey: ['issue-detail', projectUrl, issueId],
+    queryFn: () => issueService.getIssueDetail(projectUrl!, issueId!),
+    enabled: mode === 'edit' && !!projectUrl && !!issueId && isOpen,
   })
 
   // Initialize form with template data
@@ -105,6 +109,19 @@ export function IssueModal({
     }
   }, [])
 
+  // Initialize form with issue data (edit 모드일 때)
+  useEffect(() => {
+    if (mode === 'edit' && issueDetail && membersData && labelsData) {
+      setTitle(issueDetail.title)
+      setContents(issueDetail.contents)
+      setStartedAt(issueDetail.startedAt || '')
+      setDueAt(issueDetail.dueAt || '')
+
+      setSelectedAssignees(issueDetail.assignees)
+      setSelectedLabels(issueDetail.labels)
+    }
+  }, [mode, issueDetail, membersData, labelsData])
+
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -118,40 +135,97 @@ export function IssueModal({
   }, [isOpen])
 
   // Handlers
-  const handleAddAssignee = (member: ProjectMember) => {
-    if (!selectedAssignees.find(a => a.peopleId === member.peopleId)) {
+  const handleAddAssignee = (member: UserInfo) => {
+    if (!selectedAssignees.find(a => a.profileId === member.profileId)) {
       setSelectedAssignees([...selectedAssignees, member])
     }
     setAssigneePopoverOpen(false)
   }
 
-  const handleRemoveAssignee = (peopleId: number) => {
-    setSelectedAssignees(selectedAssignees.filter(a => a.peopleId !== peopleId))
+  const handleRemoveAssignee = (profileId: number) => {
+    setSelectedAssignees(
+      selectedAssignees.filter(a => a.profileId !== profileId)
+    )
   }
 
   const handleAddLabel = (label: Label) => {
-    if (!selectedLabels.find(l => l.id === label.id)) {
+    if (!selectedLabels.find(l => l === label)) {
       setSelectedLabels([...selectedLabels, label])
     }
     setLabelPopoverOpen(false)
   }
 
-  const handleRemoveLabel = (labelId: number) => {
-    setSelectedLabels(selectedLabels.filter(l => l.id !== labelId))
+  const handleRemoveLabel = (label: Label) => {
+    setSelectedLabels(selectedLabels.filter(l => l !== label))
   }
 
-  const handleSave = () => {
-    const issueData: IssuePayload = {
-      title,
-      contents,
-      startedAt,
-      dueAt,
-      assignees: selectedAssignees,
-      labels: selectedLabels,
+  const handleSave = async () => {
+    setIsLoading(true)
+    try {
+      if (mode === 'create') {
+        // 생성 모드
+        const issueData: IssuePayload = {
+          title,
+          contents,
+          startedAt,
+          dueAt,
+          assignees: selectedAssignees.map(p => p.profileId),
+          labels: selectedLabels.map(l => l.labelId),
+        }
+        onSave?.(issueData)
+        onClose()
+      } else if (mode === 'edit' && projectUrl && issueId) {
+        // 수정 모드
+        // Issue 기본 정보 업데이트
+        await issueService.updateIssue(projectUrl, {
+          issueId,
+          title,
+          contents,
+          startedAt,
+          dueAt,
+        })
+
+        if (selectedAssignees) {
+          // 담당자 업데이트
+          await issueService.updateIssueAssignees(
+            projectUrl,
+            issueId,
+            selectedAssignees.map(a => a.profileId)
+          )
+        }
+
+        // 라벨 업데이트
+        if (selectedLabels.length) {
+          await issueService.updateIssueLabels(
+            projectUrl,
+            issueId,
+            selectedLabels.map(l => l.labelId)
+          )
+        }
+
+        onClose()
+      }
+    } catch (error) {
+      console.error('Issue 저장 실패:', error)
+    } finally {
+      setIsLoading(false)
     }
-    onSave?.(issueData)
-    console.log('issueData : ', issueData)
-    onClose()
+  }
+
+  const handleDelete = async () => {
+    if (!projectUrl || !issueId) return
+
+    if (!confirm('정말 이 이슈를 삭제하시겠습니까?')) return
+
+    setIsLoading(true)
+    try {
+      await issueService.deleteIssue(projectUrl, issueId)
+      onClose()
+    } catch (error) {
+      console.error('Issue 삭제 실패:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCancel = () => {
@@ -168,7 +242,9 @@ export function IssueModal({
           <div className="flex flex-col gap-5 bg-[#f8faff] px-8 py-12">
             {/* Header */}
             <DialogHeader className="sr-only">
-              <DialogTitle>Create Issue</DialogTitle>
+              <DialogTitle>
+                {mode === 'create' ? 'Create Issue' : 'Edit Issue'}
+              </DialogTitle>
             </DialogHeader>
 
             {/* Title Input */}
@@ -198,15 +274,6 @@ export function IssueModal({
                 />
               </div>
             </div>
-
-            {/* Date Section */}
-            {/* <div className="flex flex-col gap-1">
-              <label className="text-sm font-bold text-black">Date</label>
-              <div className="flex h-[46px] items-center rounded-md border border-[#f1f3f7] bg-white px-3 py-3.5 shadow-sm">
-                <span className="text-xs text-[#6d758f]">자동 기입</span>
-              </div>
-            </div> */}
-
             {/* Start and Due Time */}
             <TimeSelector
               startedAt={startedAt}
@@ -230,20 +297,34 @@ export function IssueModal({
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                className="h-12 flex-1 rounded-lg border-black text-base font-medium text-black hover:bg-gray-50"
-              >
-                Cancel
-              </Button>
+              {mode === 'edit' ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={isLoading}
+                  className="h-12 flex-1 rounded-lg text-base font-medium"
+                >
+                  {isLoading ? 'Deleting...' : 'Delete'}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  className="h-12 flex-1 rounded-lg border-black text-base font-medium text-black hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
                 type="button"
                 onClick={handleSave}
+                disabled={isLoading}
                 className="h-12 flex-1 rounded-lg bg-black text-base font-medium text-white hover:bg-black/90"
               >
-                Save
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>

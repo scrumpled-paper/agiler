@@ -13,12 +13,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import type { ProjectMember } from '@/types'
+import type { UserInfo } from '@/types'
 import { Plus } from 'lucide-react'
 
 type AssigneeSelectorProps = {
-  members: ProjectMember[]
-  onAdd: (member: ProjectMember) => void
+  members: UserInfo[]
+  onAdd: (member: UserInfo) => void
   isOpen: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -53,7 +53,7 @@ export function AssigneeSelector({
             <CommandGroup>
               {members.map(member => (
                 <CommandItem
-                  key={member.peopleId}
+                  key={member.profileId}
                   onSelect={() => onAdd(member)}
                   className="flex items-center gap-2"
                 >

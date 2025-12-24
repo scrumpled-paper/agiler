@@ -1,9 +1,9 @@
 import { X } from 'lucide-react'
 import { Avatar } from '@/components/ui/avatar'
-import type { ProjectMember } from '@/types'
+import type { UserInfo } from '@/types'
 
 type SelectedAssigneesProps = {
-  assignees: ProjectMember[]
+  assignees: UserInfo[]
   onRemove: (peopleId: number) => void
 }
 
@@ -17,7 +17,7 @@ export function SelectedAssignees({
     <div className="flex flex-wrap items-center gap-2">
       {assignees.map(member => (
         <div
-          key={member.peopleId}
+          key={member.profileId}
           className="flex h-[43px] items-center gap-2 rounded-[5px] border-[0.67px] border-[#e1e4ed] bg-white px-3 py-3 shadow-sm"
         >
           <Avatar className="h-8 w-8">
@@ -38,7 +38,7 @@ export function SelectedAssignees({
           </span>
           <button
             type="button"
-            onClick={() => onRemove(member.peopleId)}
+            onClick={() => onRemove(member.profileId)}
             className="ml-1 text-[#6d758f] hover:text-black"
           >
             <X className="h-3 w-3" />

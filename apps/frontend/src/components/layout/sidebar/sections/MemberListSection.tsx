@@ -9,11 +9,11 @@ import {
 import { DisplayItem } from '../items/DisplayItem'
 import { ShowMoreButton } from '../buttons/ShowMoreButton'
 import type { DisplaySection } from '@/lib/sidebar/types'
-import type { ProjectMember } from '@/types'
+import type { UserInfo } from '@/types'
 
 export interface MemberListSectionProps {
   section: DisplaySection
-  members?: ProjectMember[]
+  members?: UserInfo[]
 }
 
 export function MemberListSection({
@@ -48,7 +48,7 @@ export function MemberListSection({
         <div className="space-y-1">
           {displayedMembers.length > 0 ? (
             displayedMembers.map(member => (
-              <DisplayItem key={member.peopleId} member={member} />
+              <DisplayItem key={member.profileId} member={member} />
             ))
           ) : (
             <p className="px-2 py-1.5 text-sm text-muted-foreground">

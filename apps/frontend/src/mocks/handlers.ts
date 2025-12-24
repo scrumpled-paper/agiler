@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import type { GetProjectListResponse, GetProjectMembersResponse } from '@/types'
 import type { User } from '@/api/services/authService'
-import type { LabelListResponse, Label } from '@/types/label'
+import type { Label } from '@/types/label'
 import type {
   TemplateListItem,
   TemplateDetail,
@@ -38,31 +38,31 @@ export const MOCK_USER: User = {
 // Mock labels data
 export const MOCK_LABELS: Label[] = [
   {
-    id: 1,
+    labelId: 1,
     name: 'bug',
     description: '라벨에 대한 설명이 들어감',
     color: '#FF4040',
   },
   {
-    id: 2,
+    labelId: 2,
     name: 'documentation',
     description: '라벨에 대한 설명이 들어감',
     color: '#4040FF',
   },
   {
-    id: 3,
+    labelId: 3,
     name: 'duplicate',
     description: '라벨에 대한 설명이 들어감',
     color: '#40FF46',
   },
   {
-    id: 4,
+    labelId: 4,
     name: 'enhancement',
     description: '라벨에 대한 설명이 들어감',
     color: '#40FFF5',
   },
   {
-    id: 5,
+    labelId: 5,
     name: 'invalid',
     description: '라벨에 대한 설명이 들어감',
     color: '#FFE240',
@@ -256,7 +256,7 @@ export const handlers = [
     const response: GetProjectMembersResponse = {
       contents: [
         {
-          peopleId: 1,
+          profileId: 1,
           nickname: 'Alice',
           email: 'alice@example.com',
           imageUrl: 'https://placehold.co/100x100',
@@ -264,7 +264,7 @@ export const handlers = [
           description: 'Frontend developer',
         },
         {
-          peopleId: 2,
+          profileId: 2,
           nickname: 'Bob',
           email: 'bob@example.com',
           imageUrl: 'https://placehold.co/100x100',
@@ -504,8 +504,13 @@ export const handlers = [
   // 라벨 목록 조회
   ...createHandlers('/api/v1/projects/:projectUrl/labels', ({ params }) => {
     console.log('[MSW] 라벨 목록 조회 호출됨:', params.projectUrl)
-    const response: LabelListResponse = {
-      labels: labelsStore,
+    const response = {
+      labels: labelsStore.map(label => ({
+        id: label.labelId,
+        name: label.name,
+        description: label.description,
+        color: label.color,
+      })),
       size: labelsStore.length,
     }
     return HttpResponse.json(response)
@@ -522,7 +527,7 @@ export const handlers = [
       }
       console.log('[MSW] 라벨 생성됨:', params.projectUrl, body)
       const newLabel: Label = {
-        id: nextLabelId++,
+        labelId: nextLabelId++,
         ...body,
       }
       labelsStore.push(newLabel)
@@ -542,7 +547,9 @@ export const handlers = [
       const labelId = Number(params.labelId)
       console.log('[MSW] 라벨 수정됨:', params.projectUrl, labelId, body)
 
-      const labelIndex = labelsStore.findIndex(label => label.id === labelId)
+      const labelIndex = labelsStore.findIndex(
+        label => label.labelId === labelId
+      )
       if (labelIndex !== -1) {
         labelsStore[labelIndex] = {
           ...labelsStore[labelIndex],
@@ -560,7 +567,7 @@ export const handlers = [
       const body = (await request.json()) as { labelId: number }
       console.log('[MSW] 라벨 삭제됨:', params.projectUrl, body.labelId)
 
-      labelsStore = labelsStore.filter(label => label.id !== body.labelId)
+      labelsStore = labelsStore.filter(label => label.labelId !== body.labelId)
       return HttpResponse.json(undefined)
     }
   ),
@@ -955,6 +962,131 @@ export const handlers = [
       console.log('[MSW] Discord 연동 요청:', params.projectUrl)
       return HttpResponse.json({
         authUrl: 'https://discord.com/api/oauth2/authorize?client_id=mock',
+      })
+    }
+  ),
+
+  // ==================== Activity List Handlers ====================
+
+  // 데일리 스크럼 목록 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/scrums',
+    ({ request, params }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page')) || 0
+      const size = Number(url.searchParams.get('size')) || 10
+
+      console.log('[MSW] 데일리 스크럼 목록 조회 호출됨:', params.projectUrl, {
+        page,
+        size,
+      })
+
+      const mockScrums = Array.from({ length: 10 }, (_, i) => ({
+        scrumId: i + 1,
+        title: `데일리 스크럼 #${i + 1}`,
+        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      }))
+
+      return HttpResponse.json({
+        contents: mockScrums,
+        pageSize: size,
+        currentPage: page,
+        totalPages: 1,
+        totalElements: 10,
+      })
+    }
+  ),
+
+  // 회의록 목록 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/meetings',
+    ({ request, params }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page')) || 0
+      const size = Number(url.searchParams.get('size')) || 10
+
+      console.log('[MSW] 회의록 목록 조회 호출됨:', params.projectUrl, {
+        page,
+        size,
+      })
+
+      const mockMeetings = Array.from({ length: 10 }, (_, i) => ({
+        meetingId: i + 1,
+        title: `회의록 #${i + 1}`,
+        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      }))
+
+      return HttpResponse.json({
+        contents: mockMeetings,
+        pageSize: size,
+        currentPage: page,
+        totalPages: 1,
+        totalElements: 10,
+      })
+    }
+  ),
+
+  // 회고 목록 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/retros',
+    ({ request, params }) => {
+      const url = new URL(request.url)
+      const page = Number(url.searchParams.get('page')) || 0
+      const size = Number(url.searchParams.get('size')) || 10
+
+      console.log('[MSW] 회고 목록 조회 호출됨:', params.projectUrl, {
+        page,
+        size,
+      })
+
+      const mockRetros = Array.from({ length: 10 }, (_, i) => ({
+        retroId: i + 1,
+        title: `회고 #${i + 1}`,
+        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      }))
+
+      return HttpResponse.json({
+        contents: mockRetros,
+        pageSize: size,
+        currentPage: page,
+        totalPages: 1,
+        totalElements: 10,
       })
     }
   ),

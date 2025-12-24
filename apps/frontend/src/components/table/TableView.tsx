@@ -10,16 +10,25 @@ import {
   TableRow,
 } from '@/components/ui/shadcn-io/table'
 import type { Issue } from '@/types/issue'
-import type { IssueColumn } from '@/types'
+import type { IssueColumn, UserInfo } from '@/types'
 import { useMemo } from 'react'
 import type { Column, Row } from '@tanstack/react-table'
 
 interface TableViewProps {
   columns: IssueColumn[]
   tasks: Issue[]
+  profiles: UserInfo[]
 }
 
-export default function TableView({ columns, tasks }: TableViewProps) {
+export default function TableView({
+  columns,
+  tasks,
+  profiles,
+}: TableViewProps) {
+  const profileMap = useMemo(
+    () => new Map(profiles.map(p => [Number(p.profileId), p])),
+    [profiles]
+  )
   const tableColumns: ColumnDef<Issue, unknown>[] = useMemo(
     () => [
       {
@@ -52,50 +61,52 @@ export default function TableView({ columns, tasks }: TableViewProps) {
         },
       },
       {
-        accessorKey: 'owner',
+        accessorKey: 'assignees',
         header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="Owner" />
         ),
         cell: ({ row }: { row: Row<Issue> }) => {
-          const owner = row.getValue('owner') as Issue['owner']
-          return <div>{owner.nickname}</div>
+          const assignees = row.getValue('assignees') as Issue['assignees']
+          const owner = profileMap.get(assignees[0])
+          return <div>{owner?.nickname}</div>
         },
       },
       {
-        accessorKey: 'startAt',
+        accessorKey: 'startedAt',
         header: ({ column }: { column: Column<Issue, unknown> }) => (
           <TableColumnHeader column={column} title="Start Date" />
         ),
         cell: ({ row }: { row: Row<Issue> }) => {
-          // Issue 타입에서 startAt이 Date 타입이므로, 타입 캐스팅 후 날짜 포맷팅
-          const date = row.getValue('startAt') as Date
+          // Issue 타입에서 startedAt이 string 타입이므로, 타입 캐스팅 후 날짜 포맷팅
+          const date = row.getValue('startedAt') as string
           return (
             <div>
-              {/* Date 객체가 아닌 경우를 대비해 new Date(date)로 감싸는 것은 유지 */}
-              {new Date(date).toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
+              {date &&
+                new Date(date).toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
             </div>
           )
         },
       },
       {
-        accessorKey: 'endAt',
+        accessorKey: 'dueAt',
         header: ({ column }: { column: Column<Issue, unknown> }) => (
-          <TableColumnHeader column={column} title="End Date" />
+          <TableColumnHeader column={column} title="Due Date" />
         ),
         cell: ({ row }: { row: Row<Issue> }) => {
-          // Issue 타입에서 endAt이 Date 타입이므로, 타입 캐스팅 후 날짜 포맷팅
-          const date = row.getValue('endAt') as Date
+          // Issue 타입에서 dueAt이 string 타입이므로, 타입 캐스팅 후 날짜 포맷팅
+          const date = row.getValue('dueAt') as string
           return (
             <div>
-              {new Date(date).toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
+              {date &&
+                new Date(date).toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
             </div>
           )
         },
