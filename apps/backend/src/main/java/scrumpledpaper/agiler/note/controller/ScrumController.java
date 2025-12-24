@@ -6,6 +6,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,8 @@ import scrumpledpaper.agiler.common.PageResDto;
 import scrumpledpaper.agiler.note.dto.IdResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantResDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantUpdateReqDto;
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.service.ScrumService;
 
@@ -59,5 +62,16 @@ public class ScrumController {
 		@RequestBody @Valid NoteDeleteReqDto request) {
 		scrumService.deleteScrums(customUserDetails.getUserId(), projectUrl, request);
 		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{projectUrl}/scrums/{scrumId}")
+	public ResponseEntity<NoteParticipantResDto> updateScrumParticipants(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable Long scrumId,
+		@RequestBody @Valid NoteParticipantUpdateReqDto request) {
+		NoteParticipantResDto response = scrumService.updateScrumParticipants(customUserDetails.getUserId(), projectUrl, scrumId, request);
+		return ResponseEntity.ok().body(response);
 	}
 }
