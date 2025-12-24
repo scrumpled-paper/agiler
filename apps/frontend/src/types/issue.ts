@@ -4,7 +4,6 @@ import type { Label } from './label'
 // 백엔드 응답 타입 (API에서 실제로 받는 데이터)
 export interface IssueResponse {
   assignees?: number[]
-  // assignees?: UserInfo[]
   createdAt: string
   dueAt?: string
   isDone: boolean
@@ -12,10 +11,25 @@ export interface IssueResponse {
   kanbanConfigId: number
   labels?: number[]
   notis?: number[]
-  // labels?: Label[]
-  // notis?: UserInfo[]
   startedAt?: string
   title: string
+}
+export interface IssueDetail {
+  assignees: UserInfo[] | []
+  createdAt: string
+  dueAt?: string
+  isDone: boolean
+  issueId: number
+  kanbanConfigId: number
+  labels: Label[] | []
+  notis: UserInfo[] | []
+  startedAt?: string
+  title: string
+}
+
+// Issue 상세 조회 응답 타입 (contents 포함)
+export interface IssueDetailResponse extends IssueDetail {
+  contents: string
 }
 
 // 프론트엔드에서 사용하는 Issue 타입 (KanbanItemProps 호환)

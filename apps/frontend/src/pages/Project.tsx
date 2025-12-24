@@ -46,6 +46,11 @@ export default function Project() {
   const [templateModalOpen, setTemplateModalOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] =
     useState<SelectedTemplate | null>(null)
+
+  // Edit modal state
+  const [editIssueId, setEditIssueId] = useState<number | null>(null)
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
+
   const queryClient = useQueryClient()
   // Check if selected date is today
   const isToday = useMemo(() => {
@@ -120,6 +125,18 @@ export default function Project() {
     }
   }
 
+  const handleCardClick = (issueId: number) => {
+    setEditIssueId(issueId)
+    setEditModalOpen(true)
+  }
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false)
+    setEditIssueId(null)
+    // Refetch kanban data after editing
+    queryClient.invalidateQueries({ queryKey: ['kanban', projectUrl] })
+  }
+
   if (isLoading) {
     return (
       <div className="container p-4 ">
@@ -187,6 +204,7 @@ export default function Project() {
           columns={columns}
           tasks={tasks}
           onTaskStatusChange={handleTaskStatusChange}
+          onCardClick={handleCardClick}
           isReadOnly={!isToday}
           labels={labels}
           profiles={profiles}
@@ -225,6 +243,17 @@ export default function Project() {
           projectUrl={projectUrl}
           selectedTemplate={selectedTemplate}
           onSave={handleIssueSave}
+        />
+      )}
+
+      {/* Edit Issue Modal */}
+      {editModalOpen && (
+        <IssueModal
+          mode="edit"
+          issueId={editIssueId ?? undefined}
+          isOpen={editModalOpen}
+          onClose={handleEditModalClose}
+          projectUrl={projectUrl}
         />
       )}
     </div>

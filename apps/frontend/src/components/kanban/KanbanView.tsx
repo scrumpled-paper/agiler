@@ -23,6 +23,7 @@ interface KanbanViewProps {
   columns: IssueColumn[]
   tasks: Issue[]
   onTaskStatusChange?: (issueId: number, kanbanConfigId: number) => void
+  onCardClick?: (issueId: number) => void
   isReadOnly?: boolean
   labels: Label[]
   profiles: UserInfo[]
@@ -32,6 +33,7 @@ export default function KanbanView({
   columns,
   tasks,
   onTaskStatusChange,
+  onCardClick,
   isReadOnly = false,
   labels,
   profiles,
@@ -177,6 +179,10 @@ export default function KanbanView({
     }
   }
 
+  const handleCardClick = (issueId: string) => {
+    onCardClick?.(Number(issueId))
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {isReadOnly && (
@@ -212,6 +218,7 @@ export default function KanbanView({
                   id={task.issueId}
                   key={task.issueId}
                   name={task.title}
+                  onClick={() => handleCardClick(task.issueId)}
                 >
                   <div className="flex flex-col gap-2">
                     <div className=" flex flex-row">

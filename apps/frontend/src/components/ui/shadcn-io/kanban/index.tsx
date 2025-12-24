@@ -93,6 +93,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
 export type KanbanCardProps<T extends KanbanItemProps = KanbanItemProps> = T & {
   children?: ReactNode
   className?: string
+  onClick?: () => void
 }
 
 export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
@@ -100,6 +101,7 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
   name,
   children,
   className,
+  onClick,
 }: KanbanCardProps<T>) => {
   const {
     attributes,
@@ -129,11 +131,14 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
         ref={setNodeRef}
       >
         <Card
+          onClick={onClick}
           className={cn(
             'gap-4 rounded-md p-3 shadow-sm',
-            !isReadOnly && 'cursor-grab',
+            !isReadOnly && onClick && 'cursor-pointer',
+            !isReadOnly && !onClick && 'cursor-grab',
             isDragging && 'pointer-events-none cursor-grabbing opacity-30',
             isReadOnly && 'cursor-default opacity-70',
+            onClick && 'hover:shadow-md transition-shadow',
             className
           )}
         >
@@ -226,8 +231,17 @@ export const KanbanProvider = <
   const [activeCardId, setActiveCardId] = useState<string | null>(null)
 
   const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor),
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 10, // 10px 이상 움직여야 드래그 시작
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250, // 250ms 이상 눌러야 드래그 시작
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor)
   )
 

@@ -1,14 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { issueService } from './issueService'
 import { apiClient } from '../client'
-import type { IssuePayload, updateIssuePayload } from '@/types/issue'
-import type { Label } from '@/types/label'
-import type { UserInfo } from '@/types'
+import type {
+  IssuePayload,
+  updateIssuePayload,
+  IssueDetailResponse,
+} from '@/types/issue'
 
 // apiClient 모킹
 vi.mock('../client', () => ({
   apiClient: {
     post: vi.fn(),
+    get: vi.fn(),
     delete: vi.fn(),
     patch: vi.fn(),
   },
@@ -96,6 +99,59 @@ describe('issueService', () => {
     })
   })
 
+  describe('getIssueDetail', () => {
+    const mockIssueDetail: IssueDetailResponse = {
+      issueId: 1,
+      title: 'Test Issue',
+      contents: 'Test contents',
+      assignees: [],
+      labels: [],
+      notis: [],
+      kanbanConfigId: 1,
+      isDone: false,
+      createdAt: '2025-01-01T00:00:00.000Z',
+      startedAt: '2025-01-01T00:00:00.000Z',
+      dueAt: '2025-01-10T00:00:00.000Z',
+    }
+
+    it('should get issue detail successfully', async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ data: mockIssueDetail })
+
+      const result = await issueService.getIssueDetail('test-project', 1)
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/api/v1/projects/test-project/issues/1'
+      )
+      expect(result).toEqual(mockIssueDetail)
+    })
+
+    it('should handle API error', async () => {
+      const apiError = new Error('Failed to get issue detail')
+      vi.mocked(apiClient.get).mockRejectedValue(apiError)
+
+      await expect(
+        issueService.getIssueDetail('test-project', 1)
+      ).rejects.toThrow('Failed to get issue detail')
+    })
+
+    it('should get issue detail with different issueId', async () => {
+      const differentDetail: IssueDetailResponse = {
+        ...mockIssueDetail,
+        issueId: 999,
+        title: 'Different Issue',
+      }
+
+      vi.mocked(apiClient.get).mockResolvedValue({ data: differentDetail })
+
+      const result = await issueService.getIssueDetail('another-project', 999)
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/api/v1/projects/another-project/issues/999'
+      )
+      expect(result).toEqual(differentDetail)
+    })
+  })
+
   describe('deleteIssue', () => {
     it('should delete issue successfully', async () => {
       const mockResponse = { success: true }
@@ -106,7 +162,7 @@ describe('issueService', () => {
       expect(apiClient.delete).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues',
         {
-          data: 1,
+          data: { issueId: 1 },
         }
       )
       expect(result).toEqual(mockResponse)
@@ -130,7 +186,7 @@ describe('issueService', () => {
       expect(apiClient.delete).toHaveBeenCalledWith(
         '/api/v1/projects/another-project/issues',
         {
-          data: 999,
+          data: { issueId: 999 },
         }
       )
     })
@@ -158,9 +214,7 @@ describe('issueService', () => {
 
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues',
-        {
-          payload: mockPayload,
-        }
+        mockPayload
       )
       expect(result).toEqual(mockResponse)
     })
@@ -190,28 +244,13 @@ describe('issueService', () => {
 
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues',
-        {
-          payload: differentPayload,
-        }
+        differentPayload
       )
     })
   })
 
   describe('updateIssueLabels', () => {
-    const mockLabels: Label[] = [
-      {
-        labelId: 1,
-        name: 'Bug',
-        description: 'Bug label',
-        color: '#ff0000',
-      },
-      {
-        labelId: 2,
-        name: 'Feature',
-        description: 'Feature label',
-        color: '#00ff00',
-      },
-    ]
+    const mockLabelIds: number[] = [1, 2]
 
     it('should update issue labels successfully', async () => {
       const mockResponse = { success: true }
@@ -220,13 +259,13 @@ describe('issueService', () => {
       const result = await issueService.updateIssueLabels(
         'test-project',
         1,
-        mockLabels
+        mockLabelIds
       )
 
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues/1/labels',
         {
-          payload: mockLabels,
+          labels: mockLabelIds,
         }
       )
       expect(result).toEqual(mockResponse)
@@ -237,7 +276,7 @@ describe('issueService', () => {
       vi.mocked(apiClient.patch).mockRejectedValue(apiError)
 
       await expect(
-        issueService.updateIssueLabels('test-project', 1, mockLabels)
+        issueService.updateIssueLabels('test-project', 1, mockLabelIds)
       ).rejects.toThrow('Failed to update labels')
     })
 
@@ -250,20 +289,13 @@ describe('issueService', () => {
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues/1/labels',
         {
-          payload: [],
+          labels: [],
         }
       )
     })
 
     it('should update with single label', async () => {
-      const singleLabel: Label[] = [
-        {
-          labelId: 1,
-          name: 'Bug',
-          description: 'Bug label',
-          color: '#ff0000',
-        },
-      ]
+      const singleLabel: number[] = [1]
 
       const mockResponse = { success: true }
       vi.mocked(apiClient.patch).mockResolvedValue({ data: mockResponse })
@@ -273,7 +305,7 @@ describe('issueService', () => {
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues/5/labels',
         {
-          payload: singleLabel,
+          labels: singleLabel,
         }
       )
     })
@@ -320,18 +352,7 @@ describe('issueService', () => {
   })
 
   describe('updateIssueAssignees', () => {
-    const mockAssignees: UserInfo[] = [
-      {
-        profileId: 1,
-        nickname: 'User 1',
-        email: 'user1@test.com',
-      },
-      {
-        profileId: 2,
-        nickname: 'User 2',
-        email: 'user2@test.com',
-      },
-    ]
+    const mockAssigneeIds: number[] = [1, 2]
 
     it('should update issue assignees successfully', async () => {
       const mockResponse = { success: true }
@@ -340,13 +361,13 @@ describe('issueService', () => {
       const result = await issueService.updateIssueAssignees(
         'test-project',
         1,
-        mockAssignees
+        mockAssigneeIds
       )
 
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/api/v1/projects/test-project/issues/1/assignees',
         {
-          assignees: mockAssignees,
+          assignees: mockAssigneeIds,
         }
       )
       expect(result).toEqual(mockResponse)
@@ -357,7 +378,7 @@ describe('issueService', () => {
       vi.mocked(apiClient.patch).mockRejectedValue(apiError)
 
       await expect(
-        issueService.updateIssueAssignees('test-project', 1, mockAssignees)
+        issueService.updateIssueAssignees('test-project', 1, mockAssigneeIds)
       ).rejects.toThrow('Failed to update assignees')
     })
 
@@ -376,13 +397,7 @@ describe('issueService', () => {
     })
 
     it('should update with single assignee', async () => {
-      const singleAssignee: UserInfo[] = [
-        {
-          profileId: 3,
-          nickname: 'User 3',
-          email: 'user3@test.com',
-        },
-      ]
+      const singleAssignee: number[] = [3]
 
       const mockResponse = { success: true }
       vi.mocked(apiClient.patch).mockResolvedValue({ data: mockResponse })
