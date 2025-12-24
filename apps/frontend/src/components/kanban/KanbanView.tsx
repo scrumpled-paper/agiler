@@ -18,6 +18,7 @@ import {
 } from '@/components/kanban/KanbanFilterBar'
 import type { Issue } from '@/types/issue'
 import type { Label } from '@/types/label'
+import { IssueModal } from '@/components/IssueModal'
 
 interface KanbanViewProps {
   columns: IssueColumn[]
@@ -27,6 +28,7 @@ interface KanbanViewProps {
   isReadOnly?: boolean
   labels: Label[]
   profiles: UserInfo[]
+  projectUrl?: string
 }
 
 export default function KanbanView({
@@ -37,6 +39,7 @@ export default function KanbanView({
   isReadOnly = false,
   labels,
   profiles,
+  projectUrl,
 }: KanbanViewProps) {
   const [filters, setFilters] = useState<KanbanFilters>({
     search: '',
@@ -45,6 +48,16 @@ export default function KanbanView({
     selectedLabels: [],
     selectedSubscribers: [],
   })
+
+  // IssueModal 관련 state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null)
+
+  // IssueModal handler
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    setSelectedIssueId(null)
+  }
 
   // 1. 빠른 조회를 위해 labels 배열을 Map으로 변환
   const labelMap = useMemo(
@@ -324,6 +337,15 @@ export default function KanbanView({
           </KanbanBoard>
         )}
       </KanbanProvider>
+
+      {/* Issue Detail Modal */}
+      <IssueModal
+        mode="edit"
+        issueId={selectedIssueId ?? undefined}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        projectUrl={projectUrl}
+      />
     </div>
   )
 }

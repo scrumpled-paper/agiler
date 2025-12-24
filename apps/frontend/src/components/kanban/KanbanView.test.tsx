@@ -1,9 +1,15 @@
-import { describe, it, expect } from 'vitest'
+/* cSpell:disable */
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import KanbanView from './KanbanView'
 import type { IssueColumn, UserInfo } from '@/types'
 import type { Issue } from '@/types/issue'
 import type { Label } from '@/types/label'
+
+// Mock IssueModal 컴포넌트
+vi.mock('@/components/IssueModal', () => ({
+  IssueModal: () => null,
+}))
 
 // Mock 데이터
 const mockColumns: IssueColumn[] = [
@@ -46,34 +52,49 @@ const mockLabels: Label[] = [
 
 const mockTasks: Issue[] = [
   {
+    id: '1',
     issueId: '1',
+    name: 'Fix login bug',
     title: 'Fix login bug',
+    column: '1',
     kanbanConfigId: 1,
     dueAt: '2025-12-31T00:00:00Z',
     startedAt: '2025-12-01T00:00:00Z',
+    createdAt: '2025-12-01T00:00:00Z',
     assignees: [1],
     labels: [1],
     notis: [1, 2],
+    isDone: false,
   },
   {
+    id: '2',
     issueId: '2',
+    name: 'Implement dark mode',
     title: 'Implement dark mode',
+    column: '2',
     kanbanConfigId: 2,
     dueAt: '2025-12-25T00:00:00Z',
     startedAt: '2025-12-10T00:00:00Z',
+    createdAt: '2025-12-10T00:00:00Z',
     assignees: [2],
     labels: [2],
     notis: [2],
+    isDone: false,
   },
   {
+    id: '3',
     issueId: '3',
+    name: 'Update documentation',
     title: 'Update documentation',
+    column: '3',
     kanbanConfigId: 3,
     dueAt: '2025-12-20T00:00:00Z',
     startedAt: '2025-12-05T00:00:00Z',
+    createdAt: '2025-12-05T00:00:00Z',
     assignees: [1, 2],
     labels: [1, 2],
     notis: [],
+    isDone: true,
   },
 ]
 
@@ -201,7 +222,9 @@ describe('KanbanView - 통합 테스트', () => {
       )
 
       // 컴포넌트가 렌더링되었는지 확인
-      expect(container.querySelector('.flex.flex-col.gap-4')).toBeInTheDocument()
+      expect(
+        container.querySelector('.flex.flex-col.gap-4')
+      ).toBeInTheDocument()
     })
 
     it('프로필이 없을 때도 정상 렌더링된다', () => {
@@ -215,7 +238,9 @@ describe('KanbanView - 통합 테스트', () => {
       )
 
       // 컴포넌트가 렌더링되었는지 확인
-      expect(container.querySelector('.flex.flex-col.gap-4')).toBeInTheDocument()
+      expect(
+        container.querySelector('.flex.flex-col.gap-4')
+      ).toBeInTheDocument()
     })
 
     it('컬럼이 없을 때도 에러 없이 렌더링된다', () => {
@@ -230,7 +255,9 @@ describe('KanbanView - 통합 테스트', () => {
 
       // 필터 바는 렌더링되어야 함
       expect(screen.getByPlaceholderText(/이슈 검색/i)).toBeInTheDocument()
-      expect(container.querySelector('.flex.flex-col.gap-4')).toBeInTheDocument()
+      expect(
+        container.querySelector('.flex.flex-col.gap-4')
+      ).toBeInTheDocument()
     })
   })
 
@@ -262,7 +289,9 @@ describe('KanbanView - 통합 테스트', () => {
       )
 
       // KanbanProvider가 렌더링되었는지 확인 (tasks를 사용하는 컴포넌트)
-      expect(container.querySelector('.flex.flex-col.gap-4')).toBeInTheDocument()
+      expect(
+        container.querySelector('.flex.flex-col.gap-4')
+      ).toBeInTheDocument()
     })
 
     it('labels와 profiles prop을 올바르게 받는다', () => {
