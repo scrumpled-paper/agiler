@@ -59,6 +59,9 @@ app:
     refreshTokenSecret: "scrumpledpaperanotherdummydummysecretkey"
     token-expiry: 86400000
     refresh-token-expiry: 604800000
+  api:
+    key: "scumpleddummypaperdummyapikeydummykey"
+    wss-token-expiry: 300000
   oauth2:
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect
