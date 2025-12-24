@@ -23,6 +23,7 @@ import jakarta.servlet.http.Cookie;
 import scrumpledpaper.agiler.annotation.IntegrationTest;
 import scrumpledpaper.agiler.common.AuthContext;
 import scrumpledpaper.agiler.common.TestDataFactory;
+import scrumpledpaper.agiler.common.config.AppProperties;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.WssTokenProvider;
 import scrumpledpaper.agiler.image.entity.Image;
@@ -42,6 +43,8 @@ public class WssControllerTest {
 	private TestDataFactory testDataFactory;
 	@Autowired
 	private WssTokenProvider wssTokenProvider;
+	@Autowired
+	private AppProperties appProperties;
 	Image defaultImage;
 
 	@Nested
@@ -197,6 +200,62 @@ public class WssControllerTest {
 
 			// then
 			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Get Retro Detail API")
+	class GetRetroDetailApi {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 회고 상세 조회 성공")
+		public void getRetroDetailSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(), project.getId());
+			Retro retro = testDataFactory.createRetroWithParticipants(project, List.of(authProfile));
+			String apiKey = appProperties.getApi().getKey();
+
+			// when
+			String response = mockMvc.perform(
+					get("/internal/api/v1/docs/retro/{id}", retro.getId())
+						.header("X-API-KEY", apiKey))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).isNotBlank();
+			assertThat(response).contains(retro.getId().toString());
+			assertThat(response).contains(retro.getTitle());
+			assertThat(response).contains(retro.getContents());
+			assertThat(response).contains(authProfile.getId().toString());
+			assertThat(response).contains(authProfile.getNickname());
+		}
+
+		@Test
+		@DisplayName("404 - 회고 상세 조회 실패 - 존재하지 않는 회고")
+		public void getRetroDetailFail_NotFoundRetro() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			String apiKey = appProperties.getApi().getKey();
+
+			// when
+			String response = mockMvc.perform(
+					get("/internal/api/v1/docs/retro/{id}", 9999L)
+						.header("X-API-KEY", apiKey))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
 		}
 	}
 }
