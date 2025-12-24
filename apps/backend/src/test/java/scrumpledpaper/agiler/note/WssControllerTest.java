@@ -258,4 +258,61 @@ public class WssControllerTest {
 			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
 		}
 	}
+
+	@Nested
+	@DisplayName("Get Meeting Detail API")
+	class GetMeetingDetailApi {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - 회의 상세 조회 성공")
+		public void getMeetingDetailSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
+			Meeting meeting = testDataFactory.createMeetingWithParticipants(project, List.of(authProfile));
+			String apiKey = appProperties.getApi().getKey();
+
+			// when
+			String response = mockMvc.perform(
+					get("/internal/api/v1/docs/meeting/{id}", meeting.getId())
+						.header("X-API-KEY", apiKey))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).isNotBlank();
+			assertThat(response).contains(meeting.getId().toString());
+			assertThat(response).contains(meeting.getTitle());
+			assertThat(response).contains(meeting.getContents());
+			assertThat(response).contains(authProfile.getId().toString());
+			assertThat(response).contains(authProfile.getNickname());
+		}
+
+		@Test
+		@DisplayName("404 - 회의 상세 조회 실패 - 존재하지 않는 회의")
+		public void getMeetingDetailFail_NotFoundMeeting() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			String apiKey = appProperties.getApi().getKey();
+
+			// when
+			String response = mockMvc.perform(
+					get("/internal/api/v1/docs/meeting/{id}", 9999L)
+						.header("X-API-KEY", apiKey))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
+		}
+	}
 }
