@@ -1,10 +1,12 @@
 package scrumpledpaper.agiler.note.service;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.note.dto.MeetingDetailResDto;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
@@ -127,5 +130,40 @@ public class MeetingService {
 		if (!exists) {
 			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
 		}
+	}
+
+	public MeetingDetailResDto getMeetingDetail(long id) {
+		Meeting meeting = meetingRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+
+		List<MeetingProfile> meetingProfiles = meetingProfileRepository.findAllByMeetingIdWithProfile(meeting.getId());
+
+		List<Long> imageIds = meetingProfiles.stream()
+			.map(MeetingProfile::getProfile)
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrls = imageService.getImageUrlsByIds(imageIds);
+
+		List<MeetingDetailResDto.ParticipantResDto> participants = meetingProfiles.stream()
+			.map(meetingProfile -> {
+				Profile profile = meetingProfile.getProfile();
+				String imageUrl = imageUrls.get(profile.getImageId());
+				return new MeetingDetailResDto.ParticipantResDto(
+					profile.getId(),
+					profile.getNickname(),
+					imageUrl
+				);
+			})
+			.toList();
+
+		return new MeetingDetailResDto(
+			meeting.getId(),
+			meeting.getTitle(),
+			meeting.getContents(),
+			meeting.getCreatedAt(),
+			participants
+		);
 	}
 }

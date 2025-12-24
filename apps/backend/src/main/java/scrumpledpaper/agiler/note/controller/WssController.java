@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
+import scrumpledpaper.agiler.note.dto.MeetingDetailResDto;
 import scrumpledpaper.agiler.note.dto.RetroDetailResDto;
 import scrumpledpaper.agiler.note.dto.WssTokenResDto;
 import scrumpledpaper.agiler.note.service.WssService;
@@ -33,5 +34,12 @@ public class WssController {
 		@PathVariable long id) {
 		RetroDetailResDto retroDetail = wssService.getRetroDetail(id);
 		return ResponseEntity.ok(retroDetail);
+	}
+
+	@GetMapping("/internal/api/v1/docs/meeting/{id}")
+	public ResponseEntity<MeetingDetailResDto> getMeetingDetail(
+		@PathVariable long id) {
+		MeetingDetailResDto meetingDetail = wssService.getMeetingDetail(id);
+		return ResponseEntity.ok(meetingDetail);
 	}
 }

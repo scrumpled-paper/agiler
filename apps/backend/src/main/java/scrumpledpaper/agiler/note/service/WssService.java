@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.common.utils.WssTokenProvider;
+import scrumpledpaper.agiler.note.dto.MeetingDetailResDto;
 import scrumpledpaper.agiler.note.dto.RetroDetailResDto;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -63,4 +64,8 @@ public class WssService {
 		return retroService.getRetroDetail(id);
 	}
 
+	@Transactional(readOnly = true)
+	public MeetingDetailResDto getMeetingDetail(long id) {
+		return meetingService.getMeetingDetail(id);
+	}
 }
