@@ -18,6 +18,7 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
+import scrumpledpaper.agiler.note.dto.RetroDetailResDto;
 import scrumpledpaper.agiler.note.dto.RetroResDto;
 import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.note.entity.RetroProfile;
@@ -127,5 +128,40 @@ public class RetroService {
 		if (!exists) {
 			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
 		}
+	}
+
+	public RetroDetailResDto getRetroDetail(long id) {
+		Retro retro = retroRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+
+		List<RetroProfile> retroProfiles = retroProfileRepository.findAllByRetroIdWithProfile(retro.getId());
+
+		List<Long> imageIds = retroProfiles.stream()
+			.map(RetroProfile::getProfile)
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrls = imageService.getImageUrlsByIds(imageIds);
+
+		List<RetroDetailResDto.ParticipantResDto> participants = retroProfiles.stream()
+			.map(retroProfile -> {
+				Profile profile = retroProfile.getProfile();
+				String imageUrl = imageUrls.get(profile.getImageId());
+				return new RetroDetailResDto.ParticipantResDto(
+					profile.getId(),
+					profile.getNickname(),
+					imageUrl
+				);
+			})
+			.toList();
+
+		return new RetroDetailResDto(
+			retro.getId(),
+			retro.getTitle(),
+			retro.getContents(),
+			retro.getCreatedAt(),
+			participants
+		);
 	}
 }
