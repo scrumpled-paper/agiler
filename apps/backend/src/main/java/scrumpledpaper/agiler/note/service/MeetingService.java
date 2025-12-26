@@ -1,10 +1,12 @@
 package scrumpledpaper.agiler.note.service;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,17 +18,22 @@ import scrumpledpaper.agiler.common.PageValidator;
 import scrumpledpaper.agiler.common.exception.CustomException;
 import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
+import scrumpledpaper.agiler.note.dto.MeetingDetailResDto;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantResDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantUpdateReqDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
 import scrumpledpaper.agiler.note.entity.MeetingProfile;
+import scrumpledpaper.agiler.note.entity.NoteType;
 import scrumpledpaper.agiler.note.mapper.MeetingMapper;
 import scrumpledpaper.agiler.note.repository.MeetingProfileRepository;
 import scrumpledpaper.agiler.note.repository.MeetingRepository;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.project.service.ProfileService;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 import scrumpledpaper.agiler.template.service.MeetingTemplateService;
@@ -35,6 +42,7 @@ import scrumpledpaper.agiler.template.service.MeetingTemplateService;
 @RequiredArgsConstructor
 public class MeetingService {
 	private final ImageService imageService;
+	private final ProfileService profileService;
 	private final MeetingRepository meetingRepository;
 	private final MeetingTemplateService meetingTemplateService;
 	private final MeetingProfileRepository meetingProfileRepository;
@@ -120,5 +128,87 @@ public class MeetingService {
 	private Meeting findByIdAndProject(Long id, Project project) {
 		return meetingRepository.findByIdAndProjectId(id, project.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+	}
+
+	public void validateMeetingInProject(Long projectId, Long meetingId) {
+		boolean exists = meetingRepository.existsByIdAndProjectId(meetingId, projectId);
+		if (!exists) {
+			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
+		}
+	}
+
+	public MeetingDetailResDto getMeetingDetail(long id) {
+		Meeting meeting = meetingRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+
+		List<MeetingProfile> meetingProfiles = meetingProfileRepository.findAllByMeetingIdWithProfile(meeting.getId());
+
+		List<Long> imageIds = meetingProfiles.stream()
+			.map(MeetingProfile::getProfile)
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrls = imageService.getImageUrlsByIds(imageIds);
+
+		List<MeetingDetailResDto.ParticipantResDto> participants = meetingProfiles.stream()
+			.map(meetingProfile -> {
+				Profile profile = meetingProfile.getProfile();
+				String imageUrl = imageUrls.get(profile.getImageId());
+				return new MeetingDetailResDto.ParticipantResDto(
+					profile.getId(),
+					profile.getNickname(),
+					imageUrl
+				);
+			})
+			.toList();
+
+		return new MeetingDetailResDto(
+			meeting.getId(),
+			meeting.getTitle(),
+			meeting.getContents(),
+			meeting.getCreatedAt(),
+			participants
+		);
+	}
+
+	public NoteParticipantResDto updateMeetingParticipants(long userId, String projectUrl, long meetingId, NoteParticipantUpdateReqDto request) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Meeting meeting = findByIdAndProject(meetingId, project);
+
+		List<MeetingProfile> existingMeetingProfiles = meetingProfileRepository.findAllByMeetingId(meetingId);
+		meetingProfileRepository.deleteAll(existingMeetingProfiles);
+
+		List<Profile> profiles = profileService.getProfilesByIds(request.participantIds());
+		List<MeetingProfile> newMeetingProfiles = profiles.stream()
+			.map(profile -> meetingMapper.toMeetingProfileEntity(meeting, profile))
+			.toList();
+		meetingProfileRepository.saveAll(newMeetingProfiles);
+
+		List<Long> imageIds = profiles.stream()
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrls = imageService.getImageUrlsByIds(imageIds);
+
+		List<NoteParticipantResDto.ParticipantResDto> participantResDtos = profiles.stream()
+			.map(profile -> {
+				String imageUrl = imageUrls.get(profile.getImageId());
+				return new NoteParticipantResDto.ParticipantResDto(
+					profile.getId(),
+					profile.getNickname(),
+					imageUrl
+				);
+			})
+			.toList();
+
+		return new NoteParticipantResDto(
+			meetingId,
+			NoteType.MEETING,
+			participantResDtos
+		);
 	}
 }

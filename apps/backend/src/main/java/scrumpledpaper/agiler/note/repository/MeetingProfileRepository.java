@@ -17,4 +17,12 @@ public interface MeetingProfileRepository extends JpaRepository<MeetingProfile, 
 	List<MeetingProfile> findAllByMeetingIdsWithProfile(List<Long> meetingIds);
 
 	List<MeetingProfile> findAllByMeetingId(Long id);
+
+	@Query("""
+		SELECT mp
+		FROM MeetingProfile mp
+		LEFT JOIN FETCH mp.profile p
+		WHERE mp.meeting.id = :id
+	""")
+	List<MeetingProfile> findAllByMeetingIdWithProfile(Long id);
 }

@@ -13,4 +13,6 @@ public interface RetroRepository extends JpaRepository<Retro, Long> {
 	Optional<Retro> findTopByProjectIdOrderByCreatedAtDesc(Long id);
 
 	Optional<Retro> findByIdAndProjectId(long retroId, Long projectId);
+
+	boolean existsByIdAndProjectId(Long retroId, Long projectId);
 }

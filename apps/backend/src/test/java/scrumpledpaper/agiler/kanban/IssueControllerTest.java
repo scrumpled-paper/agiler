@@ -487,9 +487,7 @@ public class IssueControllerTest {
 			IssueUpdateReqDto updateReqDto = new IssueUpdateReqDto(
 				issue.getId(),
 				randomString(20),
-				randomString(50),
-				null,
-				null
+				randomString(50)
 			);
 
 			// when
@@ -517,9 +515,7 @@ public class IssueControllerTest {
 			IssueUpdateReqDto updateReqDto = new IssueUpdateReqDto(
 				9999L,
 				randomString(20),
-				randomString(50),
-				null,
-				null
+				randomString(50)
 			);
 
 			// when
@@ -562,9 +558,7 @@ public class IssueControllerTest {
 			IssueUpdateReqDto updateReqDto = new IssueUpdateReqDto(
 				issue.getId(),
 				randomString(20),
-				randomString(50),
-				null,
-				null
+				randomString(50)
 			);
 
 			// when

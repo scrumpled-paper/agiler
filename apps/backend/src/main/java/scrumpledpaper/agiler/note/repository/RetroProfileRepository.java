@@ -17,4 +17,12 @@ public interface RetroProfileRepository extends JpaRepository<RetroProfile, Long
 	List<RetroProfile> findAllByRetroIdsWithProfile(List<Long> retroIds);
 
 	List<RetroProfile> findAllByRetroId(Long id);
+
+	@Query("""
+		SELECT rp
+		FROM RetroProfile rp
+		LEFT JOIN FETCH rp.profile p
+		WHERE rp.retro.id = :id
+	""")
+	List<RetroProfile> findAllByRetroIdWithProfile(Long id);
 }

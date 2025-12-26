@@ -28,6 +28,8 @@ import scrumpledpaper.agiler.image.entity.Image;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantResDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantUpdateReqDto;
 import scrumpledpaper.agiler.note.entity.Meeting;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
@@ -394,6 +396,140 @@ public class MeetingControllerTest {
 			// when
 			String response = mockMvc.perform(
 					delete("/api/v1/projects/{projectUrl}/meetings", url)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Update Meeting Participants Test")
+	class UpdateMeetingParticipantsTest {
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("200 - Meeting 참가자 업데이트 성공")
+		public void updateMeetingParticipantsSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
+			Profile otherProfile = testDataFactory.createProfile(otherAuth.getUser(), project, Role.MEMBER);
+			Meeting meeting = testDataFactory.createMeetingWithParticipants(project, List.of(authProfile));
+			NoteParticipantUpdateReqDto reqDto = new NoteParticipantUpdateReqDto(List.of(otherProfile.getId()));
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/meetings/{meetingId}", url, meeting.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			NoteParticipantResDto resDto = objectMapper.readValue(response, NoteParticipantResDto.class);
+			assertThat(resDto.participants()).hasSize(1);
+			assertThat(resDto.participants().get(0).profileId()).isEqualTo(otherProfile.getId());
+			assertThat(resDto.participants().get(0).nickname()).isEqualTo(otherProfile.getNickname());
+		}
+
+		@Test
+		@DisplayName("200 - Meeting 참가자 전체 삭제 성공")
+		public void updateMeetingParticipantsRemoveAllSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
+			Meeting meeting = testDataFactory.createMeetingWithParticipants(project, List.of(authProfile));
+			NoteParticipantUpdateReqDto reqDto = new NoteParticipantUpdateReqDto(List.of());
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/meetings/{meetingId}", url, meeting.getId())
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			NoteParticipantResDto resDto = objectMapper.readValue(response, NoteParticipantResDto.class);
+			assertThat(resDto.participants()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("403 - 프로젝트 참여자가 아닌 사용자가 Meeting 참가자 업데이트 시도")
+		public void updateMeetingParticipantsNotMember() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			AuthContext otherAuth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
+			Meeting meeting = testDataFactory.createMeetingWithParticipants(project, List.of(authProfile));
+			NoteParticipantUpdateReqDto reqDto = new NoteParticipantUpdateReqDto(List.of());
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/meetings/{meetingId}", url, meeting.getId())
+						.cookie(new Cookie("accessToken", otherAuth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isForbidden())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_MEMBER.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 프로젝트의 Meeting 참가자 업데이트 시도")
+		public void updateMeetingParticipantsProjectNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "non-existent-url";
+			NoteParticipantUpdateReqDto reqDto = new NoteParticipantUpdateReqDto(List.of());
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/meetings/{meetingId}", url, 1L)
+						.cookie(new Cookie("accessToken", auth.getToken()))
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(reqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.PROJECT_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("404 - 존재하지 않는 Meeting 참가자 업데이트 시도")
+		public void updateMeetingParticipantsMeetingNotFound() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			NoteParticipantUpdateReqDto reqDto = new NoteParticipantUpdateReqDto(List.of());
+
+			// when
+			String response = mockMvc.perform(
+					patch("/api/v1/projects/{projectUrl}/meetings/{meetingId}", url, 999L)
 						.cookie(new Cookie("accessToken", auth.getToken()))
 						.contentType("application/json")
 						.content(objectMapper.writeValueAsString(reqDto)))

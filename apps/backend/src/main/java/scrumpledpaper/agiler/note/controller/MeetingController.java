@@ -6,6 +6,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,8 @@ import scrumpledpaper.agiler.note.dto.IdResDto;
 import scrumpledpaper.agiler.note.dto.MeetingResDto;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantResDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantUpdateReqDto;
 import scrumpledpaper.agiler.note.service.MeetingService;
 
 @RestController
@@ -59,5 +62,16 @@ public class MeetingController {
 		@RequestBody @Valid NoteDeleteReqDto noteDeleteReqDto) {
 		meetingService.deleteMeetings(customUserDetails.getUserId(), projectUrl, noteDeleteReqDto);
 		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{projectUrl}/meetings/{meetingId}")
+	public ResponseEntity<NoteParticipantResDto> updateMeetingParticipants(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails customUserDetails,
+		@PathVariable String projectUrl,
+		@PathVariable long meetingId,
+		@RequestBody @Valid NoteParticipantUpdateReqDto request) {
+		NoteParticipantResDto resDto = meetingService.updateMeetingParticipants(customUserDetails.getUserId(), projectUrl, meetingId, request);
+		return ResponseEntity.ok().body(resDto);
 	}
 }

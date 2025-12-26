@@ -36,6 +36,7 @@ public enum ErrorCode {
 	MEETING_TEMPLATE_NOT_FOUND(404, "T004", "회의 템플릿을 찾을 수 없습니다."),
 
 	NOTE_NOT_FOUND(404, "NT001", "문서를 찾을 수 없습니다."),
+	INVALID_DOCUMENT_ID(400, "NT002", "유효하지 않은 문서 ID입니다."),
 
 	DEFAULT_KANBAN_CONFIG_NOT_FOUND(404, "K001", "Default 칸반 설정을 찾을 수 없습니다."),
 	KANBAN_CONFIG_NOT_FOUND(404, "K002", "칸반 설정을 찾을 수 없습니다."),

@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.note.dto.ScrumResDto;
 import scrumpledpaper.agiler.note.entity.Scrum;
+import scrumpledpaper.agiler.note.entity.ScrumProfile;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.entity.ScrumTemplate;
@@ -57,4 +58,7 @@ public interface ScrumMapper {
 	@Mapping(target = "project", source = "project")
 	@Mapping(target = "scrumProfiles", ignore = true)
 	Scrum toEntity(Project project, String title, String contents);
+
+	@Mapping(target = "id", ignore = true)
+	ScrumProfile toScrumProfileEntity(Scrum scrum, Profile profile);
 }

@@ -473,11 +473,12 @@ public class TestDataFactory {
 		return issueRepository.findAllByProjectId(id);
 	}
 
-	public void createMeetingWithParticipants(Project project, List<Profile> participants) {
+	public Meeting createMeetingWithParticipants(Project project, List<Profile> participants) {
 		Meeting savedMeeting = meetingRepository.save(MeetingFixture.createMeeting(project));
 		meetingProfileRepository.saveAll(
 			MeetingFixture.createMeetingProfiles(savedMeeting, participants)
 		);
+		return savedMeeting;
 	}
 
 	public Page<Meeting> findMeetingsByProjectIdPaged(Long id, int page, int size) {
@@ -511,11 +512,12 @@ public class TestDataFactory {
 		return retroRepository.findAllByProjectId(id, pageable);
 	}
 
-	public void createRetroWithParticipants(Project project, List<Profile> participants) {
+	public Retro createRetroWithParticipants(Project project, List<Profile> participants) {
 		Retro savedRetro = retroRepository.save(RetroFixture.createRetro(project));
 		retroProfileRepository.saveAll(
 			RetroFixture.createRetroProfiles(savedRetro, participants)
 		);
+		return savedRetro;
 	}
 
 	public Retro findByLatestRetroByProjectId(Long id) {

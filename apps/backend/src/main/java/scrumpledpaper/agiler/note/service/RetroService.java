@@ -18,7 +18,11 @@ import scrumpledpaper.agiler.common.exception.ErrorCode;
 import scrumpledpaper.agiler.image.service.ImageService;
 import scrumpledpaper.agiler.note.dto.NoteCreateReqDto;
 import scrumpledpaper.agiler.note.dto.NoteDeleteReqDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantResDto;
+import scrumpledpaper.agiler.note.dto.NoteParticipantUpdateReqDto;
+import scrumpledpaper.agiler.note.dto.RetroDetailResDto;
 import scrumpledpaper.agiler.note.dto.RetroResDto;
+import scrumpledpaper.agiler.note.entity.NoteType;
 import scrumpledpaper.agiler.note.entity.Retro;
 import scrumpledpaper.agiler.note.entity.RetroProfile;
 import scrumpledpaper.agiler.note.mapper.RetroMapper;
@@ -27,6 +31,7 @@ import scrumpledpaper.agiler.note.repository.RetroRepository;
 import scrumpledpaper.agiler.project.dto.ProjectAccessContext;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
+import scrumpledpaper.agiler.project.service.ProfileService;
 import scrumpledpaper.agiler.project.service.ProjectValidator;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
 import scrumpledpaper.agiler.template.service.RetroTemplateService;
@@ -35,6 +40,7 @@ import scrumpledpaper.agiler.template.service.RetroTemplateService;
 @RequiredArgsConstructor
 public class RetroService {
 	private final ImageService imageService;
+	private final ProfileService profileService;
 	private final RetroRepository retroRepository;
 	private final RetroTemplateService retroTemplateService;
 	private final RetroProfileRepository retroProfileRepository;
@@ -120,5 +126,87 @@ public class RetroService {
 	private Retro findByIdAndProject(long retroId, Project project) {
 		return retroRepository.findByIdAndProjectId(retroId, project.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+	}
+
+	public void validateRetroInProject(Long projectId, Long retroId) {
+		boolean exists = retroRepository.existsByIdAndProjectId(retroId, projectId);
+		if (!exists) {
+			throw new CustomException(ErrorCode.NOTE_NOT_FOUND);
+		}
+	}
+
+	public RetroDetailResDto getRetroDetail(long id) {
+		Retro retro = retroRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+
+		List<RetroProfile> retroProfiles = retroProfileRepository.findAllByRetroIdWithProfile(retro.getId());
+
+		List<Long> imageIds = retroProfiles.stream()
+			.map(RetroProfile::getProfile)
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrls = imageService.getImageUrlsByIds(imageIds);
+
+		List<RetroDetailResDto.ParticipantResDto> participants = retroProfiles.stream()
+			.map(retroProfile -> {
+				Profile profile = retroProfile.getProfile();
+				String imageUrl = imageUrls.get(profile.getImageId());
+				return new RetroDetailResDto.ParticipantResDto(
+					profile.getId(),
+					profile.getNickname(),
+					imageUrl
+				);
+			})
+			.toList();
+
+		return new RetroDetailResDto(
+			retro.getId(),
+			retro.getTitle(),
+			retro.getContents(),
+			retro.getCreatedAt(),
+			participants
+		);
+	}
+
+	public NoteParticipantResDto updateRetroParticipants(long userId, String projectUrl, long retroId, NoteParticipantUpdateReqDto request) {
+		ProjectAccessContext context = projectValidator.validateAccess(userId, projectUrl);
+		Project project = context.project();
+
+		Retro retro = findByIdAndProject(retroId, project);
+
+		List<RetroProfile> existingRetroProfiles = retroProfileRepository.findAllByRetroId(retro.getId());
+		retroProfileRepository.deleteAll(existingRetroProfiles);
+
+		List<Profile> profiles = profileService.getProfilesByIds(request.participantIds());
+		List<RetroProfile> newRetroProfiles = profiles.stream()
+			.map(profile -> retroMapper.toRetroProfileEntity(retro, profile))
+			.toList();
+		retroProfileRepository.saveAll(newRetroProfiles);
+
+		List<Long> imageIds = profiles.stream()
+			.map(Profile::getImageId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> imageUrls = imageService.getImageUrlsByIds(imageIds);
+
+		List<NoteParticipantResDto.ParticipantResDto> participantDtos = profiles.stream()
+			.map(profile -> {
+				String imageUrl = imageUrls.get(profile.getImageId());
+				return new NoteParticipantResDto.ParticipantResDto(
+					profile.getId(),
+					profile.getNickname(),
+					imageUrl
+				);
+			})
+			.toList();
+
+		return new NoteParticipantResDto(
+			retroId,
+			NoteType.RETRO,
+			participantDtos
+		);
 	}
 }

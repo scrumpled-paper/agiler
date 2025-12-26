@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 
 import scrumpledpaper.agiler.note.dto.RetroResDto;
 import scrumpledpaper.agiler.note.entity.Retro;
+import scrumpledpaper.agiler.note.entity.RetroProfile;
 import scrumpledpaper.agiler.project.entity.Profile;
 import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
@@ -57,4 +58,7 @@ public interface RetroMapper {
 	@Mapping(target = "project", source = "project")
 	@Mapping(target = "retroProfiles", ignore = true)
 	Retro toEntity(Project project, String title, String contents);
+
+	@Mapping(target = "id", ignore = true)
+	RetroProfile toRetroProfileEntity(Retro retro, Profile profile);
 }
