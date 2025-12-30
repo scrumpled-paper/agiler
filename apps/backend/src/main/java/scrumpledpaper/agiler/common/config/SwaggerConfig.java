@@ -26,14 +26,16 @@ public class SwaggerConfig {
 			.info(new Info()
 				.title("Agiler API")
 				.version("v1.0")
-				.description("Agiler Backend API with JWT Authentication"))
-			.addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+				.description("Agiler Backend API with JWT (Cookie) and X-API-KEY Authentication"))
+			// X-API-KEY 인증 (internal API용)
+			.addSecurityItem(new SecurityRequirement().addList("apiKeyAuth"))
 			.components(new io.swagger.v3.oas.models.Components()
-				.addSecuritySchemes("bearerAuth",
+				// X-API-KEY 헤더 인증
+				.addSecuritySchemes("apiKeyAuth",
 					new SecurityScheme()
-						.type(SecurityScheme.Type.HTTP)
-						.scheme("bearer")
-						.bearerFormat("JWT")
-						.description("Enter your JWT token here")));
+						.type(SecurityScheme.Type.APIKEY)
+						.in(SecurityScheme.In.HEADER)
+						.name("X-API-KEY")
+						.description("Internal API Key")));
 	}
 }
