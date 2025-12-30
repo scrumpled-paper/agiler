@@ -68,4 +68,14 @@ public class WssService {
 	public MeetingDetailResDto getMeetingDetail(long id) {
 		return meetingService.getMeetingDetail(id);
 	}
+
+	@Transactional
+	public void updateMeeting(Long id, String title, String contents) {
+		meetingService.updateMeeting(id, title, contents);
+	}
+
+	@Transactional
+	public void updateRetro(Long id, String title, String contents) {
+		retroService.updateRetro(id, title, contents);
+	}
 }

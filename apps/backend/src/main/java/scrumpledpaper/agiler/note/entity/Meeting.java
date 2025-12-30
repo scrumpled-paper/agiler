@@ -45,4 +45,9 @@ public class Meeting extends BaseEntity {
 	@OneToMany(mappedBy = "meeting", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<MeetingProfile> meetingProfiles = new java.util.ArrayList<>();
+
+	public void updateTitleAndContents(String title, String contents) {
+		this.title = title;
+		this.contents = contents;
+	}
 }

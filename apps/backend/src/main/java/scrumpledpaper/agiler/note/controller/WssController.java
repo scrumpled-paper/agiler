@@ -4,12 +4,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import scrumpledpaper.agiler.auth.service.CustomUserDetails;
 import scrumpledpaper.agiler.note.dto.MeetingDetailResDto;
+import scrumpledpaper.agiler.note.dto.NoteUpdateReqDto;
 import scrumpledpaper.agiler.note.dto.RetroDetailResDto;
 import scrumpledpaper.agiler.note.dto.WssTokenResDto;
 import scrumpledpaper.agiler.note.service.WssService;
@@ -41,5 +44,21 @@ public class WssController {
 		@PathVariable long id) {
 		MeetingDetailResDto meetingDetail = wssService.getMeetingDetail(id);
 		return ResponseEntity.ok(meetingDetail);
+	}
+
+	@PutMapping("/internal/api/v1/docs/meeting/{id}")
+	public ResponseEntity<Void> updateMeeting(
+		@PathVariable Long id,
+		@RequestBody NoteUpdateReqDto request) {
+		wssService.updateMeeting(id, request.title(), request.contents());
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/internal/api/v1/docs/retro/{id}")
+	public ResponseEntity<Void> updateRetro(
+		@PathVariable Long id,
+		@RequestBody NoteUpdateReqDto request) {
+		wssService.updateRetro(id, request.title(), request.contents());
+		return ResponseEntity.noContent().build();
 	}
 }

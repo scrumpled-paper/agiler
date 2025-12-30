@@ -1,12 +1,10 @@
 package scrumpledpaper.agiler.note.service;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -210,5 +208,12 @@ public class MeetingService {
 			NoteType.MEETING,
 			participantResDtos
 		);
+	}
+
+	public void updateMeeting(Long meetingId, String title, String contents) {
+		Meeting meeting = meetingRepository.findById(meetingId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+
+		meeting.updateTitleAndContents(title, contents);
 	}
 }
