@@ -34,7 +34,7 @@ export class YjsGateway implements OnModuleInit, OnModuleDestroy {
                 }
 
                 // AuthService 검증
-                const { userId } = await this.authService.connectWebSocket(
+                const { userId, docId } = await this.authService.connectWebSocket(
                     wssToken,
                     ws,
                 );
