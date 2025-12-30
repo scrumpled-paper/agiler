@@ -52,7 +52,12 @@ public enum ErrorCode {
 	NOTIFICATION_UNAUTHORIZED(403, "N005", "알림 채널에 대한 권한이 없습니다."),
 	NOTIFICATION_SUBSCRIPTION_NOT_FOUND(404, "N006", "알림 구독을 찾을 수 없습니다."),
 	INVALID_SCHEDULE_REQUEST(400, "N007", "잘못된 알림 예약 요청입니다. delayInMinutes 또는 notificationTime 중 하나만 지정해야 합니다."),
-	DUPLICATE_NOTIFICATION_CHANNEL(409, "N008", "이미 등록된 알림 채널입니다.");
+	DUPLICATE_NOTIFICATION_CHANNEL(409, "N008", "이미 등록된 알림 채널입니다."),
+
+	RETRO_NOT_FOUND(404, "NT001", "회고를 찾을 수 없습니다."),
+	SCRUM_NOT_FOUND(404, "NT002", "스크럼을 찾을 수 없습니다."),
+	MEETING_NOT_FOUND(404, "NT003", "회의를 찾을 수 없습니다."),
+	INVALID_NOTE_TYPE(400, "NT004", "유효하지 않은 노트 타입입니다.");
 
 	private final int status;
 	private final String code;

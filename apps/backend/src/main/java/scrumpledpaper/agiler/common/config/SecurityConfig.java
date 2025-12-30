@@ -37,7 +37,9 @@ public class SecurityConfig {
 			/* auth */
 			"/api/v1/login/**",
 			/* health check */
-			"/actuator/**"
+			"/actuator/**",
+			/* internal api for collab-wss */
+			"/api/v1/internal/**"
 	};
 
 	@Bean

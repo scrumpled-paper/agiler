@@ -9,6 +9,7 @@ import scrumpledpaper.agiler.fixture.IssueTemplateFixture;
 import scrumpledpaper.agiler.fixture.KanbanConfigFixture;
 import scrumpledpaper.agiler.fixture.LabelFixture;
 import scrumpledpaper.agiler.fixture.MeetingTemplateFixture;
+import scrumpledpaper.agiler.fixture.NoteFixture;
 import scrumpledpaper.agiler.fixture.NotificationSubscriptionFixture;
 import scrumpledpaper.agiler.fixture.ProfileFixture;
 import scrumpledpaper.agiler.fixture.ProfileNotificationChannelFixture;
@@ -42,6 +43,12 @@ import scrumpledpaper.agiler.project.entity.Project;
 import scrumpledpaper.agiler.project.entity.Role;
 import scrumpledpaper.agiler.project.repository.ProfileRepository;
 import scrumpledpaper.agiler.project.repository.ProjectRepository;
+import scrumpledpaper.agiler.note.entity.Meeting;
+import scrumpledpaper.agiler.note.entity.Retro;
+import scrumpledpaper.agiler.note.entity.Scrum;
+import scrumpledpaper.agiler.note.repository.MeetingRespository;
+import scrumpledpaper.agiler.note.repository.RetroRepository;
+import scrumpledpaper.agiler.note.repository.ScrumRespository;
 import scrumpledpaper.agiler.template.entity.IssueTemplate;
 import scrumpledpaper.agiler.template.entity.MeetingTemplate;
 import scrumpledpaper.agiler.template.entity.RetroTemplate;
@@ -79,6 +86,9 @@ public class TestDataFactory {
 	private final NotificationSubscriptionRepository notificationSubscriptionRepository;
 	private final ProfileNotificationChannelRepository profileNotificationChannelRepository;
 	private final ScheduledNotificationRepository scheduledNotificationRepository;
+	private final RetroRepository retroRepository;
+	private final ScrumRespository scrumRepository;
+	private final MeetingRespository meetingRepository;
 	private final EntityManager entityManager;
 
 	public static final long DEFAULT_IMAGE_ID = 1L;
@@ -401,5 +411,33 @@ public class TestDataFactory {
 			kanbanConfigs.add(kanbanConfig);
 		}
 		return kanbanConfigRepository.saveAll(kanbanConfigs);
+	}
+
+	// Note (Retro, Scrum, Meeting) methods
+	public Retro createRetro(Project project, String title, String contents) {
+		Retro retro = NoteFixture.createRetro(project, title, contents);
+		return retroRepository.save(retro);
+	}
+
+	public Retro findRetroById(Long id) {
+		return retroRepository.findById(id).orElseThrow();
+	}
+
+	public Scrum createScrum(Project project, String title, String contents) {
+		Scrum scrum = NoteFixture.createScrum(project, title, contents);
+		return scrumRepository.save(scrum);
+	}
+
+	public Scrum findScrumById(Long id) {
+		return scrumRepository.findById(id).orElseThrow();
+	}
+
+	public Meeting createMeeting(Project project, String title, String contents) {
+		Meeting meeting = NoteFixture.createMeeting(project, title, contents);
+		return meetingRepository.save(meeting);
+	}
+
+	public Meeting findMeetingById(Long id) {
+		return meetingRepository.findById(id).orElseThrow();
 	}
 }
