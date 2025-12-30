@@ -113,9 +113,9 @@ export class YjsService {
 
                 switch (messageType) {
                     case syncProtocol.messageYjsSyncStep1: {
+                        // ✅ SyncStep1 받으면 SyncStep2로 응답
                         encoding.writeVarUint(encoder, syncProtocol.messageYjsSyncStep2);
-                        const update = Y.encodeStateAsUpdate(doc);
-                        syncProtocol.writeUpdate(encoder, update);
+                        syncProtocol.writeSyncStep2(encoder, doc);  // ✅ writeSyncStep2 사용
                         const response = encoding.toUint8Array(encoder);
                         ws.send(response);
                         this.logger.log(`📤 SyncStep2 전송: ${docId}`);
@@ -123,12 +123,14 @@ export class YjsService {
                     }
 
                     case syncProtocol.messageYjsSyncStep2: {
-                        syncProtocol.readUpdate(decoder, doc, null);
+                        // ✅ readSyncStep2 사용
+                        syncProtocol.readSyncStep2(decoder, doc, null);
                         this.logger.log(`📥 SyncStep2 수신: ${docId}`);
                         break;
                     }
 
                     case syncProtocol.messageYjsUpdate: {
+                        // ✅ Update는 readUpdate 사용
                         syncProtocol.readUpdate(decoder, doc, null);
                         this.broadcast(docId, message, ws);
                         this.logger.log(`📝 업데이트 수신 및 브로드캐스트: ${docId}`);
@@ -137,6 +139,7 @@ export class YjsService {
                 }
             } catch (error: any) {
                 this.logger.error(`❌ 메시지 처리 실패: ${error.message}`);
+                this.logger.error(`스택: ${error.stack}`);
             }
         });
 
@@ -162,7 +165,7 @@ export class YjsService {
             this.logger.error(`❌ WebSocket 에러: ${error.message}`);
         });
 
-        // 초기 sync
+        // ✅ 초기 sync
         try {
             const encoder = encoding.createEncoder();
             encoding.writeVarUint(encoder, syncProtocol.messageYjsSyncStep1);
