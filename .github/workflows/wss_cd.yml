@@ -46,10 +46,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: |
-            apps/collab-wss/dist/**
-            apps/collab-wss/package.json
-            apps/collab-wss/package-lock.json
+          source: "apps/collab-wss/dist/**,apps/collab-wss/package.json,apps/collab-wss/package-lock.json"
           target: "/home/ubuntu/collab-wss"
           strip_components: 2
 
