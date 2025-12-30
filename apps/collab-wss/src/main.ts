@@ -19,16 +19,11 @@ async function bootstrap() {
       .setTitle('WSS Server API')
       .setDescription('Agiler WebSocket 서버 API (토큰 검증 및 문서 조회)')
       .setVersion('1.0')
-      .addCookieAuth('accessToken', {
-        type: 'apiKey',
-        in: 'cookie',
-        name: 'accessToken',
-      })
       .addServer(serverUrl, 'WSS 서버')
       .build();
     const document = SwaggerModule.createDocument(app, config);
 
-    SwaggerModule.setup('swagger-ui', app, document, {
+    SwaggerModule.setup('collab/swagger-ui', app, document, {
         customSiteTitle: 'WSS Server API',
         swaggerOptions: {
             persistAuthorization: true,
