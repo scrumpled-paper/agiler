@@ -10,6 +10,24 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         logger: ['log', 'error', 'warn', 'debug', 'verbose'],
     });
+
+    const allowedOrigins = [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'https://agiler.p-e.kr',
+    ];
+
+    app.enableCors({
+        origin: (origin, cb) => {
+            if (!origin) return cb(null, true);
+            if (allowedOrigins.includes(origin)) return cb(null, true);
+            return cb(new Error(`CORS blocked for origin: ${origin}`), false);
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    });
+
   const configService = app.get<ConfigService>(ConfigService);
   const port = configService.get<number>('PORT') ?? 4000;
 
