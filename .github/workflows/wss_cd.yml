@@ -22,6 +22,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Build (generate dist)
+        working-directory: ./apps/collab-wss
+        run: |
+          npm ci
+          npm run build
+
       # 1) 서버 배포 디렉토리 정리 (stale file 방지)
       - name: Prepare deploy dir
         uses: appleboy/ssh-action@v1.0.3
@@ -34,18 +40,19 @@ jobs:
             mkdir -p "$DEPLOY_PATH"
             rm -rf "$DEPLOY_PATH"/*
 
-      # 2) 전체 소스 안전하게 복사
-      - name: Transfer files to server
+      - name: Transfer build artifacts to server
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "apps/collab-wss/**"
+          source: |
+            apps/collab-wss/dist/**
+            apps/collab-wss/package.json
+            apps/collab-wss/package-lock.json
           target: "/home/ubuntu/collab-wss"
           strip_components: 2
 
-      # 3) 서버에서 prod deps 설치 + env 주입 + pm2 재시작
       - name: Deploy with PM2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -58,20 +65,11 @@ jobs:
             DEPLOY_PATH="/home/ubuntu/collab-wss"
             cd "$DEPLOY_PATH"
 
-            # Load nvm (non-interactive ssh에서도 node/npm/pm2 잡히게)
+            # Load nvm
             export NVM_DIR="$HOME/.nvm"
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
-              . "$NVM_DIR/nvm.sh"
-            else
-              echo "nvm.sh not found at $NVM_DIR/nvm.sh"
-              exit 1
-            fi
+            . "$NVM_DIR/nvm.sh"
 
             nvm use 23
-
-            node -v
-            npm -v
-            pm2 -v
 
             npm ci --omit=dev
 
@@ -83,7 +81,7 @@ jobs:
             if pm2 describe collab-wss > /dev/null 2>&1; then
               pm2 restart collab-wss --update-env
             else
-              pm2 start npm --name "collab-wss" -- start
+              pm2 start "node dist/main.js" --name "collab-wss"
             fi
 
             pm2 save
