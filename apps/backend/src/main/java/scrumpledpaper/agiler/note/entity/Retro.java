@@ -45,4 +45,9 @@ public class Retro extends BaseEntity {
 	@OneToMany(mappedBy = "retro", fetch = FetchType.LAZY)
 	@Builder.Default
 	private List<RetroProfile> retroProfiles = new java.util.ArrayList<>();
+
+	public void updateTitleAndContents(String title, String contents) {
+		this.title = title;
+		this.contents = contents;
+	}
 }

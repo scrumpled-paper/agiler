@@ -51,6 +51,14 @@ public class WssController {
 		@PathVariable Long id,
 		@RequestBody NoteUpdateReqDto request) {
 		wssService.updateMeeting(id, request.title(), request.contents());
-		return ResponseEntity.ok().build();
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/internal/api/v1/docs/retro/{id}")
+	public ResponseEntity<Void> updateRetro(
+		@PathVariable Long id,
+		@RequestBody NoteUpdateReqDto request) {
+		wssService.updateRetro(id, request.title(), request.contents());
+		return ResponseEntity.noContent().build();
 	}
 }

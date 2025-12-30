@@ -209,4 +209,11 @@ public class RetroService {
 			participantDtos
 		);
 	}
+
+	public void updateRetro(Long id, String title, String contents) {
+		Retro retro = retroRepository.findById(id)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOTE_NOT_FOUND));
+
+		retro.updateTitleAndContents(title, contents);
+	}
 }
