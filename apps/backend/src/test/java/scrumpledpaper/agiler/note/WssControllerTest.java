@@ -326,8 +326,8 @@ public class WssControllerTest {
 		}
 
 		@Test
-		@DisplayName("200 - 회의 상세 조회 성공")
-		public void getMeetingDetailSuccess() throws Exception {
+		@DisplayName("204 - 회의 수정 성공")
+		public void putMeetingSuccess() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
@@ -344,7 +344,7 @@ public class WssControllerTest {
 						.header("X-API-KEY", apiKey)
 						.contentType("application/json")
 						.content(objectMapper.writeValueAsString(updateReqDto)))
-				.andExpect(status().isOk())
+				.andExpect(status().isNoContent())
 				.andReturn().getResponse().getContentAsString();
 
 			// then
@@ -354,8 +354,8 @@ public class WssControllerTest {
 		}
 
 		@Test
-		@DisplayName("404 - 회의 상세 조회 실패 - 존재하지 않는 회의")
-		public void getMeetingDetailFail_NotFoundMeeting() throws Exception {
+		@DisplayName("404 - 회의 수정 실패 - 존재하지 않는 회의")
+		public void putMeetingFail_NotFoundMeeting() throws Exception {
 			// given
 			AuthContext auth = testDataFactory.createAuth(defaultImage);
 			String url = "test-url";
@@ -366,6 +366,66 @@ public class WssControllerTest {
 			// when
 			String response = mockMvc.perform(
 					put("/internal/api/v1/docs/meeting/{id}", 9999L)
+						.header("X-API-KEY", apiKey)
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isNotFound())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			assertThat(response).contains(ErrorCode.NOTE_NOT_FOUND.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("Update Retro API")
+	class UpdateRetroApi{
+		@BeforeEach
+		void beforeEach() {
+			defaultImage = testDataFactory.createDefaultImage();
+		}
+
+		@Test
+		@DisplayName("204 - 회고 수정 성공")
+		public void putRetroSuccess() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			Project project = testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			Profile authProfile = testDataFactory.findProfileByUserIdAndProjectId(auth.getUser().getId(),
+				project.getId());
+			Retro retro = testDataFactory.createRetroWithParticipants(project, List.of(authProfile));
+			String apiKey = appProperties.getApi().getKey();
+			NoteUpdateReqDto updateReqDto = new NoteUpdateReqDto("Updated Title", "Updated Contents");
+
+			// when
+			String response = mockMvc.perform(
+					put("/internal/api/v1/docs/retro/{id}", retro.getId())
+						.header("X-API-KEY", apiKey)
+						.contentType("application/json")
+						.content(objectMapper.writeValueAsString(updateReqDto)))
+				.andExpect(status().isNoContent())
+				.andReturn().getResponse().getContentAsString();
+
+			// then
+			Retro updatedRetro = testDataFactory.findRetroById(retro.getId());
+			assertThat(updatedRetro.getTitle()).isEqualTo("Updated Title");
+			assertThat(updatedRetro.getContents()).isEqualTo("Updated Contents");
+		}
+
+		@Test
+		@DisplayName("404 - 회고 수정 실패 - 존재하지 않는 회고")
+		public void putRetroFail_NotFoundRetro() throws Exception {
+			// given
+			AuthContext auth = testDataFactory.createAuth(defaultImage);
+			String url = "test-url";
+			testDataFactory.createProjectAndOwnerProfile(url, auth.getUser());
+			String apiKey = appProperties.getApi().getKey();
+			NoteUpdateReqDto updateReqDto = new NoteUpdateReqDto("Updated Title", "Updated Contents");
+
+			// when
+			String response = mockMvc.perform(
+					put("/internal/api/v1/docs/retro/{id}", 9999L)
 						.header("X-API-KEY", apiKey)
 						.contentType("application/json")
 						.content(objectMapper.writeValueAsString(updateReqDto)))
