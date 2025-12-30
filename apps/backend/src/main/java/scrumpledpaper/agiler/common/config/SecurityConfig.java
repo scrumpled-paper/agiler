@@ -59,8 +59,7 @@ public class SecurityConfig {
 				.accessDeniedHandler(customAccessDeniedHandler)
 			)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/internal/**").hasAuthority(INTERNAL_API_ROLE)
-				.anyRequest().authenticated()
+				.anyRequest().hasAuthority(INTERNAL_API_ROLE)
 			)
 			.addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
