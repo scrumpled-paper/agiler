@@ -227,29 +227,24 @@ export class YjsService {
 
     private broadcastRaw(docId: string, msg: Uint8Array, sender: WebSocket) {
         const connections = this.connections.get(docId);
-        if (!connections || connections.size <= 1) return;
+        if (connections && connections.size > 1) {
+            // 순수 Yjs Update 형식
+            const encoder = encoding.createEncoder();
+            encoding.writeVarUint(encoder, messageSync);
+            encoding.writeVarUint8Array(encoder, msg);
+            const updateMsg = encoding.toUint8Array(encoder);
 
-        const preview = this.getMessagePreview(msg);
-        this.logger.debug(`🌐 [${docId}] 브로드캐스트 ${preview}`);
-
-        let sentCount = 0;
-        let failedCount = 0;
-
-        connections.forEach((client) => {
-            if (client === sender || client.readyState !== WebSocket.OPEN) return;
-            const clientAddr = `${(client as any)._socket.remoteAddress}:${(client as any)._socket.remotePort}`;
-
-            try {
-                client.send(msg);
-                this.logger.debug(`✅ [${docId}] [${clientAddr}] 서버에서 브로드캐스트 전송`);
-                sentCount++;
-            } catch (error: any) {
-                failedCount++;
-                connections.delete(client);
-            }
-        });
-
-        this.logger.log(`📊 [${docId}] 브로드캐스트: ${sentCount}성공/${failedCount}실패`);
+            connections.forEach((client: WebSocket) => {
+                if (client.readyState === WebSocket.OPEN && client !== origin) {
+                    try {
+                        client.send(updateMsg);
+                        this.logger.debug(`🌐 서버 To 클라이언트 CRDT 브로드캐스트 → [${docId}] 전송`);
+                    } catch {
+                        connections.delete(client);
+                    }
+                }
+            });
+        }
     }
 
     private loadDocumentData(doc: Y.Doc, documentData: DocumentDto) {

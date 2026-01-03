@@ -58,8 +58,13 @@ export class AuthService {
         if (!wssToken) {
             throw new HttpException('Missing WSS token', HttpStatus.BAD_REQUEST);
         }
+        const rawToken = wssToken?.endsWith('/')
+            ? wssToken.slice(0, -1)
+            : wssToken;
+
+
         // 1. WSS 토큰 검증
-        const { sub: userId, docId } = this.verifyWssToken(wssToken);
+        const { sub: userId, docId } = this.verifyWssToken(rawToken);
 
         // 2. Y.Doc 가져오기 또는 생성
         const doc = await this.yjsService.getOrCreateDoc(docId);
