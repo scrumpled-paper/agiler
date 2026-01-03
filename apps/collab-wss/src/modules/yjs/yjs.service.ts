@@ -10,7 +10,6 @@ import { DocumentService } from '../document/document.service';
 import { Buffer } from 'buffer';
 import { DocumentDto } from '../document/dto/document-response.dto';
 
-// y-websocket이 사용하는 메시지 타입 [web:414][web:424]
 const messageSync = 0;
 const messageAwareness = 1;
 
@@ -19,8 +18,9 @@ export class YjsService {
     private readonly logger = new Logger(YjsService.name);
     private docs = new Map<string, Y.Doc>();
     private connections = new Map<string, Set<WebSocket>>();
-    private autoSaveTimers = new Map<string, NodeJS.Timeout>();
+    private autoSaveTimers = new Map<string, ReturnType<typeof setTimeout>>();
     private awarenessMap = new Map<string, awarenessProtocol.Awareness>();
+    private logThrottle = new Map<string, number>();
 
     constructor(private readonly documentService: DocumentService) {}
 
@@ -29,18 +29,16 @@ export class YjsService {
 
         if (!doc) {
             doc = new Y.Doc();
-
             const documentData = await this.documentService.fetchDocumentFromSpring(docId);
             this.loadDocumentData(doc, documentData);
             this.docs.set(docId, doc);
 
-            // Awareness도 같이 생성
             const awareness = new awarenessProtocol.Awareness(doc);
             this.awarenessMap.set(docId, awareness);
 
             this.logger.log(`📄 새 Y.Doc 생성: ${docId}`);
         } else {
-            this.logger.log(`📄 기존 Y.Doc 재사용: ${docId}`);
+            this.logActivity(docId, `📄 기존 Y.Doc 재사용: ${docId}`);
         }
 
         return doc;
@@ -56,6 +54,9 @@ export class YjsService {
     }
 
     connectWebSocket(ws: WebSocket, docId: string, doc: Y.Doc) {
+        const wsId = `ws-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        (ws as any).id = wsId;
+
         if (!this.connections.has(docId)) {
             this.connections.set(docId, new Set());
         }
@@ -67,54 +68,43 @@ export class YjsService {
             this.setupAutoSave(docId, doc);
         }
 
-        this.logger.log(`✅ 소켓 연결 완료: ${docId}`);
-        this.logger.log(`📊 접속자: ${this.connections.get(docId)!.size}명`);
+        this.logger.log(`✅ [${wsId.slice(0,8)}] 소켓 연결: ${docId} (총 ${this.connections.get(docId)!.size}명)`);
     }
 
     async saveDocumentToSpring(docId: string): Promise<void> {
         const doc = this.docs.get(docId);
         if (!doc) {
-            throw new HttpException(
-                `문서를 찾을 수 없습니다: ${docId}`,
-                HttpStatus.NOT_FOUND,
-            );
+            throw new HttpException(`문서를 찾을 수 없습니다: ${docId}`, HttpStatus.NOT_FOUND);
         }
 
         const yTitle = doc.getText('title');
         const yContents = doc.getText('contents');
 
-        await this.documentService.saveDocumentToSpring(
-            docId,
-            yTitle.toString(),
-            yContents.toString(),
-        );
-
+        await this.documentService.saveDocumentToSpring(docId, yTitle.toString(), yContents.toString());
         this.logger.log(`💾 문서 저장 완료: ${docId}`);
     }
 
     private setupAutoSave(docId: string, doc: Y.Doc) {
-        doc.on('update', () => {
-            if (this.autoSaveTimers.has(docId)) {
-                clearTimeout(this.autoSaveTimers.get(docId)!);
+        if (this.autoSaveTimers.has(docId)) {
+            clearTimeout(this.autoSaveTimers.get(docId)!);
+        }
+
+        const timer = setTimeout(async () => {
+            try {
+                await this.saveDocumentToSpring(docId);
+                this.logger.log(`💾 자동 저장 완료: ${docId}`);
+            } catch (error: any) {
+                this.logger.error(`❌ 자동 저장 실패: ${docId} - ${error.message}`);
             }
+        }, 5 * 60 * 1000);  // 5분
 
-            const timer = setTimeout(async () => {
-                try {
-                    await this.saveDocumentToSpring(docId);
-                    this.logger.log(`💾 자동 저장 완료: ${docId}`);
-                } catch (error: any) {
-                    this.logger.error(`❌ 자동 저장 실패: ${docId} - ${error.message}`);
-                }
-            }, 4000);
-
-            this.autoSaveTimers.set(docId, timer);
-        });
-
-        this.logger.log(`🔄 자동 저장 활성화: ${docId}`);
+        this.autoSaveTimers.set(docId, timer);
+        this.logger.log(`🔄 자동 저장 설정: ${docId} (5분)`);
     }
 
     private setupWebSocket(ws: WebSocket, doc: Y.Doc, docId: string) {
         const awareness = this.getAwareness(docId, doc);
+        const wsId = (ws as any).id;
 
         ws.on('message', (message: Buffer) => {
             try {
@@ -122,104 +112,148 @@ export class YjsService {
                 const decoder = decoding.createDecoder(uint8Message);
                 const messageType = decoding.readVarUint(decoder);
 
+                // ✅ 들어온 메시지 전체 내용 로깅
+                const fullMsgHex = Array.from(uint8Message).map(b => b.toString(16).padStart(2,'0')).join(' ');
+                const msgSummary = fullMsgHex.length > 100 ? fullMsgHex.slice(0, 100) + '...' : fullMsgHex;
+                this.logger.log(`📨 수신 [${docId}] [${wsId.slice(0,8)}] (${message.length}B): ${msgSummary}`);
+
                 switch (messageType) {
                     case messageSync: {
-                        // ✅ readSyncMessage가 서버 doc를 업데이트하고 응답 패킷(reply)을 만든다 [web:414][web:432]
                         const encoder = encoding.createEncoder();
                         encoding.writeVarUint(encoder, messageSync);
-
                         syncProtocol.readSyncMessage(decoder, encoder, doc, ws);
 
                         const reply = encoding.toUint8Array(encoder);
                         if (reply.length > 1) {
-                            // 1) 요청한 클라이언트에게 응답
+                            // ✅ reply 메시지 내용 로깅
+                            const replyHex = Array.from(reply).map(b => b.toString(16).padStart(2,'0')).join(' ').slice(0, 100);
+                            this.logger.log(`📤 응답 [${docId}] (${reply.length}B): ${replyHex}...`);
+
                             ws.send(reply);
-                            // 2) 같은 문서의 다른 클라이언트에게도 CRDT update 브로드캐스트
                             this.broadcastRaw(docId, reply, ws);
                         }
-
-                        this.logger.log(`📥 Sync 메시지 처리 및 브로드캐스트: ${docId}`);
+                        this.logActivity(docId, `📥 Sync 처리: ${docId}`);
                         break;
                     }
 
                     case messageAwareness: {
                         const update = decoding.readVarUint8Array(decoder);
 
+                        // ✅ Awareness update 내용 로깅
+                        const updateHex = Array.from(update).map(b => b.toString(16).padStart(2,'0')).join(' ').slice(0, 100);
+                        this.logger.log(`👥 Awareness [${docId}] (${update.length}B): ${updateHex}...`);
+
                         awarenessProtocol.applyAwarenessUpdate(awareness, update, ws);
 
-                        // Awareness는 그대로 재포장해서 다른 클라이언트에게 전달 [web:414]
                         const encoder = encoding.createEncoder();
                         encoding.writeVarUint(encoder, messageAwareness);
                         encoding.writeVarUint8Array(encoder, update);
                         const msg = encoding.toUint8Array(encoder);
 
+                        // ✅ 브로드캐스트 메시지 내용 로깅
+                        const bcHex = Array.from(msg).map(b => b.toString(16).padStart(2,'0')).join(' ').slice(0, 100);
+                        this.logger.log(`📡 브로드캐스트 준비 [${docId}] (${msg.length}B): ${bcHex}...`);
+
                         this.broadcastRaw(docId, msg, ws);
-                        this.logger.log(`📡 Awareness 브로드캐스트: ${docId}`);
                         break;
                     }
 
                     default: {
-                        this.logger.warn(`⚠️ 알 수 없는 메시지 타입: ${messageType}`);
+                        this.logger.warn(`⚠️ [${docId}] 알 수 없는 타입 ${messageType}: ${msgSummary}`);
                     }
                 }
             } catch (error: any) {
-                this.logger.error(`❌ 메시지 처리 실패: ${error.message}`);
-                this.logger.error(`스택: ${error.stack}`);
+                this.logger.error(`❌ [${docId}] 메시지 처리 실패: ${error.message}`);
             }
         });
 
         ws.on('close', () => {
-            this.logger.log(`👋 연결 종료: ${docId}`);
+            this.logger.log(`👋 [${wsId}] 종료: ${docId}`);
             const connections = this.connections.get(docId);
             if (connections) {
                 connections.delete(ws);
-                this.logger.log(`📊 남은 접속자: ${connections.size}명`);
+                this.logger.log(`📊 [${docId}] 남은: ${connections.size}명`);
+
                 if (connections.size === 0) {
+                    this.saveDocumentOnLastUserLeave(docId);
                     this.connections.delete(docId);
-                    if (this.autoSaveTimers.has(docId)) {
-                        clearTimeout(this.autoSaveTimers.get(docId)!);
-                        this.autoSaveTimers.delete(docId);
-                        this.logger.log(`🛑 자동 저장 비활성화: ${docId}`);
-                    }
                 }
             }
         });
 
         ws.on('error', (error) => {
-            this.logger.error(`❌ WebSocket 에러: ${error.message}`);
+            this.logger.error(`❌ [${docId}] WebSocket 에러: ${error.message}`);
         });
 
-        // ✅ 초기 SyncStep1 전송 (y-websocket 패턴) [web:414][web:416]
+        // 초기 SyncStep1
         try {
             const encoder = encoding.createEncoder();
             encoding.writeVarUint(encoder, messageSync);
             syncProtocol.writeSyncStep1(encoder, doc);
             const syncMessage = encoding.toUint8Array(encoder);
             ws.send(syncMessage);
-            this.logger.log(`📤 초기 SyncStep1 전송: ${docId}`);
+            this.logActivity(docId, `📤 초기 SyncStep1: ${docId}`);
         } catch (error: any) {
-            this.logger.error(`❌ 초기 sync 실패: ${error.message}`);
+            this.logger.error(`❌ [${docId}] 초기 sync 실패: ${error.message}`);
         }
     }
 
     private broadcastRaw(docId: string, msg: Uint8Array, sender: WebSocket) {
         const connections = this.connections.get(docId);
-        if (!connections) return;
+        if (!connections || connections.size <= 1) {
+            this.logger.debug(`📭 브로드캐스트 생략: ${docId} (총 ${connections?.size || 0}명)`);
+            return;
+        }
+
+        // ✅ 브로드캐스트 메시지 전체 내용 로깅
+        const fullMsgHex = Array.from(msg).map(b => b.toString(16).padStart(2,'0')).join(' ');
+        const msgSummary = fullMsgHex.length > 150 ? fullMsgHex.slice(0, 150) + '...' : fullMsgHex;
+        this.logger.log(`🌐 전송 메시지 [${docId}] (${msg.length}B): ${msgSummary}`);
 
         let sentCount = 0;
+        let failedCount = 0;
+
         connections.forEach((client) => {
-            if (client !== sender && client.readyState === WebSocket.OPEN) {
-                try {
-                    client.send(msg);
-                    sentCount++;
-                } catch (error: any) {
-                    this.logger.error(`❌ 브로드캐스트 실패: ${error.message}`);
-                }
+            if (client === sender || client.readyState !== WebSocket.OPEN) {
+                return;
+            }
+
+            try {
+                client.send(msg);
+                sentCount++;
+                const clientId = (client as any).id?.slice(0,8) || 'unknown';
+                this.logger.log(`✅ 전송완료 [${docId}] -> [${clientId}] (${msg.length}B)`);
+            } catch (error: any) {
+                failedCount++;
+                this.logger.error(`❌ 전송실패 [${docId}] -> [${(client as any).id?.slice(0,8)}]: ${error.message}`);
+                connections.delete(client);
             }
         });
 
-        if (sentCount > 0) {
-            this.logger.log(`📡 브로드캐스트: ${sentCount}명에게 전송`);
+        this.logger.log(`📊 [${docId}] 브로드캐스트 결과: ${sentCount}성공 / ${failedCount}실패 (대상: ${connections.size-1})`);
+    }
+
+    private logActivity(docId: string, message: string) {
+        const now = Date.now();
+        const key = `${docId}-${message.slice(0,20)}`;
+        const last = this.logThrottle.get(key) || 0;
+
+        if (now - last > 5000) {  // 5초에 한 번
+            this.logger.log(message);
+            this.logThrottle.set(key, now);
+        }
+    }
+
+    private async saveDocumentOnLastUserLeave(docId: string) {
+        try {
+            if (this.autoSaveTimers.has(docId)) {
+                clearTimeout(this.autoSaveTimers.get(docId)!);
+                this.autoSaveTimers.delete(docId);
+            }
+            await this.saveDocumentToSpring(docId);
+            this.logger.log(`💾 마지막 유저 퇴장 저장: ${docId}`);
+        } catch (error: any) {
+            this.logger.error(`❌ 퇴장 저장 실패: ${docId} - ${error.message}`);
         }
     }
 
@@ -232,25 +266,20 @@ export class YjsService {
         const yTitle = doc.getText('title');
         if (documentData.title && yTitle.length === 0) {
             yTitle.insert(0, documentData.title);
-            this.logger.log(`✅ 제목 로드: ${documentData.title}`);
         }
 
         const yContents = doc.getText('contents');
         if (documentData.contents && yContents.length === 0) {
             yContents.insert(0, documentData.contents);
-            this.logger.log(`✅ 내용 로드: ${documentData.contents.length}자`);
         }
 
-        type ParticipantValue = string | number;
-        const yParticipants: Y.Array<Y.Map<ParticipantValue>> = doc.getArray('participants');
-
+        const yParticipants: Y.Array<Y.Map<any>> = doc.getArray('participants');
         if (documentData.participants && documentData.participants.length > 0 && yParticipants.length === 0) {
             documentData.participants.forEach((participant) => {
-                const participantMap = new Y.Map<ParticipantValue>();
+                const participantMap = new Y.Map();
                 participantMap.set('profileId', participant.profileId);
                 participantMap.set('nickname', participant.nickname);
                 participantMap.set('imageUrl', participant.imageUrl);
-
                 yParticipants.push([participantMap]);
             });
         }
@@ -259,7 +288,6 @@ export class YjsService {
     cleanup() {
         this.autoSaveTimers.forEach((timer) => clearTimeout(timer));
         this.autoSaveTimers.clear();
-
         this.docs.clear();
         this.connections.clear();
         this.awarenessMap.clear();
