@@ -16,6 +16,7 @@ import ProjectNotificationsSetting from './pages/projectSettings/ProjectNotifica
 import DailyScrumsList from './pages/DailyScrumsList'
 import MeetingsList from './pages/MeetingsList'
 import RetrospectivesList from './pages/RetrospectList'
+import Meeting from './pages/Meeting'
 
 export const routers = createBrowserRouter([
   {
@@ -154,7 +155,7 @@ export const routers = createBrowserRouter([
                 path: ':retrospectiveId',
                 element: (
                   <ProtectedRoute>
-                    <DailyScrum />
+                    <Meeting />
                   </ProtectedRoute>
                 ),
               },
@@ -175,7 +176,7 @@ export const routers = createBrowserRouter([
                 path: ':meetingId',
                 element: (
                   <ProtectedRoute>
-                    <DailyScrum />
+                    <Meeting />
                   </ProtectedRoute>
                 ),
               },

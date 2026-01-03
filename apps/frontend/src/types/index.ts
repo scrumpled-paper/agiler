@@ -2,7 +2,7 @@ export interface UserInfo {
   profileId: number
   nickname: string
   email?: string
-  imageUrl?: string
+  imageUrl: string
   role?: string
   description?: string
 }
