@@ -1,5 +1,9 @@
+// [ ] noteheader ui수정을 위해 남겨둠
+import type * as Y from 'yjs'
 interface ScrumHeaderProps {
-  title: string
+  ydoc: Y.Doc
+  // ytitle: Y.text
+  type: string
   isConnected?: boolean
   isSynced?: boolean
   lastSaved?: Date
@@ -7,13 +11,15 @@ interface ScrumHeaderProps {
 }
 
 /**
- * Daily Scrum 헤더 컴포넌트
+ * 동시편집 헤더 컴포넌트
  * - 제목 표시
  * - WebSocket 연결 상태 표시
  * - 마지막 저장 시간 표시
  */
-export function ScrumHeader({
-  title,
+export function NoteHeader({
+  // ydoc,
+  // ytitle,
+  type,
   isConnected = false,
   isSynced = false,
   lastSaved,
@@ -21,7 +27,8 @@ export function ScrumHeader({
 }: ScrumHeaderProps) {
   return (
     <div className="flex justify-between items-center mb-4">
-      <h1 className="text-3xl font-bold">{title}</h1>
+      <h1 className="text-3xl font-bold">{type}</h1>
+
       <div className="flex gap-3 items-center text-sm">
         {/* WebSocket 연결 상태 */}
         <div className="flex items-center gap-1.5">

@@ -8,7 +8,6 @@ type ParticipantMap = Y.Map<string | number>
 export interface YjsConnection {
   ydoc: Y.Doc
   ytitle: Y.Text
-  ycontents: Y.Text
   yParticipants: Y.Array<ParticipantMap>
   provider: WebsocketProvider
   isConnected: boolean

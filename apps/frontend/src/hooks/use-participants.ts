@@ -16,10 +16,13 @@ export function useParticipants(ydoc: Y.Doc | undefined) {
     }
 
     // 초기 로드
-    setParticipants(getParticipants(ydoc))
+    const initialParticipants = getParticipants(ydoc)
+    console.log('[YJS] 참여자 초기 로드:', initialParticipants.length, '명')
+    setParticipants(initialParticipants)
 
     // 변경 감지 및 실시간 동기화
     const unobserve = observeParticipants(ydoc, newParticipants => {
+      console.log('[YJS] 참여자 변경 감지:', newParticipants.length, '명')
       setParticipants(newParticipants)
     })
 

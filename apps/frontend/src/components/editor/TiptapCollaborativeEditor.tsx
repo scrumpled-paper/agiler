@@ -80,7 +80,7 @@ export function TiptapCollaborativeEditor({
               // Collaboration: Yjs와 동기화
               Collaboration.configure({
                 document: ydoc,
-                field: 'content', // Y.Doc 내 필드 이름
+                field: 'contents', // Y.Doc 내 필드 이름 (Tiptap이 자동으로 Y.XmlFragment 생성)
               }),
               // CollaborationCursor: 다른 사용자의 커서 위치 표시
               CollaborationCursor.configure({

@@ -16,7 +16,7 @@ interface UseYjsWebSocketOptions {
 export function useYjsWebSocket({
   projectUrl,
   docId,
-  initialParticipants = [],
+  // initialParticipants = [],
   enabled = true,
   noteType,
 }: UseYjsWebSocketOptions) {
@@ -34,7 +34,6 @@ export function useYjsWebSocket({
   const ydocRef = useRef<Y.Doc | undefined>(undefined)
   const providerRef = useRef<WebsocketProvider | undefined>(undefined)
   const ytitleRef = useRef<Y.Text | undefined>(undefined)
-  const ycontentsRef = useRef<Y.Text | undefined>(undefined)
   const yParticipantsRef = useRef<Y.Array<ParticipantMap> | undefined>(
     undefined
   )
@@ -56,7 +55,6 @@ export function useYjsWebSocket({
         // 1단계: Yjs 문서 초기화
         ydoc = new Y.Doc()
         const ytitle = ydoc.getText('title')
-        const ycontents = ydoc.getText('contents')
         const yParticipants: Y.Array<ParticipantMap> =
           ydoc.getArray('participants')
 
@@ -68,20 +66,19 @@ export function useYjsWebSocket({
 
         ydocRef.current = ydoc
         ytitleRef.current = ytitle
-        ycontentsRef.current = ycontents
         yParticipantsRef.current = yParticipants
 
         // 초기 참여자 목록 설정
-        if (initialParticipants.length > 0 && yParticipants.length === 0) {
-          const yMaps = initialParticipants.map(participant => {
-            const yMap: ParticipantMap = new Y.Map()
-            yMap.set('profileId', participant.profileId)
-            yMap.set('nickname', participant.nickname)
-            yMap.set('imageUrl', participant.imageUrl)
-            return yMap
-          })
-          yParticipants.push(yMaps)
-        }
+        // if (initialParticipants.length > 0 && yParticipants.length === 0) {
+        //   const yMaps = initialParticipants.map(participant => {
+        //     const yMap: ParticipantMap = new Y.Map()
+        //     yMap.set('profileId', participant.profileId)
+        //     yMap.set('nickname', participant.nickname)
+        //     yMap.set('imageUrl', participant.imageUrl)
+        //     return yMap
+        //   })
+        //   yParticipants.push(yMaps)
+        // }
 
         // 개발 환경에서 로컬 yjs-server 사용 (환경변수로 제어)
         const useLocalServer = import.meta.env.VITE_USE_LOCAL_YJS === 'true'
@@ -100,6 +97,8 @@ export function useYjsWebSocket({
           provider = new WebsocketProvider(wsUrl, roomId, ydoc, {
             connect: true,
           })
+          console.log('provider : ', provider)
+          console.error('provider : ', provider)
 
           // cleanup이 호출되었으면 provider 정리 후 종료
           if (isCleanedUp) {
@@ -131,6 +130,16 @@ export function useYjsWebSocket({
 
           provider.on('status', statusHandler)
           provider.on('sync', syncHandler)
+
+          // 🔍 디버깅: Ydoc 업데이트 감지
+          const updateHandler = (update: Uint8Array, origin: unknown) => {
+            console.log('[YJS ✏️] 문서 업데이트 감지:', {
+              크기: `${update.byteLength} bytes`,
+              origin: origin === provider ? 'WebSocket' : 'Local',
+              시간: new Date().toLocaleTimeString(),
+            })
+          }
+          ydoc.on('update', updateHandler)
         } else {
           // 프로덕션 모드: 백엔드 WSS 서버 사용
           console.log('[YJS] 백엔드 WSS 서버 모드로 연결을 시작합니다.')
@@ -215,6 +224,16 @@ export function useYjsWebSocket({
             provider.on('status', statusHandler)
             provider.on('sync', syncHandler)
 
+            // 🔍 디버깅: Ydoc 업데이트 감지
+            const updateHandler = (update: Uint8Array, origin: unknown) => {
+              console.log('[YJS ✏️] 문서 업데이트 감지:', {
+                크기: `${update.byteLength} bytes`,
+                origin: origin === provider ? 'WebSocket' : 'Local',
+                시간: new Date().toLocaleTimeString(),
+              })
+            }
+            ydoc!.on('update', updateHandler)
+
             return provider
           }
 
@@ -298,13 +317,11 @@ export function useYjsWebSocket({
       setIsSynced(false)
       setConnectionState({ status: 'idle' })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUrl, docId, noteType, enabled])
 
   return {
     ydoc: ydocRef.current,
     ytitle: ytitleRef.current,
-    ycontents: ycontentsRef.current,
     yParticipants: yParticipantsRef.current,
     provider: providerRef.current,
     isConnected,

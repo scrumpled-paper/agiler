@@ -3,8 +3,9 @@ import { useYjsWebSocket } from '@/hooks/use-yjs-websocket'
 import { useParticipants } from '@/hooks/use-participants'
 import { addParticipant, removeParticipant } from '@/utils/yjs-participants'
 import { TiptapCollaborativeEditor } from '@/components/editor/TiptapCollaborativeEditor'
-import { ScrumHeader } from '@/components/scrum/ScrumHeader'
+// import { NoteHeader } from '@/components/scrum/ScrumHeader'
 import type { Participant } from '@/types/yjs'
+import { NoteHeader } from '@/components/editor/NoteHeader'
 
 /**
  * Meeting 상세 페이지
@@ -97,12 +98,13 @@ export default function Meeting() {
   return (
     <div className="container p-8">
       {/* 헤더: 제목, 연결 상태 */}
-      <ScrumHeader
-        title={ytitle?.toString() || 'Meeting'}
+      <NoteHeader
+        ydoc={ydoc}
+        ytitle={ytitle}
+        type="Meeting Note"
         isConnected={isConnected}
         isSynced={isSynced}
       />
-
       {/* Tiptap 협업 에디터 */}
       <div className="mt-6">
         <TiptapCollaborativeEditor

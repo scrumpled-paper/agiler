@@ -23,13 +23,22 @@ export function addParticipant(ydoc: Y.Doc, participant: Participant): boolean {
     return false
   }
 
-  // Y.Map으로 변환하여 추가
-  const yParticipant: ParticipantMap = new Y.Map()
-  yParticipant.set('profileId', participant.profileId)
-  yParticipant.set('nickname', participant.nickname)
-  yParticipant.set('imageUrl', participant.imageUrl)
+  // 트랜잭션을 사용하여 확실한 동기화 보장
+  ydoc.transact(() => {
+    // Y.Map으로 변환하여 추가
+    const yParticipant: ParticipantMap = new Y.Map()
+    yParticipant.set('profileId', participant.profileId)
+    yParticipant.set('nickname', participant.nickname)
+    yParticipant.set('imageUrl', participant.imageUrl)
 
-  yParticipants.push([yParticipant])
+    yParticipants.push([yParticipant])
+    console.log(
+      `[YJS] 참여자 추가됨:`,
+      participant.nickname,
+      `(profileId: ${participant.profileId})`
+    )
+  })
+
   return true
 }
 
@@ -52,7 +61,12 @@ export function removeParticipant(ydoc: Y.Doc, profileId: number): boolean {
     return false
   }
 
-  yParticipants.delete(index, 1)
+  // 트랜잭션을 사용하여 확실한 동기화 보장
+  ydoc.transact(() => {
+    yParticipants.delete(index, 1)
+    console.log(`[YJS] 참여자 제거됨: profileId ${profileId}`)
+  })
+
   return true
 }
 
@@ -86,7 +100,9 @@ export function observeParticipants(
   const yParticipants = ydoc.getArray<ParticipantMap>('participants')
 
   const observer = () => {
-    callback(getParticipants(ydoc))
+    const participants = getParticipants(ydoc)
+    console.log('[YJS] 참여자 배열 변경 감지됨:', participants.length, '명')
+    callback(participants)
   }
 
   yParticipants.observe(observer)
