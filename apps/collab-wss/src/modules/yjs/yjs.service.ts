@@ -83,6 +83,18 @@ export class YjsService {
         this.autoSaveTimers.set(docId, timer);
     }
 
+    private async saveDocumentOnLastUserLeave(docId: string) {
+        try {
+            if (this.autoSaveTimers.has(docId)) {
+                clearTimeout(this.autoSaveTimers.get(docId)!);
+            }
+            await this.saveDocumentToSpring(docId);
+            this.logger.log(`💾 퇴장 저장: ${docId}`);
+        } catch (error: any) {
+            this.logger.error(`❌ 퇴장 저장 실패: ${docId}`);
+        }
+    }
+
     async saveDocumentToSpring(docId: string): Promise<void> {
         const doc = this.docs.get(docId);
         if (!doc) throw new HttpException(`문서 없음: ${docId}`, HttpStatus.NOT_FOUND);
@@ -103,19 +115,28 @@ export class YjsService {
 
     private getMessagePreview(uint8Msg: Uint8Array): string {
         const size = uint8Msg.length;
+
         try {
-            const textDecoder = new TextDecoder('utf-8');
-            const previewText = textDecoder.decode(uint8Msg.slice(0, 80));
-            // 제어문자 제거 후 정리
-            const cleanText = previewText.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
-            if (cleanText.length > 0) {
-                return `(${size}B) "${cleanText.slice(0, 40)}..."`;
+            const decoder = decoding.createDecoder(uint8Msg);
+            const type = decoding.readVarUint(decoder);
+
+            if (type === 0) {
+                // Sync: StateSet/Δ 추출
+                const stateSet = decoding.hasContent(decoder);
+                const update = decoding.readVarUint8Array(decoder);
+                return `(${size}B) Sync ${stateSet ? '+' : ''}${update.length}BΔ`;
+            } else if (type === 1) {
+                // Awareness: JSON 파싱
+                const jsonData = decoding.readVarUint8Array(decoder);
+                const jsonStr = new TextDecoder().decode(jsonData);
+                const json = JSON.parse(jsonStr);
+                return `(${size}B) Awareness "${json.user?.name}"`;
             }
         } catch {}
+
         return `(${size}B) 바이너리`;
     }
 
-    typescript
     private setupWebSocket(ws: WebSocket, doc: Y.Doc, docId: string) {
         const awareness = this.getAwareness(docId, doc);
 
@@ -129,7 +150,7 @@ export class YjsService {
                 const messageType = decoding.readVarUint(decoder);
 
                 const preview = this.getMessagePreview(uint8Message);
-                this.logger.debug(`📨 [${docId}] [${clientId}] 수신 ${preview} type=${messageType}`);
+                this.logger.debug(`📨 [${docId}] [${clientId}] 서버 수신 ${preview} type=${messageType}`);
 
                 switch (messageType) {
                     case messageSync: {
@@ -138,7 +159,7 @@ export class YjsService {
                         syncProtocol.readSyncMessage(decoder, encoder, doc, ws);
 
                         const reply = encoding.toUint8Array(encoder);
-                        if (reply.length > 1) {
+                        if (reply.length > 0) {
                             const replyPreview = this.getMessagePreview(reply);
                             this.logger.debug(`📤 [${docId}] [${clientId}] 응답 ${replyPreview}`);
                             ws.send(reply);
@@ -217,14 +238,11 @@ export class YjsService {
 
         connections.forEach((client) => {
             if (client === sender || client.readyState !== WebSocket.OPEN) return;
-            if (client === sender) return;
             const clientAddr = `${(client as any)._socket.remoteAddress}:${(client as any)._socket.remotePort}`;
-            this.logger.debug(`✅ [${docId}] [${clientAddr}] 전송`);
 
             try {
                 client.send(msg);
-                const clientId = (client as any).id?.slice(0,8) || '??';
-                this.logger.debug(`✅ [${docId}] [${clientId}] 전송완료`);
+                this.logger.debug(`✅ [${docId}] [${clientAddr}] 서버에서 브로드캐스트 전송`);
                 sentCount++;
             } catch (error: any) {
                 failedCount++;
@@ -233,18 +251,6 @@ export class YjsService {
         });
 
         this.logger.log(`📊 [${docId}] 브로드캐스트: ${sentCount}성공/${failedCount}실패`);
-    }
-
-    private async saveDocumentOnLastUserLeave(docId: string) {
-        try {
-            if (this.autoSaveTimers.has(docId)) {
-                clearTimeout(this.autoSaveTimers.get(docId)!);
-            }
-            await this.saveDocumentToSpring(docId);
-            this.logger.log(`💾 퇴장 저장: ${docId}`);
-        } catch (error: any) {
-            this.logger.error(`❌ 퇴장 저장 실패: ${docId}`);
-        }
     }
 
     private loadDocumentData(doc: Y.Doc, documentData: DocumentDto) {
