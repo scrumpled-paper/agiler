@@ -16,11 +16,13 @@ describe('TableView', () => {
       profileId: 1,
       nickname: 'John Doe',
       email: 'john@example.com',
+      imageUrl: '',
     },
     {
       profileId: 2,
       nickname: 'Jane Smith',
       email: 'jane@example.com',
+      imageUrl: '',
     },
   ]
 
@@ -283,8 +285,18 @@ describe('TableView', () => {
   it('프로필 맵이 올바르게 동작한다', () => {
     const manyProfiles: UserInfo[] = [
       ...mockProfiles,
-      { profileId: 3, nickname: 'Alice Johnson', email: 'alice@example.com' },
-      { profileId: 4, nickname: 'Bob Wilson', email: 'bob@example.com' },
+      {
+        profileId: 3,
+        nickname: 'Alice Johnson',
+        email: 'alice@example.com',
+        imageUrl: '',
+      },
+      {
+        profileId: 4,
+        nickname: 'Bob Wilson',
+        email: 'bob@example.com',
+        imageUrl: '',
+      },
     ]
 
     const taskWithProfile3: Issue[] = [

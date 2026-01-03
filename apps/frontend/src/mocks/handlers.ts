@@ -1090,6 +1090,52 @@ export const handlers = [
       })
     }
   ),
+
+  // ==================== Meeting Detail Handler ====================
+
+  // 회의록 상세 조회
+  ...createHandlers(
+    '/api/v1/projects/:projectUrl/meetings/:meetingId',
+    ({ params }) => {
+      const meetingId = Number(params.meetingId)
+      console.log(
+        '[MSW] 회의록 상세 조회 호출됨:',
+        params.projectUrl,
+        meetingId
+      )
+
+      return HttpResponse.json({
+        id: meetingId,
+        title: `회의록 #${meetingId}`,
+        contents:
+          '# 회의록\n\n## 안건\n\n## 논의 사항\n\n## 결정 사항\n\n## 액션 아이템',
+        createdAt: new Date().toISOString(),
+        participants: [
+          {
+            profileId: 1,
+            nickname: 'Alice',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+          {
+            profileId: 2,
+            nickname: 'Bob',
+            imageUrl: 'https://placehold.co/100x100',
+          },
+        ],
+      })
+    }
+  ),
+
+  // 회의록 내용 업데이트
+  ...createPutHandlers(
+    '/api/v1/projects/:projectUrl/meetings/:meetingId',
+    async ({ params, request }) => {
+      const meetingId = Number(params.meetingId)
+      const body = (await request.json()) as { contents: string }
+      console.log('[MSW] 회의록 업데이트:', params.projectUrl, meetingId, body)
+      return new HttpResponse(null, { status: 200 })
+    }
+  ),
 ]
 
 // Helper function to reset labels store for tests
