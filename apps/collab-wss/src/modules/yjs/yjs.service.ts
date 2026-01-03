@@ -38,11 +38,7 @@ export class YjsService {
             // 변경 감지 + 자동 저장
             doc.on('update', (update: Uint8Array, origin: any) => {
                 this.triggerAutoSave(docId);
-                if (origin && origin instanceof WebSocket) {
-                    this.broadcastRaw(docId, update, origin as WebSocket);
-                } else {
-                    this.broadcastRaw(docId, update, null as any);
-                }
+                this.broadcastUpdate(docId, update, origin as WebSocket);
             });
 
             this.logger.log(`📄 새 Y.Doc 생성: ${docId}`);
@@ -229,31 +225,26 @@ export class YjsService {
         }
     }
 
-    private broadcastRaw(docId: string, msg: Uint8Array, sender: WebSocket) {
+    private broadcastUpdate(docId: string, update: Uint8Array, sender?: WebSocket) {
         const connections = this.connections.get(docId);
         if (!connections || connections.size <= 1) return;
 
-        const preview = this.getMessagePreview(msg);
-        this.logger.debug(`🌐 [${docId}] 브로드캐스트 ${preview}`);
+        const encoder = encoding.createEncoder();
 
-        let sentCount = 0;
-        let failedCount = 0;
+        // ✅ SyncProtocol 헤더 (type 0)
+        encoding.writeVarUint(encoder, 0);  // SyncProtocolMessageType
 
-        connections.forEach((client: WebSocket) => {
-            if (client === sender || client.readyState !== WebSocket.OPEN) return;
+        // ✅ UpdateMessage (type 2)
+        encoding.writeVarUint(encoder, 2);  // UpdateMessageType
+        encoding.writeVarUint8Array(encoder, update);  // raw Yjs update
 
-            try {
-                client.send(msg);
-                const clientAddr = `${(client as any)._socket.remoteAddress}:${(client as any)._socket.remotePort}`;
-                this.logger.debug(`✅ [${docId}] → [${clientAddr}] 전송`);
-                sentCount++;
-            } catch (error: any) {
-                failedCount++;
-                connections.delete(client);
+        const message = encoding.toUint8Array(encoder);
+
+        connections.forEach((client) => {
+            if (client !== sender && client.readyState === WebSocket.OPEN) {
+                client.send(message);
             }
         });
-
-        this.logger.log(`📊 [${docId}] 브로드캐스트: ${sentCount}성공/${failedCount}실패`);
     }
 
     private loadDocumentData(doc: Y.Doc, documentData: DocumentDto) {
