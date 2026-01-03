@@ -1,4 +1,4 @@
-// src/yjs/yjs.service.ts
+// src/yjs/yjs.service.ts (로그 액티비티 제거)
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import * as Y from 'yjs';
@@ -20,7 +20,6 @@ export class YjsService {
     private connections = new Map<string, Set<WebSocket>>();
     private autoSaveTimers = new Map<string, ReturnType<typeof setTimeout>>();
     private awarenessMap = new Map<string, awarenessProtocol.Awareness>();
-    private logThrottle = new Map<string, number>();
 
     constructor(private readonly documentService: DocumentService) {}
 
@@ -38,7 +37,7 @@ export class YjsService {
 
             this.logger.log(`📄 새 Y.Doc 생성: ${docId}`);
         } else {
-            this.logActivity(docId, `📄 기존 Y.Doc 재사용: ${docId}`);
+            this.logger.log(`📄 기존 Y.Doc 재사용: ${docId}`);  // ✅ 직접 출력
         }
 
         return doc;
@@ -96,7 +95,7 @@ export class YjsService {
             } catch (error: any) {
                 this.logger.error(`❌ 자동 저장 실패: ${docId} - ${error.message}`);
             }
-        }, 5 * 60 * 1000);  // 5분
+        }, 5 * 60 * 1000);
 
         this.autoSaveTimers.set(docId, timer);
         this.logger.log(`🔄 자동 저장 설정: ${docId} (5분)`);
@@ -112,7 +111,6 @@ export class YjsService {
                 const decoder = decoding.createDecoder(uint8Message);
                 const messageType = decoding.readVarUint(decoder);
 
-                // ✅ 들어온 메시지 전체 내용 로깅
                 const fullMsgHex = Array.from(uint8Message).map(b => b.toString(16).padStart(2,'0')).join(' ');
                 const msgSummary = fullMsgHex.length > 100 ? fullMsgHex.slice(0, 100) + '...' : fullMsgHex;
                 this.logger.log(`📨 수신 [${docId}] [${wsId.slice(0,8)}] (${message.length}B): ${msgSummary}`);
@@ -125,21 +123,18 @@ export class YjsService {
 
                         const reply = encoding.toUint8Array(encoder);
                         if (reply.length > 1) {
-                            // ✅ reply 메시지 내용 로깅
                             const replyHex = Array.from(reply).map(b => b.toString(16).padStart(2,'0')).join(' ').slice(0, 100);
                             this.logger.log(`📤 응답 [${docId}] (${reply.length}B): ${replyHex}...`);
 
                             ws.send(reply);
                             this.broadcastRaw(docId, reply, ws);
                         }
-                        this.logActivity(docId, `📥 Sync 처리: ${docId}`);
+                        this.logger.log(`📥 Sync 처리: ${docId}`);  // ✅ 직접 출력
                         break;
                     }
 
                     case messageAwareness: {
                         const update = decoding.readVarUint8Array(decoder);
-
-                        // ✅ Awareness update 내용 로깅
                         const updateHex = Array.from(update).map(b => b.toString(16).padStart(2,'0')).join(' ').slice(0, 100);
                         this.logger.log(`👥 Awareness [${docId}] (${update.length}B): ${updateHex}...`);
 
@@ -150,7 +145,6 @@ export class YjsService {
                         encoding.writeVarUint8Array(encoder, update);
                         const msg = encoding.toUint8Array(encoder);
 
-                        // ✅ 브로드캐스트 메시지 내용 로깅
                         const bcHex = Array.from(msg).map(b => b.toString(16).padStart(2,'0')).join(' ').slice(0, 100);
                         this.logger.log(`📡 브로드캐스트 준비 [${docId}] (${msg.length}B): ${bcHex}...`);
 
@@ -185,14 +179,13 @@ export class YjsService {
             this.logger.error(`❌ [${docId}] WebSocket 에러: ${error.message}`);
         });
 
-        // 초기 SyncStep1
         try {
             const encoder = encoding.createEncoder();
             encoding.writeVarUint(encoder, messageSync);
             syncProtocol.writeSyncStep1(encoder, doc);
             const syncMessage = encoding.toUint8Array(encoder);
             ws.send(syncMessage);
-            this.logActivity(docId, `📤 초기 SyncStep1: ${docId}`);
+            this.logger.log(`📤 초기 SyncStep1: ${docId}`);  // ✅ 직접 출력
         } catch (error: any) {
             this.logger.error(`❌ [${docId}] 초기 sync 실패: ${error.message}`);
         }
@@ -205,7 +198,6 @@ export class YjsService {
             return;
         }
 
-        // ✅ 브로드캐스트 메시지 전체 내용 로깅
         const fullMsgHex = Array.from(msg).map(b => b.toString(16).padStart(2,'0')).join(' ');
         const msgSummary = fullMsgHex.length > 150 ? fullMsgHex.slice(0, 150) + '...' : fullMsgHex;
         this.logger.log(`🌐 전송 메시지 [${docId}] (${msg.length}B): ${msgSummary}`);
@@ -231,17 +223,6 @@ export class YjsService {
         });
 
         this.logger.log(`📊 [${docId}] 브로드캐스트 결과: ${sentCount}성공 / ${failedCount}실패 (대상: ${connections.size-1})`);
-    }
-
-    private logActivity(docId: string, message: string) {
-        const now = Date.now();
-        const key = `${docId}-${message.slice(0,20)}`;
-        const last = this.logThrottle.get(key) || 0;
-
-        if (now - last > 5000) {  // 5초에 한 번
-            this.logger.log(message);
-            this.logThrottle.set(key, now);
-        }
     }
 
     private async saveDocumentOnLastUserLeave(docId: string) {
