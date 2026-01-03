@@ -56,21 +56,15 @@ export class YjsService {
     }
 
     connectWebSocket(ws: WebSocket, docId: string, doc: Y.Doc) {
-        const wsId = `ws-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        (ws as any).id = wsId;
-
         if (!this.connections.has(docId)) {
             this.connections.set(docId, new Set());
         }
         this.connections.get(docId)!.add(ws);
 
+        const size = this.connections.get(docId)!.size;
+        this.logger.log(`✅ 연결: ${docId} (${size}명)`);
+
         this.setupWebSocket(ws, doc, docId);
-
-        if (this.connections.get(docId)!.size === 1) {
-            this.setupAutoSave(docId, doc);
-        }
-
-        this.logger.log(`✅ [${wsId.slice(0,8)}] 연결: ${docId} (${this.connections.get(docId)!.size}명)`);
     }
 
     private triggerAutoSave(docId: string) {
@@ -107,10 +101,6 @@ export class YjsService {
         this.logger.log(`💾 저장완료: ${docId}`);
     }
 
-    private setupAutoSave(docId: string, doc: Y.Doc) {
-        this.triggerAutoSave(docId);
-    }
-
     private getMessagePreview(uint8Msg: Uint8Array): string {
         const size = uint8Msg.length;
         try {
@@ -125,9 +115,12 @@ export class YjsService {
         return `(${size}B) 바이너리`;
     }
 
+    typescript
     private setupWebSocket(ws: WebSocket, doc: Y.Doc, docId: string) {
         const awareness = this.getAwareness(docId, doc);
-        const wsId = (ws as any).id;
+
+        // ✅ IP:Port 로 간단 식별
+        const clientId = `${(ws as any)._socket.remoteAddress}:${(ws as any)._socket.remotePort || '??'}`;
 
         ws.on('message', (message: Buffer) => {
             try {
@@ -135,9 +128,8 @@ export class YjsService {
                 const decoder = decoding.createDecoder(uint8Message);
                 const messageType = decoding.readVarUint(decoder);
 
-                // ✅ 문자열 변환 로깅
                 const preview = this.getMessagePreview(uint8Message);
-                this.logger.debug(`📨 [${docId}] [${wsId.slice(0,8)}] 수신 ${preview} type=${messageType}`);
+                this.logger.debug(`📨 [${docId}] [${clientId}] 수신 ${preview} type=${messageType}`);
 
                 switch (messageType) {
                     case messageSync: {
@@ -147,9 +139,8 @@ export class YjsService {
 
                         const reply = encoding.toUint8Array(encoder);
                         if (reply.length > 1) {
-                            // ✅ 응답 문자열 로깅
                             const replyPreview = this.getMessagePreview(reply);
-                            this.logger.debug(`📤 [${docId}] [${wsId.slice(0,8)}] 응답 ${replyPreview}`);
+                            this.logger.debug(`📤 [${docId}] [${clientId}] 응답 ${replyPreview}`);
                             ws.send(reply);
                             this.broadcastRaw(docId, reply, ws);
                         }
@@ -159,7 +150,7 @@ export class YjsService {
                     case messageAwareness: {
                         const update = decoding.readVarUint8Array(decoder);
                         const updatePreview = this.getMessagePreview(update);
-                        this.logger.debug(`👥 [${docId}] [${wsId.slice(0,8)}] Awareness ${updatePreview}`);
+                        this.logger.debug(`👥 [${docId}] [${clientId}] Awareness ${updatePreview}`);
 
                         awarenessProtocol.applyAwarenessUpdate(awareness, update, ws);
 
@@ -181,7 +172,7 @@ export class YjsService {
         });
 
         ws.on('close', () => {
-            this.logger.log(`👋 [${wsId.slice(0,8)}] 종료: ${docId}`);
+            this.logger.log(`👋 [${clientId}] 종료: ${docId}`);
             const connections = this.connections.get(docId);
             if (connections) {
                 connections.delete(ws);
@@ -207,7 +198,7 @@ export class YjsService {
             syncProtocol.writeSyncStep1(encoder, doc);
             const syncMessage = encoding.toUint8Array(encoder);
             const syncPreview = this.getMessagePreview(syncMessage);
-            this.logger.debug(`📤 [${docId}] [${wsId.slice(0,8)}] 초기 Sync ${syncPreview}`);
+            this.logger.debug(`📤 [${docId}] [${clientId}] 초기 Sync ${syncPreview}`);
             ws.send(syncMessage);
         } catch (error: any) {
             this.logger.error(`❌ [${docId}] 초기 sync 실패: ${error.message}`);
@@ -226,6 +217,9 @@ export class YjsService {
 
         connections.forEach((client) => {
             if (client === sender || client.readyState !== WebSocket.OPEN) return;
+            if (client === sender) return;
+            const clientAddr = `${(client as any)._socket.remoteAddress}:${(client as any)._socket.remotePort}`;
+            this.logger.debug(`✅ [${docId}] [${clientAddr}] 전송`);
 
             try {
                 client.send(msg);
