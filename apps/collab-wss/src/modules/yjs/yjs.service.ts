@@ -38,6 +38,7 @@ export class YjsService {
             // 변경 감지 + 자동 저장
             doc.on('update', (update: Uint8Array, origin: any) => {
                 this.triggerAutoSave(docId);
+                this.broadcastRaw(docId, update, origin as WebSocket);
             });
 
             this.logger.log(`📄 새 Y.Doc 생성: ${docId}`);
@@ -160,10 +161,8 @@ export class YjsService {
 
                         const reply = encoding.toUint8Array(encoder);
                         if (reply.length > 0) {
-                            const replyPreview = this.getMessagePreview(reply);
-                            this.logger.debug(`📤 [${docId}] [${clientId}] 응답 ${replyPreview}`);
                             ws.send(reply);
-                            this.broadcastRaw(docId, reply, ws);
+                            this.logger.debug(`📤 [${docId}] Sync 응답 (${reply.length}B)`);
                         }
                         break;
                     }
