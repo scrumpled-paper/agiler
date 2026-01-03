@@ -11,11 +11,13 @@ describe('KanbanFilterBar', () => {
       profileId: 1,
       nickname: 'John Doe',
       email: 'john@example.com',
+      imageUrl: '',
     },
     {
       profileId: 2,
       nickname: 'Jane Smith',
       email: 'jane@example.com',
+      imageUrl: '',
     },
   ]
 
@@ -39,6 +41,7 @@ describe('KanbanFilterBar', () => {
       profileId: 3,
       nickname: 'Bob Johnson',
       email: 'bob@example.com',
+      imageUrl: '',
     },
   ]
 
