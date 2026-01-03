@@ -27,9 +27,13 @@ export class YjsGateway implements OnModuleInit, OnModuleDestroy {
             try {
                 // ✅ URL에서 쿼리 파라미터 추출
                 const url = new URL(req.url!, `http://${req.headers.host}`);
-
                 const result = url.searchParams.get('wssToken');
-                const wssToken = wssToken.replace(/\/[^\/]*$/, "");
+
+                if (!result) {
+                    return;
+                }
+
+                const wssToken = result.replace(/\/[^\/]*$/, "");
 
                 if (!wssToken) {
                     throw new Error('Missing wssToken parameter');

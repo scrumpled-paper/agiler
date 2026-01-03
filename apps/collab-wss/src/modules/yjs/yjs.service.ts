@@ -38,7 +38,11 @@ export class YjsService {
             // 변경 감지 + 자동 저장
             doc.on('update', (update: Uint8Array, origin: any) => {
                 this.triggerAutoSave(docId);
-                this.broadcastRaw(docId, update, origin as WebSocket);
+                if (origin && origin instanceof WebSocket) {
+                    this.broadcastRaw(docId, update, origin as WebSocket);
+                } else {
+                    this.broadcastRaw(docId, update, null as any);
+                }
             });
 
             this.logger.log(`📄 새 Y.Doc 생성: ${docId}`);
@@ -227,24 +231,29 @@ export class YjsService {
 
     private broadcastRaw(docId: string, msg: Uint8Array, sender: WebSocket) {
         const connections = this.connections.get(docId);
-        if (connections && connections.size > 1) {
-            // 순수 Yjs Update 형식
-            const encoder = encoding.createEncoder();
-            encoding.writeVarUint(encoder, messageSync);
-            encoding.writeVarUint8Array(encoder, msg);
-            const updateMsg = encoding.toUint8Array(encoder);
+        if (!connections || connections.size <= 1) return;
 
-            connections.forEach((client: WebSocket) => {
-                if (client.readyState === WebSocket.OPEN && client !== origin) {
-                    try {
-                        client.send(updateMsg);
-                        this.logger.debug(`🌐 서버 To 클라이언트 CRDT 브로드캐스트 → [${docId}] 전송`);
-                    } catch {
-                        connections.delete(client);
-                    }
-                }
-            });
-        }
+        const preview = this.getMessagePreview(msg);
+        this.logger.debug(`🌐 [${docId}] 브로드캐스트 ${preview}`);
+
+        let sentCount = 0;
+        let failedCount = 0;
+
+        connections.forEach((client: WebSocket) => {
+            if (client === sender || client.readyState !== WebSocket.OPEN) return;
+
+            try {
+                client.send(msg);
+                const clientAddr = `${(client as any)._socket.remoteAddress}:${(client as any)._socket.remotePort}`;
+                this.logger.debug(`✅ [${docId}] → [${clientAddr}] 전송`);
+                sentCount++;
+            } catch (error: any) {
+                failedCount++;
+                connections.delete(client);
+            }
+        });
+
+        this.logger.log(`📊 [${docId}] 브로드캐스트: ${sentCount}성공/${failedCount}실패`);
     }
 
     private loadDocumentData(doc: Y.Doc, documentData: DocumentDto) {
