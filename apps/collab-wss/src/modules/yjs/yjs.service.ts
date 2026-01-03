@@ -179,7 +179,7 @@ export class YjsService {
                         encoding.writeVarUint8Array(encoder, update);
                         const msg = encoding.toUint8Array(encoder);
 
-                        this.broadcastRaw(docId, msg, ws);
+                        this.broadcastUpdate(docId, msg, ws);
                         break;
                     }
 
